@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Строки главного экрана, добавленные вместе с ui/schedule. -->
+<resources>
+    <!-- Выбор группы ещё не сделан -->
+    <string name="schedule_no_selection_title">Расписание не настроено</string>
+    <string name="schedule_no_selection_hint">Выберите факультет и группу, чтобы увидеть расписание занятий.</string>
+
+    <!-- Детали занятия -->
+    <string name="lesson_source_unavailable">Не удалось открыть браузер</string>
+</resources>

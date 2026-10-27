@@ -1,0 +1,1254 @@
+BEGIN:VCALENDAR
+PRODID;X-RICAL-TZSOURCE=TZINFO:timetable.tusur.ru
+CALSCALE:GREGORIAN
+VERSION:2.0
+BEGIN:VTIMEZONE
+TZID;X-RICAL-TZSOURCE=TZINFO:Asia/Novosibirsk
+BEGIN:STANDARD
+DTSTART:20160724T020000
+RDATE:20160724T040000
+TZOFFSETFROM:+0600
+TZOFFSETTO:+0700
+TZNAME:+07
+END:STANDARD
+END:VTIMEZONE
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260902T102500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260902T085000
+DESCRIPTION:Практика\, Головчук О.О.\, Гужов Ф.А.\, Давыдов Д.М.\, Максим
+ енко С.П.\, Марченко Н.В.\, Цвиринько В.Н.
+SUMMARY:Элективные дисциплины по физической культуре и спорту
+LOCATION:
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260916T102500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260916T085000
+DESCRIPTION:Практика\, Головчук О.О.\, Гужов Ф.А.\, Давыдов Д.М.\, Максим
+ енко С.П.\, Марченко Н.В.\, Цвиринько В.Н.
+SUMMARY:Элективные дисциплины по физической культуре и спорту
+LOCATION:
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260930T102500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260930T085000
+DESCRIPTION:Практика\, Головчук О.О.\, Гужов Ф.А.\, Давыдов Д.М.\, Максим
+ енко С.П.\, Марченко Н.В.\, Цвиринько В.Н.
+SUMMARY:Элективные дисциплины по физической культуре и спорту
+LOCATION:
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261014T102500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261014T085000
+DESCRIPTION:Практика\, Головчук О.О.\, Гужов Ф.А.\, Давыдов Д.М.\, Максим
+ енко С.П.\, Марченко Н.В.\, Цвиринько В.Н.
+SUMMARY:Элективные дисциплины по физической культуре и спорту
+LOCATION:
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261028T102500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261028T085000
+DESCRIPTION:Практика\, Головчук О.О.\, Гужов Ф.А.\, Давыдов Д.М.\, Максим
+ енко С.П.\, Марченко Н.В.\, Цвиринько В.Н.
+SUMMARY:Элективные дисциплины по физической культуре и спорту
+LOCATION:
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260905T102500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260905T085000
+DESCRIPTION:Лабораторная работа\, Лазарев Т.П.
+SUMMARY:Защита информации в компьютерных сетях
+LOCATION:улк 408
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260904T145000
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260904T131500
+DESCRIPTION:Лекция\, Новгородова Н.А.
+SUMMARY:Безопасность систем баз данных
+LOCATION:улк 808
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260902T200500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260902T183000
+DESCRIPTION:Лекция\, Новгородова Н.А.
+SUMMARY:Безопасность систем баз данных
+LOCATION:улк 808
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260903T182000
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260903T164500
+DESCRIPTION:Лекция\, Цимбалов К.И.
+SUMMARY:Защита информации в компьютерных сетях
+LOCATION:улк 808
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260904T163500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260904T150000
+DESCRIPTION:Лекция\, Цимбалов К.И.
+SUMMARY:Защита информации в компьютерных сетях
+LOCATION:улк 808
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260904T182000
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260904T164500
+DESCRIPTION:Практика\, Давыдова Е.М.
+SUMMARY:Учебно-проектная деятельность (УПД-2)
+LOCATION:улк 303
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260903T163500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260903T150000
+DESCRIPTION:Практика\, Давыдова Е.М.
+SUMMARY:Учебно-проектная деятельность (УПД-2)
+LOCATION:улк 401
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260905T121500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260905T104000
+DESCRIPTION:Лабораторная работа\, Лазарев Т.П.
+SUMMARY:Защита информации в компьютерных сетях
+LOCATION:улк 408
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260905T145000
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260905T131500
+DESCRIPTION:Лабораторная работа\, Васильев Е.И.
+SUMMARY:Безопасность систем баз данных
+LOCATION:улк 414
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260902T163500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260902T150000
+DESCRIPTION:Лабораторная работа\, Васильев Е.И.
+SUMMARY:Безопасность систем баз данных
+LOCATION:улк 414
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260902T145000
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260902T131500
+DESCRIPTION:Лабораторная работа\, Васильев Е.И.
+SUMMARY:Безопасность систем баз данных
+LOCATION:улк 414
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260907T102500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260907T085000
+DESCRIPTION:Практика\, Головчук О.О.\, Гужов Ф.А.\, Давыдов Д.М.\, Максим
+ енко С.П.\, Марченко Н.В.\, Цвиринько В.Н.
+SUMMARY:Элективные дисциплины по физической культуре и спорту
+LOCATION:
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260921T102500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260921T085000
+DESCRIPTION:Практика\, Головчук О.О.\, Гужов Ф.А.\, Давыдов Д.М.\, Максим
+ енко С.П.\, Марченко Н.В.\, Цвиринько В.Н.
+SUMMARY:Элективные дисциплины по физической культуре и спорту
+LOCATION:
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261019T102500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261019T085000
+DESCRIPTION:Практика\, Головчук О.О.\, Гужов Ф.А.\, Давыдов Д.М.\, Максим
+ енко С.П.\, Марченко Н.В.\, Цвиринько В.Н.
+SUMMARY:Элективные дисциплины по физической культуре и спорту
+LOCATION:
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260909T102500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260909T085000
+DESCRIPTION:Практика\, Головчук О.О.\, Гужов Ф.А.\, Давыдов Д.М.\, Максим
+ енко С.П.\, Марченко Н.В.\, Цвиринько В.Н.
+SUMMARY:Элективные дисциплины по физической культуре и спорту
+LOCATION:
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260923T102500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260923T085000
+DESCRIPTION:Практика\, Головчук О.О.\, Гужов Ф.А.\, Давыдов Д.М.\, Максим
+ енко С.П.\, Марченко Н.В.\, Цвиринько В.Н.
+SUMMARY:Элективные дисциплины по физической культуре и спорту
+LOCATION:
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261021T102500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261021T085000
+DESCRIPTION:Практика\, Головчук О.О.\, Гужов Ф.А.\, Давыдов Д.М.\, Максим
+ енко С.П.\, Марченко Н.В.\, Цвиринько В.Н.
+SUMMARY:Элективные дисциплины по физической культуре и спорту
+LOCATION:
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260910T102500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260910T085000
+DESCRIPTION:Практика\, Катаев М.Ю.\, Костюченко Е.Ю.\, Лаптев П.Ю.\, Ново
+ хрестов А.К.\, Пехов О.В.\, Шабля Ю.В.
+SUMMARY:Проектная деятельность (ГПО-2)
+LOCATION:улк 401\, улк 408\, улк 504\, улк 707\, ф 435
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260924T102500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260924T085000
+DESCRIPTION:Практика\, Катаев М.Ю.\, Костюченко Е.Ю.\, Лаптев П.Ю.\, Ново
+ хрестов А.К.\, Пехов О.В.\, Шабля Ю.В.
+SUMMARY:Проектная деятельность (ГПО-2)
+LOCATION:улк 401\, улк 408\, улк 504\, улк 707\, ф 435
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261022T102500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261022T085000
+DESCRIPTION:Практика\, Катаев М.Ю.\, Костюченко Е.Ю.\, Лаптев П.Ю.\, Ново
+ хрестов А.К.\, Пехов О.В.\, Шабля Ю.В.
+SUMMARY:Проектная деятельность (ГПО-2)
+LOCATION:улк 401\, улк 408\, улк 504\, улк 707\, ф 435
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260907T145000
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260907T131500
+DESCRIPTION:Практика\, Давыдова Е.М.
+SUMMARY:Учебно-проектная деятельность (УПД-2)
+LOCATION:улк 808
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260921T145000
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260921T131500
+DESCRIPTION:Практика\, Давыдова Е.М.
+SUMMARY:Учебно-проектная деятельность (УПД-2)
+LOCATION:улк 808
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260908T182000
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260908T164500
+DESCRIPTION:Лекция\, Новгородова Н.А.
+SUMMARY:Безопасность систем баз данных
+LOCATION:улк 808
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260922T182000
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260922T164500
+DESCRIPTION:Лекция\, Новгородова Н.А.
+SUMMARY:Безопасность систем баз данных
+LOCATION:улк 808
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260907T163500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260907T150000
+DESCRIPTION:Лекция\, Цимбалов К.И.
+SUMMARY:Защита информации в компьютерных сетях
+LOCATION:улк 808
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260921T163500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260921T150000
+DESCRIPTION:Лекция\, Цимбалов К.И.
+SUMMARY:Защита информации в компьютерных сетях
+LOCATION:улк 808
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260912T121500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260912T104000
+DESCRIPTION:Лекция\, Новгородова Н.А.
+SUMMARY:Безопасность систем баз данных
+LOCATION:улк 808
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260926T121500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260926T104000
+DESCRIPTION:Лекция\, Новгородова Н.А.
+SUMMARY:Безопасность систем баз данных
+LOCATION:улк 808
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260911T163500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260911T150000
+DESCRIPTION:Лекция\, Цимбалов К.И.
+SUMMARY:Защита информации в компьютерных сетях
+LOCATION:улк 808
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260908T163500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260908T150000
+DESCRIPTION:Лекция\, Цимбалов К.И.
+SUMMARY:Защита информации в компьютерных сетях
+LOCATION:улк 808
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260922T163500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260922T150000
+DESCRIPTION:Лекция\, Цимбалов К.И.
+SUMMARY:Защита информации в компьютерных сетях
+LOCATION:улк 808
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260911T121500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260911T104000
+DESCRIPTION:Практика\, Давыдова Е.М.
+SUMMARY:Учебно-проектная деятельность (УПД-2)
+LOCATION:улк 310
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260925T121500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260925T104000
+DESCRIPTION:Практика\, Давыдова Е.М.
+SUMMARY:Учебно-проектная деятельность (УПД-2)
+LOCATION:улк 310
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260907T121500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260907T104000
+DESCRIPTION:Лабораторная работа\, Васильев Е.И.
+SUMMARY:Безопасность систем баз данных
+LOCATION:улк 407
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260921T121500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260921T104000
+DESCRIPTION:Лабораторная работа\, Васильев Е.И.
+SUMMARY:Безопасность систем баз данных
+LOCATION:улк 407
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260911T215000
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260911T201500
+DESCRIPTION:Лабораторная работа\, Лазарев Т.П.
+SUMMARY:Защита информации в компьютерных сетях
+LOCATION:улк 407
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260912T145000
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260912T131500
+DESCRIPTION:Лабораторная работа\, Лазарев Т.П.
+SUMMARY:Защита информации в компьютерных сетях
+LOCATION:улк 407
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260912T163500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260912T150000
+DESCRIPTION:Лабораторная работа\, Лазарев Т.П.
+SUMMARY:Защита информации в компьютерных сетях
+LOCATION:улк 407
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260911T200500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260911T183000
+DESCRIPTION:Лабораторная работа\, Лазарев Т.П.
+SUMMARY:Защита информации в компьютерных сетях
+LOCATION:улк 407
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260911T182000
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260911T164500
+DESCRIPTION:Лекция\, Новгородова Н.А.
+SUMMARY:Безопасность систем баз данных
+LOCATION:улк 808
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260925T182000
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260925T164500
+DESCRIPTION:Лекция\, Новгородова Н.А.
+SUMMARY:Безопасность систем баз данных
+LOCATION:улк 808
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260909T121500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260909T104000
+DESCRIPTION:Лабораторная работа\, Васильев Е.И.
+SUMMARY:Безопасность систем баз данных
+LOCATION:улк 407
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260923T121500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260923T104000
+DESCRIPTION:Лабораторная работа\, Васильев Е.И.
+SUMMARY:Безопасность систем баз данных
+LOCATION:улк 407
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260909T145000
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260909T131500
+DESCRIPTION:Лабораторная работа\, Васильев Е.И.
+SUMMARY:Безопасность систем баз данных
+LOCATION:улк 407
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260923T145000
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260923T131500
+DESCRIPTION:Лабораторная работа\, Васильев Е.И.
+SUMMARY:Безопасность систем баз данных
+LOCATION:улк 407
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260908T145000
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260908T131500
+DESCRIPTION:Практика\, Герман О.Н.
+SUMMARY:Философия
+LOCATION:улк 403
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260922T145000
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260922T131500
+DESCRIPTION:Практика\, Герман О.Н.
+SUMMARY:Философия
+LOCATION:улк 403
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260914T145000
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260914T131500
+DESCRIPTION:Практика\, Давыдова Е.М.
+SUMMARY:Учебно-проектная деятельность (УПД-2)
+LOCATION:улк 310
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260915T145000
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260915T131500
+DESCRIPTION:Практика\, Герман О.Н.
+SUMMARY:Философия
+LOCATION:улк 403
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260929T145000
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260929T131500
+DESCRIPTION:Практика\, Герман О.Н.
+SUMMARY:Философия
+LOCATION:улк 403
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260919T145000
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260919T131500
+DESCRIPTION:Лабораторная работа\, Лазарев Т.П.
+SUMMARY:Защита информации в компьютерных сетях
+LOCATION:улк 407
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261003T145000
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261003T131500
+DESCRIPTION:Лабораторная работа\, Лазарев Т.П.
+SUMMARY:Защита информации в компьютерных сетях
+LOCATION:улк 407
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260930T163500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260930T150000
+DESCRIPTION:Лабораторная работа\, Пехов О.В.
+SUMMARY:Технологии Интернета вещей
+LOCATION:улк 707
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261014T163500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261014T150000
+DESCRIPTION:Лабораторная работа\, Пехов О.В.
+SUMMARY:Технологии Интернета вещей
+LOCATION:улк 707
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260930T145000
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260930T131500
+DESCRIPTION:Лабораторная работа\, Васильев Е.И.
+SUMMARY:Безопасность систем баз данных
+LOCATION:улк 407
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260919T163500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260919T150000
+DESCRIPTION:Лабораторная работа\, Лазарев Т.П.
+SUMMARY:Защита информации в компьютерных сетях
+LOCATION:улк 407
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261003T163500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261003T150000
+DESCRIPTION:Лабораторная работа\, Лазарев Т.П.
+SUMMARY:Защита информации в компьютерных сетях
+LOCATION:улк 407
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260930T121500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260930T104000
+DESCRIPTION:Лабораторная работа\, Васильев Е.И.
+SUMMARY:Безопасность систем баз данных
+LOCATION:улк 407
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260914T102500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260914T085000
+DESCRIPTION:Практика\, Головчук О.О.\, Гужов Ф.А.\, Давыдов Д.М.\, Максим
+ енко С.П.\, Марченко Н.В.\, Цвиринько В.Н.
+SUMMARY:Элективные дисциплины по физической культуре и спорту
+LOCATION:
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260928T102500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260928T085000
+DESCRIPTION:Практика\, Головчук О.О.\, Гужов Ф.А.\, Давыдов Д.М.\, Максим
+ енко С.П.\, Марченко Н.В.\, Цвиринько В.Н.
+SUMMARY:Элективные дисциплины по физической культуре и спорту
+LOCATION:
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261012T102500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261012T085000
+DESCRIPTION:Практика\, Головчук О.О.\, Гужов Ф.А.\, Давыдов Д.М.\, Максим
+ енко С.П.\, Марченко Н.В.\, Цвиринько В.Н.
+SUMMARY:Элективные дисциплины по физической культуре и спорту
+LOCATION:
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261026T102500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261026T085000
+DESCRIPTION:Практика\, Головчук О.О.\, Гужов Ф.А.\, Давыдов Д.М.\, Максим
+ енко С.П.\, Марченко Н.В.\, Цвиринько В.Н.
+SUMMARY:Элективные дисциплины по физической культуре и спорту
+LOCATION:
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260915T200500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260915T183000
+DESCRIPTION:Лекция\, Герман О.Н.
+SUMMARY:Философия
+LOCATION:улк 808
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260929T200500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260929T183000
+DESCRIPTION:Лекция\, Герман О.Н.
+SUMMARY:Философия
+LOCATION:улк 808
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260918T163500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260918T150000
+DESCRIPTION:Лекция\, Цимбалов К.И.
+SUMMARY:Защита информации в компьютерных сетях
+LOCATION:улк 808
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261002T163500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261002T150000
+DESCRIPTION:Лекция\, Цимбалов К.И.
+SUMMARY:Защита информации в компьютерных сетях
+LOCATION:улк 808
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260930T182000
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260930T164500
+DESCRIPTION:Лабораторная работа\, Пехов О.В.
+SUMMARY:Технологии Интернета вещей
+LOCATION:улк 707
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260915T163500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260915T150000
+DESCRIPTION:Лекция\, Цимбалов К.И.
+SUMMARY:Защита информации в компьютерных сетях
+LOCATION:улк 808
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260929T163500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260929T150000
+DESCRIPTION:Лекция\, Цимбалов К.И.
+SUMMARY:Защита информации в компьютерных сетях
+LOCATION:улк 808
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260915T182000
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260915T164500
+DESCRIPTION:Лекция\, Новгородова Н.А.
+SUMMARY:Безопасность систем баз данных
+LOCATION:улк 808
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260929T182000
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260929T164500
+DESCRIPTION:Лекция\, Новгородова Н.А.
+SUMMARY:Безопасность систем баз данных
+LOCATION:улк 808
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260919T121500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260919T104000
+DESCRIPTION:Лекция\, Новгородова Н.А.
+SUMMARY:Безопасность систем баз данных
+LOCATION:улк 808
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260928T145000
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260928T131500
+DESCRIPTION:Лабораторная работа\, Васильев Е.И.
+SUMMARY:Безопасность систем баз данных
+LOCATION:улк 408
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260918T182000
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260918T164500
+DESCRIPTION:Лекция\, Новгородова Н.А.
+SUMMARY:Безопасность систем баз данных
+LOCATION:улк 808
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261002T182000
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261002T164500
+DESCRIPTION:Лекция\, Новгородова Н.А.
+SUMMARY:Безопасность систем баз данных
+LOCATION:улк 808
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260928T163500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260928T150000
+DESCRIPTION:Практика\, Давыдова Е.М.
+SUMMARY:Учебно-проектная деятельность (УПД-2)
+LOCATION:улк 808
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261012T163500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261012T150000
+DESCRIPTION:Практика\, Давыдова Е.М.
+SUMMARY:Учебно-проектная деятельность (УПД-2)
+LOCATION:улк 808
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261026T163500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261026T150000
+DESCRIPTION:Практика\, Давыдова Е.М.
+SUMMARY:Учебно-проектная деятельность (УПД-2)
+LOCATION:улк 808
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260918T121500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260918T104000
+DESCRIPTION:Практика\, Давыдова Е.М.
+SUMMARY:Учебно-проектная деятельность (УПД-2)
+LOCATION:улк 310
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261002T121500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261002T104000
+DESCRIPTION:Практика\, Давыдова Е.М.
+SUMMARY:Учебно-проектная деятельность (УПД-2)
+LOCATION:улк 310
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260914T121500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260914T104000
+DESCRIPTION:Лабораторная работа\, Васильев Е.И.
+SUMMARY:Безопасность систем баз данных
+LOCATION:улк 408
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260928T121500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260928T104000
+DESCRIPTION:Лабораторная работа\, Васильев Е.И.
+SUMMARY:Безопасность систем баз данных
+LOCATION:улк 408
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260902T182000
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260902T164500
+DESCRIPTION:Лекция\, Новгородова Н.А.
+SUMMARY:Безопасность систем баз данных
+LOCATION:улк 808
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260910T121500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260910T104000
+DESCRIPTION:Практика\, Катаев М.Ю.\, Костюченко Е.Ю.\, Лаптев П.Ю.\, Ново
+ хрестов А.К.\, Пехов О.В.\, Шабля Ю.В.
+SUMMARY:Проектная деятельность (ГПО-2)
+LOCATION:улк 401\, улк 408\, улк 504\, улк 707\, ф 435
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260924T121500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260924T104000
+DESCRIPTION:Практика\, Катаев М.Ю.\, Костюченко Е.Ю.\, Лаптев П.Ю.\, Ново
+ хрестов А.К.\, Пехов О.В.\, Шабля Ю.В.
+SUMMARY:Проектная деятельность (ГПО-2)
+LOCATION:улк 401\, улк 408\, улк 504\, улк 707\, ф 435
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261022T121500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261022T104000
+DESCRIPTION:Практика\, Катаев М.Ю.\, Костюченко Е.Ю.\, Лаптев П.Ю.\, Ново
+ хрестов А.К.\, Пехов О.В.\, Шабля Ю.В.
+SUMMARY:Проектная деятельность (ГПО-2)
+LOCATION:улк 401\, улк 408\, улк 504\, улк 707\, ф 435
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260903T102500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260903T085000
+DESCRIPTION:Практика\, Катаев М.Ю.\, Костюченко Е.Ю.\, Лаптев П.Ю.\, Ново
+ хрестов А.К.\, Пехов О.В.\, Шабля Ю.В.
+SUMMARY:Проектная деятельность (ГПО-2)
+LOCATION:улк 408\, улк 707\, улк 401\, улк 504\, ф 435
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260917T102500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260917T085000
+DESCRIPTION:Практика\, Катаев М.Ю.\, Костюченко Е.Ю.\, Лаптев П.Ю.\, Ново
+ хрестов А.К.\, Пехов О.В.\, Шабля Ю.В.
+SUMMARY:Проектная деятельность (ГПО-2)
+LOCATION:улк 408\, улк 707\, улк 401\, улк 504\, ф 435
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261001T102500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261001T085000
+DESCRIPTION:Практика\, Катаев М.Ю.\, Костюченко Е.Ю.\, Лаптев П.Ю.\, Ново
+ хрестов А.К.\, Пехов О.В.\, Шабля Ю.В.
+SUMMARY:Проектная деятельность (ГПО-2)
+LOCATION:улк 408\, улк 707\, улк 401\, улк 504\, ф 435
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261015T102500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261015T085000
+DESCRIPTION:Практика\, Катаев М.Ю.\, Костюченко Е.Ю.\, Лаптев П.Ю.\, Ново
+ хрестов А.К.\, Пехов О.В.\, Шабля Ю.В.
+SUMMARY:Проектная деятельность (ГПО-2)
+LOCATION:улк 408\, улк 707\, улк 401\, улк 504\, ф 435
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261029T102500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261029T085000
+DESCRIPTION:Практика\, Катаев М.Ю.\, Костюченко Е.Ю.\, Лаптев П.Ю.\, Ново
+ хрестов А.К.\, Пехов О.В.\, Шабля Ю.В.
+SUMMARY:Проектная деятельность (ГПО-2)
+LOCATION:улк 408\, улк 707\, улк 401\, улк 504\, ф 435
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260903T145000
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260903T131500
+DESCRIPTION:Практика\, Катаев М.Ю.\, Костюченко Е.Ю.\, Лаптев П.Ю.\, Ново
+ хрестов А.К.\, Пехов О.В.\, Шабля Ю.В.
+SUMMARY:Проектная деятельность (ГПО-2)
+LOCATION:улк 408\, улк 707\, ф 435\, улк 401\, улк 504
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260917T145000
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260917T131500
+DESCRIPTION:Практика\, Катаев М.Ю.\, Костюченко Е.Ю.\, Лаптев П.Ю.\, Ново
+ хрестов А.К.\, Пехов О.В.\, Шабля Ю.В.
+SUMMARY:Проектная деятельность (ГПО-2)
+LOCATION:улк 408\, улк 707\, ф 435\, улк 401\, улк 504
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261001T145000
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261001T131500
+DESCRIPTION:Практика\, Катаев М.Ю.\, Костюченко Е.Ю.\, Лаптев П.Ю.\, Ново
+ хрестов А.К.\, Пехов О.В.\, Шабля Ю.В.
+SUMMARY:Проектная деятельность (ГПО-2)
+LOCATION:улк 408\, улк 707\, ф 435\, улк 401\, улк 504
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260903T121500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260903T104000
+DESCRIPTION:Практика\, Катаев М.Ю.\, Костюченко Е.Ю.\, Лаптев П.Ю.\, Ново
+ хрестов А.К.\, Пехов О.В.\, Шабля Ю.В.
+SUMMARY:Проектная деятельность (ГПО-2)
+LOCATION:улк 408\, улк 401\, улк 504\, улк 707\, ф 435
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260917T121500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260917T104000
+DESCRIPTION:Практика\, Катаев М.Ю.\, Костюченко Е.Ю.\, Лаптев П.Ю.\, Ново
+ хрестов А.К.\, Пехов О.В.\, Шабля Ю.В.
+SUMMARY:Проектная деятельность (ГПО-2)
+LOCATION:улк 408\, улк 401\, улк 504\, улк 707\, ф 435
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261001T121500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261001T104000
+DESCRIPTION:Практика\, Катаев М.Ю.\, Костюченко Е.Ю.\, Лаптев П.Ю.\, Ново
+ хрестов А.К.\, Пехов О.В.\, Шабля Ю.В.
+SUMMARY:Проектная деятельность (ГПО-2)
+LOCATION:улк 408\, улк 401\, улк 504\, улк 707\, ф 435
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261015T121500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261015T104000
+DESCRIPTION:Практика\, Катаев М.Ю.\, Костюченко Е.Ю.\, Лаптев П.Ю.\, Ново
+ хрестов А.К.\, Пехов О.В.\, Шабля Ю.В.
+SUMMARY:Проектная деятельность (ГПО-2)
+LOCATION:улк 408\, улк 401\, улк 504\, улк 707\, ф 435
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261029T121500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261029T104000
+DESCRIPTION:Практика\, Катаев М.Ю.\, Костюченко Е.Ю.\, Лаптев П.Ю.\, Ново
+ хрестов А.К.\, Пехов О.В.\, Шабля Ю.В.
+SUMMARY:Проектная деятельность (ГПО-2)
+LOCATION:улк 408\, улк 401\, улк 504\, улк 707\, ф 435
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260905T182000
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260905T164500
+DESCRIPTION:Практика\, Герман О.Н.
+SUMMARY:Философия
+LOCATION:улк 403
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260926T145000
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260926T131500
+DESCRIPTION:Лабораторная работа\, Лазарев Т.П.
+SUMMARY:Защита информации в компьютерных сетях
+LOCATION:улк 407
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260926T163500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260926T150000
+DESCRIPTION:Лабораторная работа\, Лазарев Т.П.
+SUMMARY:Защита информации в компьютерных сетях
+LOCATION:улк 407
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260925T200500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260925T183000
+DESCRIPTION:Практика\, Лазарев Т.П.
+SUMMARY:Защита информации в компьютерных сетях
+LOCATION:улк 407
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260922T200500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260922T183000
+DESCRIPTION:Практика\, Лазарев Т.П.\, Семенов Г.Ю.\, Цимбалов К.И.
+SUMMARY:Защита информации в компьютерных сетях
+LOCATION:улк 408
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260930T200500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260930T183000
+DESCRIPTION:Практика\, Лазарев Т.П.
+SUMMARY:Защита информации в компьютерных сетях
+LOCATION:улк 407
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261002T200500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261002T183000
+DESCRIPTION:Практика\, Лазарев Т.П.
+SUMMARY:Защита информации в компьютерных сетях
+LOCATION:улк 407
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260916T163500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260916T150000
+DESCRIPTION:Лабораторная работа\, ЭИОС\, Пехов О.В.
+SUMMARY:Технологии Интернета вещей
+LOCATION:
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260916T145000
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260916T131500
+DESCRIPTION:Лабораторная работа\, ЭИОС\, Васильев Е.И.
+SUMMARY:Безопасность систем баз данных
+LOCATION:
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260916T182000
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260916T164500
+DESCRIPTION:Лабораторная работа\, ЭИОС\, Пехов О.В.
+SUMMARY:Технологии Интернета вещей
+LOCATION:
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260916T121500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20260916T104000
+DESCRIPTION:Лабораторная работа\, ЭИОС\, Васильев Е.И.
+SUMMARY:Безопасность систем баз данных
+LOCATION:
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261006T121500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261006T104000
+DESCRIPTION:Зачет\, Цимбалов К.И.
+SUMMARY:Защита информации в компьютерных сетях
+LOCATION:улк 405
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261009T145000
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261009T131500
+DESCRIPTION:Экзамен\, Новгородова Н.А.
+SUMMARY:Безопасность систем баз данных
+LOCATION:улк 407
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261009T163500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261009T150000
+DESCRIPTION:Экзамен\, Новгородова Н.А.
+SUMMARY:Безопасность систем баз данных
+LOCATION:улк 407
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261016T102500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261016T085000
+DESCRIPTION:Лекция\, Харченко С.С.
+SUMMARY:Технологии и методы программирования
+LOCATION:улк 808
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261016T163500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261016T150000
+DESCRIPTION:Лекция\, Якимук А.Ю.
+SUMMARY:Безопасность операционных систем
+LOCATION:улк 808
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261012T145000
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261012T131500
+DESCRIPTION:Лекция\, Якимук А.Ю.
+SUMMARY:Безопасность операционных систем
+LOCATION:улк 808
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261016T145000
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261016T131500
+DESCRIPTION:Лабораторная работа\, Меденцев К.В.
+SUMMARY:Технологии и методы программирования
+LOCATION:улк 407
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261030T145000
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261030T131500
+DESCRIPTION:Лабораторная работа\, Меденцев К.В.
+SUMMARY:Технологии и методы программирования
+LOCATION:улк 407
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261017T102500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261017T085000
+DESCRIPTION:Лабораторная работа\, Лазарев Т.П.
+SUMMARY:Безопасность операционных систем
+LOCATION:улк 504
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261031T102500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261031T085000
+DESCRIPTION:Лабораторная работа\, Лазарев Т.П.
+SUMMARY:Безопасность операционных систем
+LOCATION:улк 504
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261016T121500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261016T104000
+DESCRIPTION:Лабораторная работа\, Меденцев К.В.
+SUMMARY:Технологии и методы программирования
+LOCATION:улк 407
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261030T121500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261030T104000
+DESCRIPTION:Лабораторная работа\, Меденцев К.В.
+SUMMARY:Технологии и методы программирования
+LOCATION:улк 407
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261017T145000
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261017T131500
+DESCRIPTION:Лекция\, Харченко С.С.
+SUMMARY:Технологии и методы программирования
+LOCATION:улк 808
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261031T145000
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261031T131500
+DESCRIPTION:Лекция\, Харченко С.С.
+SUMMARY:Технологии и методы программирования
+LOCATION:улк 808
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261017T121500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261017T104000
+DESCRIPTION:Лабораторная работа\, Лазарев Т.П.
+SUMMARY:Безопасность операционных систем
+LOCATION:улк 504
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261031T121500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261031T104000
+DESCRIPTION:Лабораторная работа\, Лазарев Т.П.
+SUMMARY:Безопасность операционных систем
+LOCATION:улк 504
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261027T200500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261027T183000
+DESCRIPTION:Лабораторная работа\, Лазарев Т.П.
+SUMMARY:Безопасность операционных систем
+LOCATION:улк 413
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261027T215000
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261027T201500
+DESCRIPTION:Лабораторная работа\, Лазарев Т.П.
+SUMMARY:Безопасность операционных систем
+LOCATION:улк 413
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261012T182000
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261012T164500
+DESCRIPTION:Курсовая работа\, Новгородова Н.А.
+SUMMARY:Безопасность систем баз данных
+LOCATION:улк 405
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261019T145000
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261019T131500
+DESCRIPTION:Лекция\, Новохрестов А.К.
+SUMMARY:Безопасность операционных систем
+LOCATION:улк 808
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261014T200500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261014T183000
+DESCRIPTION:Лекция\, Якимук А.Ю.
+SUMMARY:Безопасность операционных систем
+LOCATION:улк 808
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261016T182000
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261016T164500
+DESCRIPTION:Лекция\, Якимук А.Ю.
+SUMMARY:Безопасность операционных систем
+LOCATION:улк 808
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261023T102500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261023T085000
+DESCRIPTION:Лекция\, Харченко С.С.
+SUMMARY:Технологии и методы программирования
+LOCATION:улк 808
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261024T145000
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261024T131500
+DESCRIPTION:Лекция\, Харченко С.С.
+SUMMARY:Технологии и методы программирования
+LOCATION:улк 808
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261014T182000
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261014T164500
+DESCRIPTION:Лекция\, Харченко С.С.
+SUMMARY:Технологии и методы программирования
+LOCATION:улк 808
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261028T182000
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261028T164500
+DESCRIPTION:Лекция\, Харченко С.С.
+SUMMARY:Технологии и методы программирования
+LOCATION:улк 808
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261014T145000
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261014T131500
+DESCRIPTION:Лабораторная работа\, Пехов О.В.
+SUMMARY:Технологии Интернета вещей
+LOCATION:улк 707
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261026T145000
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261026T131500
+DESCRIPTION:Лекция\, Новохрестов А.К.
+SUMMARY:Безопасность операционных систем
+LOCATION:улк 808
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261013T182000
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261013T164500
+DESCRIPTION:Практика\, Давыдова Е.М.
+SUMMARY:Учебно-проектная деятельность (УПД-2)
+LOCATION:улк 310
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261027T182000
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261027T164500
+DESCRIPTION:Практика\, Давыдова Е.М.
+SUMMARY:Учебно-проектная деятельность (УПД-2)
+LOCATION:улк 310
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261013T163500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261013T150000
+DESCRIPTION:Лабораторная работа\, Меденцев К.В.
+SUMMARY:Технологии и методы программирования
+LOCATION:улк 408
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261012T200500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261012T183000
+DESCRIPTION:Курсовая работа\, Новгородова Н.А.
+SUMMARY:Безопасность систем баз данных
+LOCATION:улк 405
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261024T163500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261024T150000
+DESCRIPTION:Лекция\, Харченко С.С.
+SUMMARY:Технологии и методы программирования
+LOCATION:улк 808
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261020T200500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261020T183000
+DESCRIPTION:Лабораторная работа\, Лазарев Т.П.
+SUMMARY:Безопасность операционных систем
+LOCATION:улк 407
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261024T102500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261024T085000
+DESCRIPTION:Лабораторная работа\, Лазарев Т.П.
+SUMMARY:Безопасность операционных систем
+LOCATION:улк 504
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261024T121500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261024T104000
+DESCRIPTION:Лабораторная работа\, Лазарев Т.П.
+SUMMARY:Безопасность операционных систем
+LOCATION:улк 504
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261020T215000
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261020T201500
+DESCRIPTION:Лабораторная работа\, Лазарев Т.П.
+SUMMARY:Безопасность операционных систем
+LOCATION:улк 407
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261021T200500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261021T183000
+DESCRIPTION:Лабораторная работа\, Лазарев Т.П.
+SUMMARY:Безопасность операционных систем
+LOCATION:улк 504
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261021T215000
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261021T201500
+DESCRIPTION:Лабораторная работа\, Лазарев Т.П.
+SUMMARY:Безопасность операционных систем
+LOCATION:улк 504
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261023T121500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261023T104000
+DESCRIPTION:Лабораторная работа\, Меденцев К.В.
+SUMMARY:Технологии и методы программирования
+LOCATION:улк 407
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261027T163500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261027T150000
+DESCRIPTION:Курсовая работа\, Новгородова Н.А.
+SUMMARY:Безопасность систем баз данных
+LOCATION:улк 405
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261021T163500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261021T150000
+DESCRIPTION:Лабораторная работа\, Меденцев К.В.
+SUMMARY:Технологии и методы программирования
+LOCATION:улк 405
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261030T182000
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261030T164500
+DESCRIPTION:Лабораторная работа\, Пехов О.В.
+SUMMARY:Технологии Интернета вещей
+LOCATION:улк 707
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261030T163500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261030T150000
+DESCRIPTION:Лабораторная работа\, Пехов О.В.
+SUMMARY:Технологии Интернета вещей
+LOCATION:улк 707
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261022T163500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261022T150000
+DESCRIPTION:Курсовая работа\, Новгородова Н.А.
+SUMMARY:Безопасность систем баз данных
+LOCATION:улк 504
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261019T182000
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261019T164500
+DESCRIPTION:Практика\, Давыдова Е.М.
+SUMMARY:Учебно-проектная деятельность (УПД-2)
+LOCATION:улк 310
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261023T145000
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261023T131500
+DESCRIPTION:Практика\, Герман О.Н.
+SUMMARY:Философия
+LOCATION:улк 409
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261026T182000
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261026T164500
+DESCRIPTION:Лекция\, Харченко С.С.
+SUMMARY:Технологии и методы программирования
+LOCATION:улк 808
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261020T182000
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261020T164500
+DESCRIPTION:Практика\, Давыдова Е.М.
+SUMMARY:Учебно-проектная деятельность (УПД-2)
+LOCATION:улк 310
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261021T182000
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261021T164500
+DESCRIPTION:Лабораторная работа\, Меденцев К.В.
+SUMMARY:Технологии и методы программирования
+LOCATION:улк 405
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261028T145000
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261028T131500
+DESCRIPTION:Лабораторная работа\, Меденцев К.В.
+SUMMARY:Технологии и методы программирования
+LOCATION:улк 407
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261028T163500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261028T150000
+DESCRIPTION:Практика\, Герман О.Н.
+SUMMARY:Философия
+LOCATION:улк 403
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261019T163500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261019T150000
+DESCRIPTION:Лекция\, Герман О.Н.
+SUMMARY:Философия
+LOCATION:улк 808
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261023T163500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261023T150000
+DESCRIPTION:Курсовая работа\, Новгородова Н.А.
+SUMMARY:Безопасность систем баз данных
+LOCATION:улк 414
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261028T121500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261028T104000
+DESCRIPTION:Лабораторная работа\, Меденцев К.В.
+SUMMARY:Технологии и методы программирования
+LOCATION:улк 407
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261027T145000
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261027T131500
+DESCRIPTION:Курсовая работа\, Новгородова Н.А.
+SUMMARY:Безопасность систем баз данных
+LOCATION:улк 405
+END:VEVENT
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261022T145000
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261022T131500
+DESCRIPTION:Практика\, Катаев М.Ю.\, Костюченко Е.Ю.\, Лаптев П.Ю.\, Ново
+ хрестов А.К.\, Пехов О.В.\, Шабля Ю.В.
+SUMMARY:Проектная деятельность (ГПО-2)
+LOCATION:улк 401\, улк 408\, улк 504\, улк 707\, ф 435
+END:VEVENT
+END:VCALENDAR

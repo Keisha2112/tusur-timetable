@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Расписание ТУСУР</string>
+
+    <!-- Общие действия -->
+    <string name="action_retry">Повторить</string>
+    <string name="action_cancel">Отмена</string>
+    <string name="action_back">Назад</string>
+    <string name="error_unknown">Что-то пошло не так</string>
+    <string name="loading">Загрузка…</string>
+
+    <!-- Онбординг -->
+    <string name="onboarding_faculty_title">Выберите факультет</string>
+    <string name="onboarding_faculty_subtitle">Список факультетов ТУСУР</string>
+    <string name="onboarding_faculty_search_hint">Поиск факультета</string>
+    <string name="onboarding_group_title">Выберите группу</string>
+    <string name="onboarding_group_subtitle">Группы факультета %1$s</string>
+    <string name="onboarding_group_search_hint">Поиск группы</string>
+    <string name="onboarding_step">Шаг %1$d из %2$d</string>
+    <string name="onboarding_no_faculties">Факультеты не найдены</string>
+    <string name="onboarding_no_groups">Группы не найдены</string>
+    <string name="onboarding_course">Курс %1$d</string>
+    <string name="onboarding_course_unknown">Без курса</string>
+    <string name="onboarding_empty_faculties">Сайт вернул пустой список факультетов</string>
+
+    <!-- Главный экран -->
+    <string name="schedule_week_title">Неделя %1$d · %2$s</string>
+    <string name="schedule_week_title_no_number">Неделя · %1$s</string>
+    <string name="schedule_week_odd">нечётная</string>
+    <string name="schedule_week_even">чётная</string>
+    <string name="schedule_today">Сегодня</string>
+    <string name="schedule_previous_week">Предыдущая неделя</string>
+    <string name="schedule_next_week">Следующая неделя</string>
+    <string name="schedule_empty_week">На эту неделю расписание ещё не опубликовано</string>
+    <string name="schedule_empty_week_hint">Попробуйте соседнюю неделю или обновите позже</string>
+    <string name="schedule_empty_day">Занятий нет</string>
+    <string name="schedule_offline">Нет подключения. Показано сохранённое расписание.</string>
+    <string name="schedule_stale">Не удалось обновить. Показано сохранённое расписание.</string>
+    <string name="schedule_updated_at">Обновлено %1$s</string>
+    <string name="schedule_error_title">Не удалось загрузить расписание</string>
+    <string name="schedule_error_no_cache">Проверьте подключение к интернету и попробуйте ещё раз.</string>
+    <string name="schedule_group_not_found">Группа не найдена. Возможно, она переименована.</string>
+    <string name="schedule_open_settings">Открыть настройки</string>
+    <string name="schedule_loading">Загружаем расписание…</string>
+    <string name="schedule_faculty_and_group">%1$s · %2$s</string>
+
+    <!-- Занятие -->
+    <string name="lesson_type_lecture">Лекция</string>
+    <string name="lesson_type_practice">Практика</string>
+    <string name="lesson_type_laboratory">Лабораторная работа</string>
+    <string name="lesson_type_research">Научно-исследовательская работа</string>
+    <string name="lesson_type_consultation">Консультация</string>
+    <string name="lesson_type_exam">Экзамен</string>
+    <string name="lesson_type_credit">Зачёт</string>
+    <string name="lesson_type_other">Занятие</string>
+    <string name="lesson_pair">Пара %1$d</string>
+    <string name="lesson_time">%1$s – %2$s</string>
+    <string name="lesson_room">ауд. %1$s</string>
+    <string name="lesson_rooms_title">Аудитории</string>
+    <string name="lesson_teachers_title">Преподаватели</string>
+    <string name="lesson_details_source">Открыть источник</string>
+    <string name="lesson_details_date">Дата</string>
+    <string name="lesson_details_time">Время</string>
+    <string name="lesson_more_teachers">и ещё %1$d</string>
+    <string name="lesson_teacher_unknown">Преподаватель не указан</string>
+
+    <!-- Недели -->
+    <string name="weeks_title">Недели</string>
+    <string name="week_current">Текущая</string>
+    <string name="week_has_lessons">Есть занятия</string>
+    <string name="week_kind_theoretical">Учебная неделя</string>
+    <string name="week_kind_exam_session">Сессия</string>
+    <string name="week_kind_weekend">Каникулы</string>
+
+    <!-- Настройки -->
+    <string name="settings_title">Настройки</string>
+    <string name="settings_current_group">Текущая группа</string>
+    <string name="settings_change_group">Изменить факультет и группу</string>
+    <string name="settings_data_source">Источник данных</string>
+    <string name="settings_data_source_url">timetable.tusur.ru</string>
+    <string name="settings_about">О приложении</string>
+    <string name="settings_version">Версия %1$s</string>
+    <string name="settings_clear_cache">Очистить кэш</string>
+    <string name="settings_clear_cache_confirm">Удалить сохранённое расписание и каталог?</string>
+    <string name="settings_clear_cache_done">Кэш очищен</string>
+    <string name="settings_theme">Тема</string>
+    <string name="settings_theme_system">Как в системе</string>
+    <string name="settings_disclaimer">Приложение неофициальное и не связано с ТУСУР. Данные берутся с открытого сайта timetable.tusur.ru.</string>
+    <string name="settings_last_update">Последнее обновление: %1$s</string>
+    <string name="settings_never_updated">Расписание ещё не загружалось</string>
+    <string name="settings_change_group_hint">После выбора расписание загрузится заново</string>
+
+    <!-- Доступность -->
+    <string name="cd_settings">Настройки</string>
+    <string name="cd_previous_week">Предыдущая неделя</string>
+    <string name="cd_next_week">Следующая неделя</string>
+    <string name="cd_choose_week">Выбрать неделю</string>
+    <string name="cd_lesson_card">Занятие: %1$s, %2$s, %3$s</string>
+
+    <!-- Ошибки -->
+    <string name="error_network">Нет подключения к интернету</string>
+    <string name="error_server">Сайт расписания недоступен</string>
+    <string name="error_parse">Не удалось разобрать данные сайта</string>
+</resources>

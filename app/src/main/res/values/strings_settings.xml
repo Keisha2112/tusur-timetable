@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_data_title">Данные</string>
+    <string name="settings_no_group">Группа не выбрана</string>
+    <string name="settings_clear_cache_confirm_action">Очистить</string>
+    <string name="settings_cache_clearing">Очистка…</string>
+    <string name="settings_link_error">Не удалось открыть браузер</string>
+    <string name="cd_open_source">Открыть timetable.tusur.ru</string>
+</resources>

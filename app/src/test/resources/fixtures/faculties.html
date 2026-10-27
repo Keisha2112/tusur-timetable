@@ -1,0 +1,2039 @@
+<!DOCTYPE HTML>
+<html lang='ru'>
+<head>
+  <meta charset='UTF-8'>
+  <meta name='viewport' content='width=device-width, initial-scale=1, maximum-scale=1'>
+  <title>Список факультетов &mdash; Расписание занятий ТУСУР</title>
+  <meta name="keywords" content="электронное расписание занятий, Томский государственный университет систем управления и радиоэлектроники, ТУСУР" />
+<meta name="description" content="электронное расписание занятий Томского государственного университета систем управления и радиоэлектроники (ТУСУР)" />
+
+  <meta content="authenticity_token" name="csrf-param" />
+<meta content="GCJ3LNUZFHp1SaFOVMcAe1rlvCbYwubXMWmrsCZd0c8=" name="csrf-token" />
+  <link href="/assets/favicon-73aa74164dbe3ac8f1a79591fbd276b1.ico" rel="shortcut icon" type="image/vnd.microsoft.icon" />
+  <!-- Top.Mail.Ru counter -->
+<script type="text/javascript">
+var _tmr = window._tmr || (window._tmr = []);
+_tmr.push({id: "3607515", type: "pageView", start: (new Date()).getTime()});
+(function (d, w, id) {
+  if (d.getElementById(id)) return;
+  var ts = d.createElement("script"); ts.type = "text/javascript"; ts.async = true; ts.id = id;
+  ts.src = "https://top-fwz1.mail.ru/js/code.js";
+  var f = function () {var s = d.getElementsByTagName("script")[0]; s.parentNode.insertBefore(ts, s);};
+  if (w.opera == "[object Opera]") { d.addEventListener("DOMContentLoaded", f, false); } else { f(); }
+})(document, window, "tmr-code");
+</script>
+<noscript><div><img src="https://top-fwz1.mail.ru/counter?id=3607515;js=na" style="position:absolute;left:-9999px;" alt="Top.Mail.Ru" /></div></noscript>
+<!-- /Top.Mail.Ru counter -->
+
+  <link href="/assets/application-21e5f91893840d8e4da8589ea6113d54.css" media="screen" rel="stylesheet" />
+  <link href="/assets/print-2cde654f215fa220c6a713a0c41a5997.css" media="print" rel="stylesheet" />
+  <script src="/assets/application-73db99c0fdd3e3436f9b70b96203b78a.js"></script>
+</head>
+<body>
+  <div id='wrapper'>
+    <div class='container hide-on-normal'>
+  <div class='row'>
+    <div class='col-xs-12'>
+      <div class='cecutient-panel'>
+        <div class='setting-font-size'>
+          <div>
+            Размер шрифта:
+            <span class='font-size'></span>
+          </div>
+          <div>
+            <a class='reduce-font-size' href='#'>&ndash;</a>
+            <a class='increase-font-size' href='#'>&plus;</a>
+          </div>
+        </div>
+        <div class='setting-color'>
+          <div>
+            Цвет сайта:
+          </div>
+          <div>
+            <a class='color-white' href='#'></a>
+            <a class='color-black' href='#'></a>
+            <a class='color-blue' href='#'></a>
+          </div>
+        </div>
+        <div class='setting-images'>
+          <div>
+            Изображения:
+          </div>
+          <div>
+            <a class='images-show' href='#'>Вкл.</a>
+            <a class='images-hide' href='#'>Выкл.</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+
+
+<link href='https://profile.tusur.ru/assets/nekst.css' rel='stylesheet' type='text/css'>
+<style type="text/css">.flash_message {
+  -moz-border-radius-topleft: 0;
+  -webkit-border-top-left-radius: 0;
+  border-top-left-radius: 0;
+  -moz-border-radius-topright: 0;
+  -webkit-border-top-right-radius: 0;
+  border-top-right-radius: 0;
+  border-top: 0;
+  cursor: pointer;
+  left: 50%;
+  margin-left: -210px;
+  position: fixed;
+  text-align: center;
+  top: 0;
+  width: 420px;
+  z-index: 9999999; }
+
+.tusur-header {
+  box-sizing: border-box !important; }
+  .tusur-header * {
+    box-sizing: border-box !important; }
+  .tusur-header__separator {
+    border-top: 1px solid #E1E0ED; }
+  .tusur-header__dropdown {
+    display: none;
+    background-color: #fff;
+    position: absolute;
+    z-index: 9999999;
+    top: 100%;
+    overflow-y: scroll; }
+    .tusur-header__dropdown--theme-user {
+      max-height: 324px;
+      right: 0;
+      box-shadow: 0px 4px 5px 0px rgba(0, 0, 0, 0.25);
+      z-index: 9999999;
+      font-size: 14px;
+      right: 0;
+      margin: 0;
+      padding: 0;
+      border-radius: 0px;
+      border: none;
+      float: none;
+      left: auto;
+      overflow-y: scroll; }
+  .tusur-header__link {
+    display: block;
+    padding: 10px 0px 10px 15px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #000;
+    width: 100%;
+    text-decoration: none;
+    width: 305px;
+    white-space: nowrap;
+    overflow-x: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer; }
+    .tusur-header__link:hover, .tusur-header__link:active, .tusur-header__link:focus {
+      background-color: #fff;
+      text-decoration: underline !important;
+      color: #000; }
+
+.cdn-header {
+  touch-action: manipulation;
+  background: #ECECF4;
+  font-size: 16px;
+  line-height: 1.5;
+  font-family: NekstCdn, sans-serif;
+  position: relative;
+  -moz-user-select: -moz-none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  user-select: none;
+  box-sizing: border-box !important; }
+  .cdn-header * {
+    box-sizing: border-box !important; }
+  .cdn-header a {
+    -webkit-user-drag: none;
+    -moz-user-drag: none;
+    -o-user-drag: none;
+    user-drag: none; }
+    .cdn-header a:hover, .cdn-header a:active, .cdn-header a:focus {
+      text-decoration: none; }
+  .cdn-header__container {
+    margin: 0 auto;
+    padding-right: 15px;
+    padding-left: 15px; }
+    .cdn-header__container--column {
+      column-count: 4;
+      gap: 30px; }
+  .cdn-header__inner {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start; }
+  .cdn-header__notifications-inner {
+    position: relative; }
+  .cdn-header__toggler {
+    display: block;
+    margin: auto 7px auto 0;
+    background: url("https://storage.tusur.ru/files/167486/Vector.svg");
+    height: 18px;
+    width: 18px;
+    background-size: 18px; }
+    .cdn-header__toggler--active {
+      background: url("https://storage.tusur.ru/files/167485/close.svg");
+      background-size: 18px;
+      height: 18px;
+      width: 18px; }
+  .cdn-header__subheader-list {
+    margin-bottom: 0px;
+    padding: 0;
+    list-style: none; }
+  .cdn-header__dropdown {
+    background-color: #fff;
+    position: absolute;
+    z-index: 9999999;
+    top: 100%;
+    padding: 40px 0 15px;
+    left: 0;
+    width: 100%;
+    transition: all 0.3s linear;
+    display: block; }
+    .cdn-header__dropdown--visualy-hidden {
+      opacity: 0; }
+    .cdn-header__dropdown--hidden {
+      display: none; }
+    .cdn-header__dropdown:before {
+      content: "";
+      display: block;
+      position: absolute;
+      width: 100%;
+      background-image: linear-gradient(180deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0) 100%);
+      height: 60px;
+      bottom: -60px; }
+  .cdn-header__visible {
+    display: block !important; }
+  .cdn-header__list {
+    display: inline-block;
+    margin-bottom: 25px; }
+  .cdn-header__arrow {
+    transition: all 0.3s;
+    transform: scale(1) rotate(0deg);
+    margin: auto 0 auto 10px;
+    background: url("https://storage.tusur.ru/files/167484/arrow.svg");
+    width: 16px;
+    height: 10px;
+    display: inline-block;
+    position: relative; }
+    .cdn-header__arrow--active {
+      transition: all 0.3s;
+      transform: scale(1) rotate(-180deg); }
+    .cdn-header__arrow--accordion {
+      display: none;
+      margin: auto 0; }
+    .cdn-header__arrow--scale {
+      transform: scale(0); }
+  .cdn-header__lock {
+    transition: all 0.3s;
+    background: url("https://storage.tusur.ru/files/168062/lock_icon_128823.svg");
+    height: 16px;
+    width: 16px;
+    margin-top: -4px;
+    display: inline-block;
+    transform: scale(0);
+    top: 18px;
+    right: 15px;
+    position: absolute; }
+  .cdn-header__link {
+    color: #000;
+    height: 100%;
+    width: 100%;
+    display: block;
+    padding: 5px 0; }
+    .cdn-header__link:hover, .cdn-header__link:active, .cdn-header__link:focus {
+      color: #000; }
+    .cdn-header__link--main-color {
+      color: #3C388D;
+      padding: 0 0; }
+      .cdn-header__link--main-color:hover, .cdn-header__link--main-color:active, .cdn-header__link--main-color:focus {
+        color: #3C388D; }
+  .cdn-header__item {
+    display: block;
+    line-height: 1.5;
+    text-decoration: none;
+    white-space: wrap;
+    overflow-x: hidden;
+    cursor: pointer;
+    font-size: 14px;
+    color: #000; }
+    .cdn-header__item:hover, .cdn-header__item:active, .cdn-header__item:focus {
+      text-decoration: underline; }
+    .cdn-header__item:last-child {
+      margin-bottom: 0; }
+    .cdn-header__item--primary {
+      font-size: 16px;
+      color: #3C388D;
+      margin: 0 0 10px 0;
+      font-weight: 600;
+      padding: 0; }
+      .cdn-header__item--primary:hover, .cdn-header__item--primary:active, .cdn-header__item--primary:focus {
+        color: #3C388D; }
+  .cdn-header__auth {
+    display: flex;
+    margin: auto 0; }
+  .cdn-header__mail {
+    border-right: 1px solid #C2C1DB;
+    white-space: nowrap; }
+    .cdn-header__mail:hover, .cdn-header__mail:focus, .cdn-header__mail:active {
+      text-decoration: none; }
+  .cdn-header__mail-img {
+    vertical-align: -5px; }
+  .cdn-header__user-block {
+    position: relative; }
+  .cdn-header__avatar-img {
+    vertical-align: -6px; }
+  .cdn-header__counter {
+    font-size: 15px;
+    margin-right: 3px;
+    color: #000;
+    vertical-align: -2px; }
+    .cdn-header__counter--empty {
+      color: #999; }
+  .cdn-header__notification {
+    position: absolute;
+    top: 100%;
+    width: 100px;
+    height: 100px;
+    background: red;
+    right: 0; }
+  .cdn-header__button {
+    display: block;
+    color: #3C388D;
+    cursor: pointer;
+    padding: 10px 15px;
+    font-size: 15px;
+    line-height: 1.5;
+    height: 44px;
+    overflow-y: hidden; }
+    .cdn-header__button:focus, .cdn-header__button:active, .cdn-header__button:hover {
+      background-color: #fff;
+      color: #3C388D; }
+    .cdn-header__button:hover {
+      background-color: #C2C1DB; }
+    .cdn-header__button--small {
+      display: flex;
+      padding: 10px 13px; }
+    .cdn-header__button--active {
+      background-color: #fff; }
+      .cdn-header__button--active:hover, .cdn-header__button--active:active, .cdn-header__button--active:focus {
+        background-color: #fff; }
+
+@media (min-width: 768px) {
+  .cdn-header__container {
+    max-width: 750px; }
+    .cdn-header__container--column {
+      column-count: 2;
+      gap: 30px; } }
+@media (min-width: 992px) {
+  .cdn-header__container {
+    max-width: 970px; }
+    .cdn-header__container--column {
+      column-count: 3;
+      gap: 30px; } }
+@media (min-width: 1200px) {
+  .cdn-header__container {
+    max-width: 1170px; }
+    .cdn-header__container--column {
+      column-count: 4;
+      gap: 30px; } }
+@media (max-width: 768px) {
+  .tusur-header__dropdown {
+    width: 100%; }
+  .tusur-header__link {
+    max-width: none;
+    width: 100%; }
+    .tusur-header__link:hover, .tusur-header__link:active, .tusur-header__link:focus {
+      text-decoration: none !important; }
+
+  .cdn-header__container {
+    padding: 0px; }
+    .cdn-header__container--column {
+      column-count: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0; }
+  .cdn-header__user-block {
+    position: static; }
+  .cdn-header__dropdown {
+    padding: 0; }
+    .cdn-header__dropdown--theme-user {
+      width: 100%; }
+  .cdn-header__user {
+    white-space: nowrap;
+    overflow-x: hidden;
+    text-overflow: ellipsis;
+    max-width: calc(200px + (100vw - 320px)); }
+  .cdn-header__link {
+    padding: 5px 15px; }
+    .cdn-header__link--main-color {
+      padding: 0 15px; }
+  .cdn-header__list {
+    margin: 0;
+    border-top: 1px solid #E1E0ED; }
+    .cdn-header__list:first-child {
+      border-top: 0; }
+  .cdn-header__subheader-list {
+    max-height: 0;
+    overflow: hidden;
+    transition: all 0.5s; }
+  .cdn-header__item {
+    margin: 0; }
+    .cdn-header__item--padding-top {
+      padding-top: 0; }
+    .cdn-header__item:last-child {
+      padding-bottom: 15px; }
+    .cdn-header__item:hover, .cdn-header__item:focus, .cdn-header__item:active {
+      text-decoration: none; }
+    .cdn-header__item--primary {
+      display: flex;
+      justify-content: space-between;
+      padding: 15px; }
+  .cdn-header__arrow--accordion {
+    display: block;
+    z-index: -1; }
+  .cdn-header__button-text {
+    display: none;
+    margin-top: 3px; }
+  .cdn-header__toggler {
+    margin-top: 3px;
+    margin-right: 0; }
+  .cdn-header__dropdown {
+    z-index: 9999999; }
+  .cdn-header__button:focus, .cdn-header__button:active, .cdn-header__button:hover {
+    background-color: transparent;
+    color: #3C388D; }
+  .cdn-header__button--active:focus, .cdn-header__button--active:active, .cdn-header__button--active:hover {
+    background-color: #fff;
+    color: #3C388D; } }
+</style>
+  
+<div class='cdn-header'>
+  <div class='cdn-header__container'>
+    <div class="cdn-header__notifications-inner">
+    </div>
+    <div class="cdn-header__inner">
+      <div class='cdn-header__dropdown-part'>
+        
+          <div class="cdn-header__button cdn-header__button--small js-cdn-dropdown-all-sites-button">
+            <span class="cdn-header__toggler js-cdn-toggler"></span>
+            <span class="cdn-header__button-text">
+              Сайты ТУСУРа
+            </span>
+          </div>
+          <div class="cdn-header__dropdown cdn-header__dropdown--visualy-hidden cdn-header__dropdown--hidden js-cdn-dropdown">
+            <div class="cdn-header__container cdn-header__container--column">
+              
+                <div class="cdn-header__list">
+                  <div class='cdn-header__item cdn-header__item--primary js-cdn-accordion-header' style='display: none'>
+                    О ТУСУРе
+                    <img alt="Arrow" class="cdn-header__arrow cdn-header__arrow--accordion" draggable="false" height="10" src="https://storage.tusur.ru/files/167484/arrow.svg" width="16" />
+                  </div>
+                  <ul class='cdn-header__subheader-list js-cdn-accordion-content'>
+                    <li class="cdn-header__item cdn-header__item--padding-top cdn-header__item--primary js-cdn-dublicate">
+                      <a
+                        class='cdn-header__link cdn-header__link--main-color js-cdn-dublicate-link'
+                        href='https://tusur.ru'
+                      >
+                        О ТУСУРе
+                      </a>
+                    </li>
+                    
+                        
+                          <li class="cdn-header__item">
+                            <a
+                              href='https://tusur.ru/ru/o-tusure/struktura-i-organy-upravleniya'
+                              class='cdn-header__link struktura'
+                            >
+                              Структура и органы управления
+                            </a>
+                          </li>
+                        
+                          <li class="cdn-header__item">
+                            <a
+                              href='https://tusur.ru/ru/obrazovanie'
+                              class='cdn-header__link obrazovanie'
+                            >
+                              Образование
+                            </a>
+                          </li>
+                        
+                          <li class="cdn-header__item">
+                            <a
+                              href='https://tusur.ru/ru/nauka-i-innovatsii'
+                              class='cdn-header__link nauka-i-innovatsii'
+                            >
+                              Наука и инновации
+                            </a>
+                          </li>
+                        
+                          <li class="cdn-header__item">
+                            <a
+                              href='https://tusur.ru/ru/sotrudnichestvo'
+                              class='cdn-header__link sotrudnichestvo'
+                            >
+                              Сотрудничество
+                            </a>
+                          </li>
+                        
+                          <li class="cdn-header__item">
+                            <a
+                              href='https://tusur.ru/ru/novosti-i-meropriyatiya'
+                              class='cdn-header__link novosti-i-meropriyatiya'
+                            >
+                              Новости и мероприятия
+                            </a>
+                          </li>
+                        
+                          <li class="cdn-header__item">
+                            <a
+                              href='https://sport.tusur.ru'
+                              class='cdn-header__link sport'
+                            >
+                              Спорт в ТУСУРе
+                            </a>
+                          </li>
+                        
+                          <li class="cdn-header__item">
+                            <a
+                              href='https://directory.tusur.ru'
+                              class='cdn-header__link directory'
+                            >
+                              Телефонный справочник
+                            </a>
+                          </li>
+                        
+                          <li class="cdn-header__item">
+                            <a
+                              href='https://tusur.ru/sveden'
+                              class='cdn-header__link sveden'
+                            >
+                              Сведения об образовательной организации
+                            </a>
+                          </li>
+                        
+                          <li class="cdn-header__item">
+                            <a
+                              href='https://regulations.tusur.ru'
+                              class='cdn-header__link baza-normativnyh-documentov'
+                            >
+                              База нормативных документов
+                            </a>
+                          </li>
+                        
+                    
+                  </ul>
+                </div>
+              
+                <div class="cdn-header__list">
+                  <div class='cdn-header__item cdn-header__item--primary js-cdn-accordion-header' style='display: none'>
+                    Абитуриентам
+                    <img alt="Arrow" class="cdn-header__arrow cdn-header__arrow--accordion" draggable="false" height="10" src="https://storage.tusur.ru/files/167484/arrow.svg" width="16" />
+                  </div>
+                  <ul class='cdn-header__subheader-list js-cdn-accordion-content'>
+                    <li class="cdn-header__item cdn-header__item--padding-top cdn-header__item--primary js-cdn-dublicate">
+                      <a
+                        class='cdn-header__link cdn-header__link--main-color js-cdn-dublicate-link'
+                        href='https://abiturient.tusur.ru'
+                      >
+                        Абитуриентам
+                      </a>
+                    </li>
+                    
+                        
+                          <li class="cdn-header__item">
+                            <a
+                              href='https://lk.tusur.ru'
+                              class='cdn-header__link kabinet'
+                            >
+                              Кабинет абитуриента
+                            </a>
+                          </li>
+                        
+                          <li class="cdn-header__item">
+                            <a
+                              href='https://abiturient.tusur.ru/ru/napravleniya-podgotovki/ochnaya-forma-obucheniya'
+                              class='cdn-header__link napravleniya-podgotovki'
+                            >
+                              Направления подготовки бакалавров и специалистов
+                            </a>
+                          </li>
+                        
+                          <li class="cdn-header__item">
+                            <a
+                              href='https://magistrant.tusur.ru/ru/magisterskie-programmy/ochnaya-forma-obucheniya'
+                              class='cdn-header__link magisterskie-programmy'
+                            >
+                              Магистерские программы
+                            </a>
+                          </li>
+                        
+                          <li class="cdn-header__item">
+                            <a
+                              href='https://abiturient.tusur.ru/ru/kontakty#comissions'
+                              class='cdn-header__link punkty-vyezda'
+                            >
+                              Пункты выезда приёмных комиссий
+                            </a>
+                          </li>
+                        
+                    
+                  </ul>
+                </div>
+              
+                <div class="cdn-header__list">
+                  <div class='cdn-header__item cdn-header__item--primary js-cdn-accordion-header' style='display: none'>
+                    Студентам
+                    <img alt="Arrow" class="cdn-header__arrow cdn-header__arrow--accordion" draggable="false" height="10" src="https://storage.tusur.ru/files/167484/arrow.svg" width="16" />
+                  </div>
+                  <ul class='cdn-header__subheader-list js-cdn-accordion-content'>
+                    <li class="cdn-header__item cdn-header__item--padding-top cdn-header__item--primary js-cdn-dublicate">
+                      <a
+                        class='cdn-header__link cdn-header__link--main-color js-cdn-dublicate-link'
+                        href='https://tusur.ru/ru/studentam'
+                      >
+                        Студентам
+                      </a>
+                    </li>
+                    
+                        
+                          <li class="cdn-header__item">
+                            <a
+                              href='https://freshman.tusur.ru'
+                              class='cdn-header__link freshman'
+                            >
+                              Первокурсникам
+                            </a>
+                          </li>
+                        
+                          <li class="cdn-header__item">
+                            <a
+                              href='https://timetable.tusur.ru'
+                              class='cdn-header__link raspisanie'
+                            >
+                              Расписание занятий
+                            </a>
+                          </li>
+                        
+                          <li class="cdn-header__item">
+                            <a
+                              href='https://profile.tusur.ru/users/sign_in?redirect_url=https%3A%2F%2Fsdo.tusur.ru%2Fauth%2Fedu%2F%3Fid%3D1'
+                              class='cdn-header__link sdo'
+                            >
+                              Система дистанционного обучения
+                            </a>
+                          </li>
+                        
+                          <li class="cdn-header__item">
+                            <a
+                              href='https://edu.tusur.ru'
+                              class='cdn-header__link edu'
+                            >
+                              Научно-образовательный портал
+                            </a>
+                          </li>
+                        
+                          <li class="cdn-header__item">
+                            <a
+                              href='https://lib.tusur.ru'
+                              class='cdn-header__link biblioteka'
+                            >
+                              Библиотека
+                            </a>
+                          </li>
+                        
+                          <li class="cdn-header__item">
+                            <a
+                              href='https://gpo.tusur.ru'
+                              class='cdn-header__link gpo'
+                            >
+                              Групповое проектное обучение
+                            </a>
+                          </li>
+                        
+                          <li class="cdn-header__item">
+                            <a
+                              href='https://attendance.tusur.ru'
+                              class='cdn-header__link attendance'
+                            >
+                              Журнал посещаемости
+                            </a>
+                          </li>
+                        
+                          <li class="cdn-header__item">
+                            <a
+                              href='https://ocenka.tusur.ru'
+                              class='cdn-header__link ocenka'
+                            >
+                              Журнал успеваемости
+                            </a>
+                          </li>
+                        
+                          <li class="cdn-header__item">
+                            <a
+                              href='https://tusur.ru/ru/studentam/kluby-po-interesam-i-volonterstvo'
+                              class='cdn-header__link clubs'
+                            >
+                              Клубы по интересам
+                            </a>
+                          </li>
+                        
+                          <li class="cdn-header__item">
+                            <a
+                              href='https://sport.tusur.ru'
+                              class='cdn-header__link sport'
+                            >
+                              Спорт в ТУСУРе
+                            </a>
+                          </li>
+                        
+                          <li class="cdn-header__item">
+                            <a
+                              href='https://tusur.ru/ru/studentam/pervichnaya-profsoyuznaya-organizatsiya-studentov-tusur'
+                              class='cdn-header__link studprof'
+                            >
+                              Профком студентов
+                            </a>
+                          </li>
+                        
+                          <li class="cdn-header__item">
+                            <a
+                              href='https://tusur.ru/ru/o-tusure/struktura-i-organy-upravleniya/departament-obrazovaniya/tsentr-sodeystviya-trudoustroystvu-vypusknikov'
+                              class='cdn-header__link cstv'
+                            >
+                              Содействие трудоустройству
+                            </a>
+                          </li>
+                        
+                          <li class="cdn-header__item">
+                            <a
+                              href='https://cloud.tusur.ru'
+                              class='cdn-header__link cloud'
+                            >
+                              Облачное хранилище ТУСУРа
+                            </a>
+                          </li>
+                        
+                          <li class="cdn-header__item">
+                            <a
+                              href='https://tusur.ru/ru/studentam/podderzhka-studencheskih-semey-v-tusure'
+                              class='cdn-header__link pssvt'
+                            >
+                              Поддержка студенческих семей
+                            </a>
+                          </li>
+                        
+                          <li class="cdn-header__item">
+                            <a
+                              href='https://tusur.ru/ru/studentam/podderzhka-uchastnikov-svo-i-ih-detey-v-tusure'
+                              class='cdn-header__link podderjka-uchastnikov-svo'
+                            >
+                              Поддержка участников СВО и их детей
+                            </a>
+                          </li>
+                        
+                          <li class="cdn-header__item">
+                            <a
+                              href='https://mfc.tusur.ru/'
+                              class='cdn-header__link mfc'
+                            >
+                              Многофункциональный центр
+                            </a>
+                          </li>
+                        
+                    
+                  </ul>
+                </div>
+              
+                <div class="cdn-header__list">
+                  <div class='cdn-header__item cdn-header__item--primary js-cdn-accordion-header' style='display: none'>
+                    Аспирантам
+                    <img alt="Arrow" class="cdn-header__arrow cdn-header__arrow--accordion" draggable="false" height="10" src="https://storage.tusur.ru/files/167484/arrow.svg" width="16" />
+                  </div>
+                  <ul class='cdn-header__subheader-list js-cdn-accordion-content'>
+                    <li class="cdn-header__item cdn-header__item--padding-top cdn-header__item--primary js-cdn-dublicate">
+                      <a
+                        class='cdn-header__link cdn-header__link--main-color js-cdn-dublicate-link'
+                        href='https://postgraduate.tusur.ru'
+                      >
+                        Аспирантам
+                      </a>
+                    </li>
+                    
+                        
+                          <li class="cdn-header__item">
+                            <a
+                              href='https://postgraduate.tusur.ru/ru/aspirantura/kak-postupit'
+                              class='cdn-header__link postuplenie-v-aspiranturu'
+                            >
+                              Поступление в аспирантуру
+                            </a>
+                          </li>
+                        
+                          <li class="cdn-header__item">
+                            <a
+                              href='https://postgraduate.tusur.ru/ru/aspirantura/napravleniya-podgotovki-aspirantov'
+                              class='cdn-header__link napravleniya-podgotovki'
+                            >
+                              Направления подготовки
+                            </a>
+                          </li>
+                        
+                          <li class="cdn-header__item">
+                            <a
+                              href='https://profile.tusur.ru/users/sign_in?redirect_url=https%3A%2F%2Fsdo.tusur.ru%2Fauth%2Fedu%2F%3Fid%3D1'
+                              class='cdn-header__link sdo'
+                            >
+                              Система дистанционного обучения
+                            </a>
+                          </li>
+                        
+                          <li class="cdn-header__item">
+                            <a
+                              href='https://postgraduate.tusur.ru/ru/dissertatsionnye-sovety'
+                              class='cdn-header__link dissertatsionnye-sovety'
+                            >
+                              Диссертационные советы
+                            </a>
+                          </li>
+                        
+                          <li class="cdn-header__item">
+                            <a
+                              href='https://timetable.tusur.ru'
+                              class='cdn-header__link timetable'
+                            >
+                              Расписание занятий
+                            </a>
+                          </li>
+                        
+                          <li class="cdn-header__item">
+                            <a
+                              href='https://edu.tusur.ru'
+                              class='cdn-header__link edu'
+                            >
+                              Научно-образовательный портал
+                            </a>
+                          </li>
+                        
+                          <li class="cdn-header__item">
+                            <a
+                              href='https://lib.tusur.ru'
+                              class='cdn-header__link biblioteka'
+                            >
+                              Библиотека
+                            </a>
+                          </li>
+                        
+                          <li class="cdn-header__item">
+                            <a
+                              href='https://journal.tusur.ru'
+                              class='cdn-header__link journal'
+                            >
+                              Журнал «Доклады ТУСУР»
+                            </a>
+                          </li>
+                        
+                    
+                  </ul>
+                </div>
+              
+                <div class="cdn-header__list">
+                  <div class='cdn-header__item cdn-header__item--primary js-cdn-accordion-header' style='display: none'>
+                    Сотрудникам
+                    <img alt="Arrow" class="cdn-header__arrow cdn-header__arrow--accordion" draggable="false" height="10" src="https://storage.tusur.ru/files/167484/arrow.svg" width="16" />
+                  </div>
+                  <ul class='cdn-header__subheader-list js-cdn-accordion-content'>
+                    <li class="cdn-header__item cdn-header__item--padding-top cdn-header__item--primary js-cdn-dublicate">
+                      <a
+                        class='cdn-header__link cdn-header__link--main-color js-cdn-dublicate-link'
+                        href='https://tusur.ru/ru/sotrudnikam'
+                      >
+                        Сотрудникам
+                      </a>
+                    </li>
+                    
+                        
+                          <li class="cdn-header__item">
+                            <a
+                              href='https://directory.tusur.ru'
+                              class='cdn-header__link directory'
+                            >
+                              Телефонный справочник
+                            </a>
+                          </li>
+                        
+                          <li class="cdn-header__item">
+                            <a
+                              href='https://timetable.tusur.ru'
+                              class='cdn-header__link raspisanie'
+                            >
+                              Расписание занятий
+                            </a>
+                          </li>
+                        
+                          <li class="cdn-header__item">
+                            <a
+                              href='https://profile.tusur.ru/users/sign_in?redirect_url=https%3A%2F%2Fsdo.tusur.ru%2Fauth%2Fedu%2F%3Fid%3D1'
+                              class='cdn-header__link sdo'
+                            >
+                              Система дистанционного обучения
+                            </a>
+                          </li>
+                        
+                          <li class="cdn-header__item">
+                            <a
+                              href='https://edu.tusur.ru'
+                              class='cdn-header__link edu'
+                            >
+                              Научно-образовательный портал
+                            </a>
+                          </li>
+                        
+                          <li class="cdn-header__item">
+                            <a
+                              href='https://lib.tusur.ru'
+                              class='cdn-header__link biblioteka'
+                            >
+                              Библиотека
+                            </a>
+                          </li>
+                        
+                          <li class="cdn-header__item">
+                            <a
+                              href='https://attendance.tusur.ru'
+                              class='cdn-header__link attendance'
+                            >
+                              Журнал посещаемости
+                            </a>
+                          </li>
+                        
+                          <li class="cdn-header__item">
+                            <a
+                              href='https://ocenka.tusur.ru'
+                              class='cdn-header__link ocenka'
+                            >
+                              Журнал успеваемости
+                            </a>
+                          </li>
+                        
+                          <li class="cdn-header__item">
+                            <a
+                              href='https://workprogram.tusur.ru'
+                              class='cdn-header__link workprogram'
+                            >
+                              Генератор рабочих программ
+                            </a>
+                          </li>
+                        
+                          <li class="cdn-header__item">
+                            <a
+                              href='https://opop.tusur.ru'
+                              class='cdn-header__link opop'
+                            >
+                              Генератор ОПОП
+                            </a>
+                          </li>
+                        
+                          <li class="cdn-header__item">
+                            <a
+                              href='https://ppsworkplan.tusur.ru'
+                              class='cdn-header__link ppsworkplan'
+                            >
+                              Генератор ИПРП
+                            </a>
+                          </li>
+                        
+                          <li class="cdn-header__item">
+                            <a
+                              href='https://effective-contracts.tusur.ru'
+                              class='cdn-header__link effective-contracts'
+                            >
+                              Показатели эффективности труда ППС
+                            </a>
+                          </li>
+                        
+                          <li class="cdn-header__item">
+                            <a
+                              href='https://sport.tusur.ru'
+                              class='cdn-header__link sport'
+                            >
+                              Спорт в ТУСУРе
+                            </a>
+                          </li>
+                        
+                          <li class="cdn-header__item">
+                            <a
+                              href='http://profkom.tusur.ru'
+                              class='cdn-header__link profkom'
+                            >
+                              Профком сотрудников
+                            </a>
+                          </li>
+                        
+                          <li class="cdn-header__item">
+                            <a
+                              href='https://cloud.tusur.ru'
+                              class='cdn-header__link cloud'
+                            >
+                              Облачное хранилище ТУСУРа
+                            </a>
+                          </li>
+                        
+                    
+                  </ul>
+                </div>
+              
+                <div class="cdn-header__list">
+                  <div class='cdn-header__item cdn-header__item--primary js-cdn-accordion-header' style='display: none'>
+                    Выпускникам
+                    <img alt="Arrow" class="cdn-header__arrow cdn-header__arrow--accordion" draggable="false" height="10" src="https://storage.tusur.ru/files/167484/arrow.svg" width="16" />
+                  </div>
+                  <ul class='cdn-header__subheader-list js-cdn-accordion-content'>
+                    <li class="cdn-header__item cdn-header__item--padding-top cdn-header__item--primary js-cdn-dublicate">
+                      <a
+                        class='cdn-header__link cdn-header__link--main-color js-cdn-dublicate-link'
+                        href='https://avt.tusur.ru'
+                      >
+                        Выпускникам
+                      </a>
+                    </li>
+                    
+                        
+                          <li class="cdn-header__item">
+                            <a
+                              href='https://avt.tusur.ru'
+                              class='cdn-header__link avt'
+                            >
+                              Ассоциация выпускников ТУСУР
+                            </a>
+                          </li>
+                        
+                          <li class="cdn-header__item">
+                            <a
+                              href='https://tusur.ru/ru/o-tusure/struktura-i-organy-upravleniya/departament-obrazovaniya/tsentr-sodeystviya-trudoustroystvu-vypusknikov'
+                              class='cdn-header__link cstv'
+                            >
+                              Содействие трудоустройству
+                            </a>
+                          </li>
+                        
+                    
+                  </ul>
+                </div>
+              
+                <div class="cdn-header__list">
+                  <div class='cdn-header__item cdn-header__item--primary js-cdn-accordion-header' style='display: none'>
+                    Партнёрам
+                    <img alt="Arrow" class="cdn-header__arrow cdn-header__arrow--accordion" draggable="false" height="10" src="https://storage.tusur.ru/files/167484/arrow.svg" width="16" />
+                  </div>
+                  <ul class='cdn-header__subheader-list js-cdn-accordion-content'>
+                    <li class="cdn-header__item cdn-header__item--padding-top cdn-header__item--primary js-cdn-dublicate">
+                      <a
+                        class='cdn-header__link cdn-header__link--main-color js-cdn-dublicate-link'
+                        href='https://tusur.ru/ru/o-tusure/partnyory'
+                      >
+                        Партнёрам
+                      </a>
+                    </li>
+                    
+                        
+                          <li class="cdn-header__item">
+                            <a
+                              href='https://tusur.ru/ru/o-tusure/partnyory/otechestvennye-partnyory'
+                              class='cdn-header__link partners'
+                            >
+                              Стратегические партнёры
+                            </a>
+                          </li>
+                        
+                          <li class="cdn-header__item">
+                            <a
+                              href='https://tusur.ru/ru/nauka-i-innovatsii/innovatsionnaya-deyatelnost/malye-innovatsionnye-predpriyatiya-s-uchastiem-tusura'
+                              class='cdn-header__link joint_structures'
+                            >
+                              Совместные структуры
+                            </a>
+                          </li>
+                        
+                          <li class="cdn-header__item">
+                            <a
+                              href='https://tusur.ru/ru/sotrudnichestvo/obrazovatelnoe-sotrudnichestvo#training'
+                              class='cdn-header__link international_activity'
+                            >
+                              Международная деятельность
+                            </a>
+                          </li>
+                        
+                          <li class="cdn-header__item">
+                            <a
+                              href='https://tusur.ru/ru/nauka-i-innovatsii/prioritetnye-nauchnye-napravleniya'
+                              class='cdn-header__link scientific_activity'
+                            >
+                              Научная и инновационная деятельность
+                            </a>
+                          </li>
+                        
+                          <li class="cdn-header__item">
+                            <a
+                              href='https://tusur.ru/ru/o-tusure/partnyory/grafik-provedeniya-praktik'
+                              class='cdn-header__link student_practice'
+                            >
+                              Практика студентов
+                            </a>
+                          </li>
+                        
+                          <li class="cdn-header__item">
+                            <a
+                              href='https://tusur.ru/ru/o-tusure/partnyory/proektnaya-deyatelnost'
+                              class='cdn-header__link project_activity'
+                            >
+                              Проектная деятельность
+                            </a>
+                          </li>
+                        
+                          <li class="cdn-header__item">
+                            <a
+                              href='https://tusur.ru/ru/obrazovanie/dopolnitelnoe-professionalnoe-obrazovanie'
+                              class='cdn-header__link additional_education'
+                            >
+                              Дополнительное образование
+                            </a>
+                          </li>
+                        
+                          <li class="cdn-header__item">
+                            <a
+                              href='https://tusur.ru/ru/o-tusure/struktura-i-organy-upravleniya/departament-obrazovaniya/tsentr-sodeystviya-trudoustroystvu-vypusknikov'
+                              class='cdn-header__link employment'
+                            >
+                              Трудоустройство
+                            </a>
+                          </li>
+                        
+                    
+                  </ul>
+                </div>
+              
+            </div>
+          </div>
+        
+      </div>
+
+      <div class="cdn-header__auth">
+        
+          <a class="cdn-header__signin cdn-header__button" href="https://profile.tusur.ru/users/sign_in?redirect_url=https%3A%2F%2Ftimetable.tusur.ru%2Ffaculties">Войти</a>
+        
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type='text/javascript'>
+  (function() {
+  var SCREEN_SM_MIN, accordion, accordionContentClose, accordionContentOpen, accordionsClosesAll, addDublicatesOnMobile, addResizeListener, baseDelay, deleteDublicaticatesDesktop, dropdownAllSites, dropdownAllSitesAnimatedClose, dropdownAllSitesAnimatedOpen, dropdownButtonAllSites, dropdownContentAllSites, dropdownPartClickOutside, dropdownUserBlock, dropdownUserBlockDesktop, dropdownUserBlockMobile, dublicate, initialization, isClickMenu, isHoverMenu, isProcessingClick, removeListenerDublicate, transitionTransformCss, userBlockClickDesktop, userBlockClickMobile, userBlockClickOutside, userBlockClickOutsideDesktop, userBlockClickOutsideMobile, userBlockClose, userBlockOpen;
+
+  SCREEN_SM_MIN = 768;
+
+  isHoverMenu = false;
+
+  isClickMenu = false;
+
+  isProcessingClick = false;
+
+  transitionTransformCss = 300;
+
+  baseDelay = 100;
+
+  dropdownButtonAllSites = document.querySelector('.js-cdn-dropdown-all-sites-button');
+
+  dropdownContentAllSites = document.querySelector('.js-cdn-dropdown');
+
+  removeListenerDublicate = null;
+
+  addResizeListener = function(func, milliseconds) {
+    var resizeHandler, resizeId;
+    resizeId = null;
+    resizeHandler = function() {
+      clearTimeout(resizeId);
+      return resizeId = setTimeout(func, milliseconds);
+    };
+    window.addEventListener('resize', resizeHandler);
+    return function() {
+      return window.removeEventListener('resize', resizeHandler);
+    };
+  };
+
+  accordionsClosesAll = function(nextElement) {
+    return document.querySelectorAll('.js-cdn-accordion-content').forEach(function(accordionContent) {
+      if (accordionContent !== nextElement) {
+        accordionContent.style.maxHeight = null;
+        return accordionContent.parentElement.querySelector('.cdn-header__arrow--accordion').classList.remove('cdn-header__arrow--active');
+      }
+    });
+  };
+
+  accordionContentOpen = function(nextElement) {
+    var ref;
+    nextElement.style.maxHeight = nextElement.scrollHeight + 'px';
+    return (ref = event.target.querySelector('.cdn-header__arrow--accordion')) != null ? ref.classList.add('cdn-header__arrow--active') : void 0;
+  };
+
+  accordionContentClose = function(nextElement) {
+    var ref;
+    nextElement.style.maxHeight = null;
+    return (ref = event.target.querySelector('.cdn-header__arrow--accordion')) != null ? ref.classList.remove('cdn-header__arrow--active') : void 0;
+  };
+
+  accordion = function(event) {
+    var nextElementTarget;
+    nextElementTarget = event.target.nextElementSibling;
+    accordionsClosesAll(nextElementTarget);
+    if (nextElementTarget != null ? nextElementTarget.classList.contains('js-cdn-accordion-content') : void 0) {
+      if (nextElementTarget.style.maxHeight) {
+        accordionContentClose(nextElementTarget);
+      } else {
+        accordionContentOpen(nextElementTarget);
+      }
+    }
+    if (document.querySelector('.cdn-header__dropdown--hidden')) {
+      return document.removeEventListener('click', accordion);
+    }
+  };
+
+  deleteDublicaticatesDesktop = function(elem) {
+    elem.querySelector('.js-cdn-dublicate').classList.add('cdn-header__item--primary');
+    elem.querySelector('.js-cdn-dublicate-link').classList.add('cdn-header__link--main-color');
+    return elem.querySelector('.js-cdn-accordion-header').style.display = 'none';
+  };
+
+  addDublicatesOnMobile = function(elem) {
+    elem.querySelector('.js-cdn-dublicate').classList.remove('cdn-header__item--primary');
+    elem.querySelector('.js-cdn-dublicate-link').classList.remove('cdn-header__link--main-color');
+    return elem.querySelector('.js-cdn-accordion-header').style.display = 'flex';
+  };
+
+  dublicate = function() {
+    var headerLists;
+    if (window.innerWidth <= SCREEN_SM_MIN) {
+      document.addEventListener('click', accordion);
+    }
+    headerLists = document.querySelectorAll('.cdn-header__list');
+    return headerLists.forEach(function(elem) {
+      if (window.innerWidth > SCREEN_SM_MIN) {
+        return deleteDublicaticatesDesktop(elem);
+      } else {
+        return addDublicatesOnMobile(elem);
+      }
+    });
+  };
+
+  dropdownPartClickOutside = function(event) {
+    var clickInsideDropdownPart;
+    clickInsideDropdownPart = document.querySelector('.cdn-header__dropdown-part').contains(event.target);
+    if (!clickInsideDropdownPart) {
+      return dropdownAllSitesAnimatedClose();
+    }
+  };
+
+  userBlockClickOutsideMobile = function(event) {
+    var clickInsideDropdown, ref;
+    clickInsideDropdown = (ref = document.querySelector('.tusur-header__dropdown, .dropdown-mobile')) != null ? ref.contains(event.target) : void 0;
+    if (!clickInsideDropdown) {
+      isClickMenu = false;
+      return userBlockClose();
+    }
+  };
+
+  userBlockClickOutsideDesktop = function(event) {
+    var clickInsideUserBlock, userBlock;
+    userBlock = document.querySelector('.cdn-header__user-block');
+    clickInsideUserBlock = userBlock.contains(event.target);
+    if (!clickInsideUserBlock) {
+      isClickMenu = false;
+      userBlockClose();
+      isProcessingClick = true;
+      userBlock.querySelector('.cdn-header__lock').style.transform = "scale(0)";
+      return setTimeout(function() {
+        userBlock.querySelector('.cdn-header__arrow').style.transform = "";
+        return isProcessingClick = false;
+      }, transitionTransformCss + baseDelay);
+    }
+  };
+
+  userBlockClickOutside = function(event) {
+    if (window.innerWidth > SCREEN_SM_MIN) {
+      return userBlockClickOutsideDesktop(event);
+    } else {
+      return userBlockClickOutsideMobile(event);
+    }
+  };
+
+  userBlockClickMobile = function(event) {
+    event.stopPropagation();
+    if (!document.querySelector('.js-cdn-dropdown').classList.contains('cdn-header__dropdown--hidden')) {
+      dropdownAllSitesAnimatedClose();
+    }
+    if (isClickMenu) {
+      isClickMenu = false;
+      return userBlockClose();
+    } else {
+      isClickMenu = true;
+      window.addEventListener('click', userBlockClickOutside);
+      return userBlockOpen();
+    }
+  };
+
+  userBlockClickDesktop = function() {
+    var userBlock;
+    if (isProcessingClick) {
+      return;
+    }
+    isProcessingClick = true;
+    userBlock = document.querySelector('.cdn-header__user-block');
+    if (isClickMenu) {
+      isClickMenu = false;
+      userBlock.querySelector('.cdn-header__lock').style.transform = "scale(0)";
+      return setTimeout(function() {
+        userBlock.querySelector('.cdn-header__arrow').style.transform = "";
+        return isProcessingClick = false;
+      }, transitionTransformCss + baseDelay);
+    } else {
+      isClickMenu = true;
+      userBlock.querySelector('.cdn-header__arrow').style.transform = "scale(0) rotate(-180deg)";
+      return setTimeout(function() {
+        userBlock.querySelector('.cdn-header__lock').style.transform = "scale(1)";
+        window.addEventListener('click', userBlockClickOutside);
+        return isProcessingClick = false;
+      }, transitionTransformCss + baseDelay);
+    }
+  };
+
+  userBlockOpen = function() {
+    var userBlock;
+    userBlock = document.querySelector('.cdn-header__user-block');
+    isHoverMenu = true;
+    if (isHoverMenu || isClickMenu) {
+      document.querySelector('.tusur-header__dropdown').classList.add('cdn-header__visible');
+      userBlock.querySelector('.cdn-header__button').classList.add('cdn-header__button--active');
+      return userBlock.querySelector('.cdn-header__arrow').classList.add('cdn-header__arrow--active');
+    }
+  };
+
+  userBlockClose = function() {
+    var userBlock;
+    userBlock = document.querySelector('.cdn-header__user-block');
+    isHoverMenu = false;
+    if (!(isHoverMenu || isClickMenu)) {
+      userBlock.querySelector('.tusur-header__dropdown').classList.remove('cdn-header__visible');
+      userBlock.querySelector('.cdn-header__button').classList.remove('cdn-header__button--active');
+      userBlock.querySelector('.cdn-header__arrow').classList.remove('cdn-header__arrow--active');
+      return window.removeEventListener('click', userBlockClickOutside);
+    }
+  };
+
+  dropdownAllSitesAnimatedOpen = function() {
+    dublicate();
+    removeListenerDublicate = addResizeListener(dublicate, baseDelay);
+    dropdownButtonAllSites.classList.add('cdn-header__button--active');
+    dropdownButtonAllSites.querySelector('.js-cdn-toggler').classList.add('cdn-header__toggler--active');
+    dropdownContentAllSites.classList.remove('cdn-header__dropdown--hidden');
+    setTimeout(function() {
+      return dropdownContentAllSites.classList.remove('cdn-header__dropdown--visualy-hidden');
+    }, 20);
+    window.addEventListener('click', dropdownPartClickOutside);
+    if (window.innerWidth <= SCREEN_SM_MIN) {
+      return document.addEventListener('click', accordion);
+    }
+  };
+
+  dropdownAllSitesAnimatedClose = function() {
+    removeListenerDublicate();
+    dropdownButtonAllSites.classList.remove('cdn-header__button--active');
+    dropdownButtonAllSites.querySelector('.js-cdn-toggler').classList.remove('cdn-header__toggler--active');
+    dropdownContentAllSites.classList.add('cdn-header__dropdown--visualy-hidden');
+    return dropdownContentAllSites.addEventListener('transitionend', function(event) {
+      dropdownContentAllSites.classList.add('cdn-header__dropdown--hidden');
+      window.removeEventListener('click', dropdownPartClickOutside);
+      return document.removeEventListener('click', accordion);
+    }, {
+      once: true
+    });
+  };
+
+  dropdownAllSites = function() {
+    return document.querySelector('.js-cdn-dropdown-all-sites-button').addEventListener('click', function() {
+      if (document.querySelector('.js-cdn-dropdown').classList.contains('cdn-header__dropdown--hidden')) {
+        return dropdownAllSitesAnimatedOpen();
+      } else {
+        return dropdownAllSitesAnimatedClose();
+      }
+    });
+  };
+
+  dropdownUserBlockDesktop = function() {
+    var ref, ref1, ref2, ref3;
+    if ((ref = document.querySelector('.cdn-header__user')) != null) {
+      ref.addEventListener('click', userBlockClickDesktop);
+    }
+    if ((ref1 = document.querySelector('.cdn-header__user-block')) != null) {
+      ref1.addEventListener('mouseover', userBlockOpen);
+    }
+    if ((ref2 = document.querySelector('.cdn-header__user-block')) != null) {
+      ref2.addEventListener('mouseout', userBlockClose);
+    }
+    return (ref3 = document.querySelector('.cdn-header__user')) != null ? ref3.removeEventListener('click', userBlockClickMobile) : void 0;
+  };
+
+  dropdownUserBlockMobile = function() {
+    var ref, ref1, ref2, ref3;
+    if ((ref = document.querySelector('.cdn-header__user')) != null) {
+      ref.removeEventListener('click', userBlockClickDesktop);
+    }
+    if ((ref1 = document.querySelector('.cdn-header__user-block')) != null) {
+      ref1.removeEventListener('mouseover', userBlockOpen);
+    }
+    if ((ref2 = document.querySelector('.cdn-header__user-block')) != null) {
+      ref2.removeEventListener('mouseout', userBlockClose);
+    }
+    return (ref3 = document.querySelector('.cdn-header__user')) != null ? ref3.addEventListener('click', userBlockClickMobile) : void 0;
+  };
+
+  dropdownUserBlock = function() {
+    if (window.innerWidth > SCREEN_SM_MIN) {
+      return dropdownUserBlockDesktop();
+    } else {
+      return dropdownUserBlockMobile();
+    }
+  };
+
+  initialization = function() {
+    var removeListenerDropdownUserBlock;
+    dropdownUserBlock();
+    dropdownAllSites();
+    removeListenerDropdownUserBlock = addResizeListener(dropdownUserBlock, 400);
+  };
+
+  document.addEventListener('page:load', initialization());
+
+}).call(this);
+
+</script>
+  <div class='tusur-cdn-header-subtop'>
+    
+  <div class='container-fluid subtop-header'>
+  <div class='container'>
+    <div class='header'>
+      <div class='row'>
+        <div class='col-md-7 col-sm-8 col-xs-12'>
+
+          <div class='logotype'>
+            <div class='image-wrapper'>
+              <a class="image" href="/">
+                <img alt="ТУСУР - расписание занятий" class="img-responsive" src="/assets/logotype-8129a24c20cd69f3f6dbd5e76038a657.svg" />
+</a>            </div>
+
+            <div class='hidden-xs site-name-wrapper'>
+              <a class="site-name" href="/">Расписание занятий</a>
+            </div>
+          </div>
+
+        </div>
+
+        <div class='col-md-5 col-sm-4 col-xs-12'>
+          <div class='subtop-header-right-items'>
+            <a href='#' class='cecutient' data-normal='Обычная версия' data-cecutient='Версия для слабовидящих'>Версия для слабовидящих</a>
+            <div class='search search-block pull-right'>
+              <form accept-charset="UTF-8" action="/searches/common_search" class="simple_form search" method="get" novalidate="novalidate"><div style="margin:0;padding:0;display:inline"><input name="utf8" type="hidden" value="&#x2713;" /></div>
+                <div class="form-group string required search_q"><input class="form-control string required" id="search_q" name="search[common]" placeholder="Поиск..." type="text" /></div>
+                <div class='form-actions'>
+                  <a href="#" onclick="$(this).closest(&quot;form&quot;).submit(); return false;"></a>
+                </div>
+</form>            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+  </div>
+
+  <div class='tusur-cdn-header-menu'>
+      <div class='container'>
+    <div class='row'>
+      <div class='col-xs-12'>
+        <span class='tusur-cdn-header-menu-toggler visible-xs'>&#9776;</span>
+        <ul class="nav nav-pills first-menu-part"><li class="active simple-navigation-active-leaf" id="faculties"><a class="active" href="/faculties">Расписание</a></li><li id="questions"><a href="https://help.tusur.ru/index.php?a=add&amp;category=17" target="_blank">Тех. поддержка</a></li></ul>
+      </div>
+    </div>
+  </div>
+
+  </div>
+
+    
+  <style type="text/css">.text-muted {
+  color: #9e9cc6 !important; }
+
+.background-light-green {
+  background-color: #edffd7; }
+
+.collapse-wrapper {
+  position: relative;
+  margin: 5px 0;
+  cursor: pointer; }
+  .collapse-wrapper .link-emulator {
+    position: absolute;
+    margin: auto auto;
+    top: 0;
+    bottom: 0;
+    left: 30px;
+    font-size: 14px;
+    color: #408cc8; }
+  .collapse-wrapper .btn-plus-minus {
+    position: relative;
+    display: inline-block;
+    background: #3c388d !important;
+    width: 23px;
+    height: 23px;
+    line-height: 24px;
+    color: #fff;
+    text-align: center;
+    z-index: 1; }
+  .collapse-wrapper.collapsed .btn-plus-minus .plus-minus-element {
+    display: block; }
+    .collapse-wrapper.collapsed .btn-plus-minus .plus-minus-element:before, .collapse-wrapper.collapsed .btn-plus-minus .plus-minus-element:after {
+      content: &quot;&quot;;
+      position: absolute;
+      width: 15px;
+      height: 3px;
+      background: #fff;
+      display: block;
+      margin: auto auto;
+      left: 0;
+      right: 0;
+      top: 0;
+      bottom: 0; }
+    .collapse-wrapper.collapsed .btn-plus-minus .plus-minus-element:after {
+      height: 15px;
+      width: 3px; }
+  .collapse-wrapper:not(.collapsed) .btn-plus-minus .plus-minus-element {
+    display: block; }
+    .collapse-wrapper:not(.collapsed) .btn-plus-minus .plus-minus-element:before, .collapse-wrapper:not(.collapsed) .btn-plus-minus .plus-minus-element:after {
+      content: &quot;&quot;;
+      position: absolute;
+      width: 15px;
+      height: 3px;
+      background: #fff;
+      display: block;
+      margin: auto auto;
+      left: 0;
+      right: 0;
+      top: 0;
+      bottom: 0; }
+
+.cookies-eu-banner {
+  border-top: 2px solid #c2c1db;
+  background: #ececf4;
+  color: #000 !important;
+  padding: 15px 0;
+  font-size: 13px;
+  text-align: center;
+  position: fixed;
+  z-index: 1000;
+  bottom: 0;
+  width: 100%; }
+  .cookies-eu-banner-inner {
+    display: -webkit-flex;
+    display: flex;
+    -webkit-align-items: center;
+    align-items: center; }
+    .cookies-eu-banner-inner .cookies-eu-banner-content {
+      text-align: left;
+      margin: 0;
+      margin-right: 10px;
+      font-size: 13px;
+      line-height: 150%;
+      color: black; }
+      .cookies-eu-banner-inner .cookies-eu-banner-content .accordion-link {
+        cursor: pointer;
+        color: #337ab7; }
+      .cookies-eu-banner-inner .cookies-eu-banner-content .accordion {
+        margin-top: 5px;
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s; }
+    .cookies-eu-banner-inner button.btn.btn-success {
+      padding: 8px 25px;
+      background-color: #9fc53a;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      border-bottom: 3px solid #92B535 !important;
+      transition: 0.3s all;
+      background-image: none;
+      box-shadow: none;
+      text-shadow: none; }
+      .cookies-eu-banner-inner button.btn.btn-success:hover {
+        background-color: #9abf38;
+        color: #fff;
+        border-color: #8bae32;
+        box-shadow: none; }
+      .cookies-eu-banner-inner button.btn.btn-success:active, .cookies-eu-banner-inner button.btn.btn-success:active:focus {
+        background-color: #9abf38;
+        color: #fff;
+        border-color: #9abf38;
+        box-shadow: inset 0px 2px 2px #84A32F, inset 0px 4px 8px #8BAC32;
+        outline: none; }
+      .cookies-eu-banner-inner button.btn.btn-success:focus {
+        background-color: #9abf38;
+        color: #fff;
+        border-color: #8bae32;
+        outline: none;
+        box-shadow: none; }
+
+@media (max-width: 768px) {
+  .cookies-eu-banner-inner {
+    display: -webkit-flex;
+    display: flex;
+    -webkit-flex-direction: column;
+    flex-direction: column;
+    -webkit-align-items: flex-start;
+    align-items: flex-start; }
+    .cookies-eu-banner-inner .cookies-eu-banner-content {
+      margin-right: 0;
+      margin-bottom: 10px; } }
+</style>
+  <div class="cookies-eu-banner hidden">
+    <div class="container">
+      <div class="cookies-eu-banner-inner">
+
+        <div class="cookies-eu-banner-content">
+          
+            Нажимая кнопку &laquo;СОГЛАСЕН&raquo;, Вы&nbsp;подтверждаете&nbsp;то, что&nbsp;
+            Вы проинформированы об&nbsp;использовании cookies на&nbsp;нашем сайте. Отключить cookies&nbsp;Вы можете в&nbsp;
+            настройках своего браузера.
+            <a class="accordion-link">Подробнее</a>
+            <div class="accordion">
+              Для того, чтобы мы&nbsp;могли качественно предоставить Вам услуги, мы&nbsp;используем cookies, которые сохраняются
+              на&nbsp;Вашем компьютере (Сведения о&nbsp;местоположении; ip-адрес; тип, язык, версия&nbsp;ОС и&nbsp;браузера;
+              тип устройства и&nbsp;разрешение его экрана; источник, откуда пришел на&nbsp;сайт пользователь; какие страницы
+              открывает и&nbsp;на&nbsp;какие кнопки нажимает пользователь; эта&nbsp;же информация используется для обработки
+              статистических данных использования сайта посредством интернет-сервиса Яндекс.Метрика)
+            </div>
+          
+        </div>
+
+        <div>
+          <button class="btn btn-success">Согласен</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script type='text/javascript'>
+    (() => {
+  const getCookie = (name) => {
+    let matches = document.cookie.match(new RegExp(
+      "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
+    ));
+    return matches ? decodeURIComponent(matches[1]) : undefined;
+  };
+
+  const setCookie = function (name, value, expiryDays, domain, path, secure) {
+    const exdate = new Date();
+    exdate.setHours(
+      exdate.getHours() +
+        (typeof expiryDays !== "number" ? 365 : expiryDays) * 24
+    );
+    document.cookie =
+      name +
+      "=" +
+      value +
+      ";expires=" +
+      exdate.toUTCString() +
+      ";path=" +
+      (path || "/") +
+      ";domain=.tusur.ru";
+  };
+
+  const $cookiesBanner = document.querySelector(".cookies-eu-banner");
+  if (!$cookiesBanner) return;
+
+  const $cookiesBannerButton = $cookiesBanner.querySelector("button");
+  const cookieName = "tusur_cookiebanner";
+  const hasCookie = getCookie(cookieName);
+
+  if (!hasCookie) {
+    $cookiesBanner.classList.remove("hidden");
+  }
+
+  $cookiesBannerButton.addEventListener("click", () => {
+    setCookie(cookieName, "closed");
+    $cookiesBanner.remove();
+  });
+
+  const $accordionLink = $cookiesBanner.querySelector(".accordion-link");
+  const $accordionBlock = $cookiesBanner.querySelector(".accordion");
+
+  if ($accordionLink && $accordionBlock) {
+    $accordionLink.addEventListener("click", function() {
+      if ($accordionBlock.style.maxHeight) {
+        $accordionBlock.style.maxHeight = null;
+      } else {
+        $accordionBlock.style.maxHeight = $accordionBlock.scrollHeight + "px";
+      }
+    });
+  }
+})();
+
+  </script>
+
+
+    <div class='container'>
+      <div class='row'>
+
+        <div class='hidden_for_print'>
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <div class="banner banner--forum-k3">
+    <a class="banner__image-link banner__image-link--youth-capital" href="https://it-hub.tusur.ru/events/forum-missiya-karera" target="_blank">
+      <img alt="Carrer it mission 2" class="banner__image" src="/assets/banners/carrer_it_mission_2-4706f2f1d2f1d5ef5b879a1703a84695.png" />
+</a>    <div class="banner__text banner__text--forum-k3">
+      <h4 class="forum-k3">Форум «Миссия: Карьера»</h4>
+      <p class="banner__text--purple">29 октября - студенты ТУСУР</p>
+      <p>Предприятия. Разработки. Практика</p>
+      <p>Начни свою важную миссию сейчас!</p>
+      <a href="https://it-hub.tusur.ru/events/forum-missiya-karera" target="_blank">
+        Подробности и регистрация
+      </a>
+    </div>
+  </div>
+
+          
+          
+          
+        </div>
+
+
+      </div>
+    </div>
+
+        <div class='container'>
+          <div class="row">
+
+  <div class="col-md-7">
+    <div class='margin-top-25'>
+      
+
+    </div>
+
+    <h1>Список факультетов</h1>
+    <ul class="faculties">
+        <li class="iret">
+          <a href="/faculties/iret">Институт радиоэлектронной техники</a>
+        </li>
+        <li class="aspirantura">
+          <a href="/faculties/aspirantura">Аспирантура</a>
+        </li>
+        <li class="pish">
+          <a href="/faculties/pish">Передовая инженерная школа &quot;Электронное приборостроение и системы связи&quot; им. А.В. Кобзева</a>
+        </li>
+        <li class="fvs">
+          <a href="/faculties/fvs">Факультет вычислительных систем</a>
+        </li>
+        <li class="fsu">
+          <a href="/faculties/fsu">Факультет систем управления</a>
+        </li>
+        <li class="fit">
+          <a href="/faculties/fit">Факультет инновационных технологий</a>
+        </li>
+        <li class="ef">
+          <a href="/faculties/ef">Экономический факультет</a>
+        </li>
+        <li class="gf">
+          <a href="/faculties/gf">Гуманитарный факультет</a>
+        </li>
+        <li class="yuf">
+          <a href="/faculties/yuf">Юридический факультет</a>
+        </li>
+        <li class="fb">
+          <a href="/faculties/fb">Факультет безопасности</a>
+        </li>
+        <li class="fdo">
+          <a href="/faculties/fdo">Факультет дистанционного обучения</a>
+        </li>
+    </ul>
+  </div>
+
+  <div class="col-md-5">
+    <div class="row">
+      <div class="col-md-12 timetable_info">
+        <div class="current_timetable_week pull-right">
+          Вторник, 27 октября, нечётная неделя
+        </div>
+
+        <ul class="current_timetable_info">
+          <li>
+            <strong>Семестр:</strong> осенний 2026/2027 учебного года,
+          </li>
+          <li>
+              нечётная неделя с 31 августа 2026, чётная неделя с 07 сентября 2026
+          </li>
+        </ul>
+      </div>
+
+      <div class="col-md-12">
+        <div class="search_form">
+          <form accept-charset="UTF-8" action="/searches/common_search" class="form-inline formtastic search" method="get" novalidate="novalidate"><div style="margin:0;padding:0;display:inline"><input name="utf8" type="hidden" value="&#x2713;" /></div>
+  <fieldset class="inputs"><ol>
+    <li class="string input optional stringish" id="search_common_input"><input id="search_common" name="search[common]" placeholder="Фамилия преподaвателя или номер группы" type="text" />
+
+</li>
+</ol></fieldset>  <fieldset class="actions"><ol>
+    <li class="action input_action " id="search_submit_action"><input class="form-actions" name="commit" type="submit" value="" /></li>
+</ol></fieldset></form>
+
+        </div>
+      </div>
+
+      <div class="col-md-12 common_information">
+        <div class="left-column">
+          <div class="schedule">
+            <h2>Сетка учебных занятий</h2>
+            <ul>
+                <li>
+                  <span class='title'>Пара 1</span>
+                  <span class='time'>
+                    08:50 &ndash;
+                    10:25
+                  </span>
+                </li>
+                <li>
+                  <span class='title'>Пара 2</span>
+                  <span class='time'>
+                    10:40 &ndash;
+                    12:15
+                  </span>
+                </li>
+                <li>
+                  <span class='title'>Пара 3</span>
+                  <span class='time'>
+                    13:15 &ndash;
+                    14:50
+                  </span>
+                </li>
+                <li>
+                  <span class='title'>Пара 4</span>
+                  <span class='time'>
+                    15:00 &ndash;
+                    16:35
+                  </span>
+                </li>
+                <li>
+                  <span class='title'>Пара 5</span>
+                  <span class='time'>
+                    16:45 &ndash;
+                    18:20
+                  </span>
+                </li>
+                <li>
+                  <span class='title'>Пара 6</span>
+                  <span class='time'>
+                    18:30 &ndash;
+                    20:05
+                  </span>
+                </li>
+                <li>
+                  <span class='title'>Пара 7</span>
+                  <span class='time'>
+                    20:15 &ndash;
+                    21:50
+                  </span>
+                </li>
+            </ul>
+          </div>
+
+          <div class='building_charging'>
+              <h2>Загрузка аудиторного фонда по корпусам</h2>
+              <ul class="list-inline">
+                  <li><a href="/buildings/gk">гк</a></li>
+                  <li><a href="/buildings/f">ф</a></li>
+                  <li><a href="/buildings/mk">мк</a></li>
+                  <li><a href="/buildings/rk">рк</a></li>
+                  <li><a href="/buildings/ulk">улк</a></li>
+              </ul>
+          </div>
+        </div>
+
+        <div class="right-column">
+          <div class="graphics">
+            <h2>Графики учебного процесса</h2>
+            <ul>
+              <li>
+                <a href="https://regulations.tusur.ru/#/documents/344" target="_blank">
+                  Рабочий календарный учебный график на 2026-2027 учебный год (очная форма обучения) (pdf)
+</a>              </li>
+              <li>
+                <a href="https://regulations.tusur.ru/#/documents/347" target="_blank">
+                  Рабочий календарный учебный график на 2026-2027 учебный год (очная форма обучения) (xls)
+</a>              </li>
+              <li>
+                <a href="https://regulations.tusur.ru/#/documents/346" target="_blank">
+                  Рабочий календарный учебный график на 2026-2027 учебный год (заочная форма обучения) (pdf)
+</a>              </li>
+              <li>
+                <a href="https://regulations.tusur.ru/#/documents/355" target="_blank">
+                  Рабочий календарный учебный график на 2026-2027 учебный год (заочная форма обучения) (xls)
+</a>              </li>
+              <li>
+                <a href="https://regulations.tusur.ru/#/documents/345" target="_blank">
+                  Рабочий календарный учебный график на 2026-2027 учебный год (очно-заочная форма обучения) (pdf)
+</a>              </li>
+              <li>
+                <a href="https://regulations.tusur.ru/#/documents/354" target="_blank">
+                  Рабочий календарный учебный график на 2026-2027 учебный год (очно-заочная форма обучения) (xls)
+</a>              </li>
+              <li>
+                <a href="https://regulations.tusur.ru/#/documents/279" target="_blank">
+                  Рабочий календарный учебный график на 2025-2026 учебный год (заочная форма обучения с применением ДОТ) (pdf)
+</a>              </li>
+              <li>
+                <a href="https://regulations.tusur.ru/#/documents/216" target="_blank">
+                  Рабочий календарный учебный график на 2024-2025 учебный год (очная форма обучения, аспирантура, 1 г/о) (pdf)
+</a>              </li>
+              <li>
+                <a href="https://regulations.tusur.ru/#/documents/217" target="_blank">
+                  Рабочий календарный учебный график на 2024-2025 учебный год (очная форма обучения, аспирантура, 2-3 г/о) (pdf)
+</a>              </li>
+              <li>
+                <a href="https://regulations.tusur.ru/#/documents/218" target="_blank">
+                  Рабочий календарный учебный график на 2024-2025 учебный год (очная форма обучения, аспирантура, 4 г/о) (pdf)
+</a>              </li>
+              <li>
+                <a href="https://regulations.tusur.ru/#/documents/219" target="_blank">
+                  Рабочий календарный учебный график на 2024-2025 учебный год (заочная форма обучения, аспирантура, 4-5 г/о) (pdf)
+</a>              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+        </div>
+  </div>
+
+  
+
+  <div id='footer'>
+  <div class='contacts'>
+    <div class='container'>
+      <ul class='pull-left contacts-list'>
+        <li class="footer-title">
+          <strong>Томский государственный университет систем управления и радиоэлектроники</strong>
+        </li>
+        <li>
+          <img alt="Address" src="/assets/footer_icon/address-c8fd37eaf600e87aebb13b684ff5a171.svg" />
+          <span>634050, г. Томск, пр. Ленина, 40</span>
+        </li>
+        <li>
+          <img alt="Phone" src="/assets/footer_icon/phone-c63d0f4b14155a626de0169ee57a0519.svg" />
+          <span>(3822) 51-05-30</span>
+        </li>
+        <li>
+          <img alt="Printer" src="/assets/footer_icon/printer-021bb4145a4bae8227893b42e1a9e446.svg" />
+          <span>(3822) 51-32-62, 52-63-65</span>
+        </li>
+        <li>
+          <img alt="Email" src="/assets/footer_icon/email-a814b73e2c970ef5e5ee09a3839b2af2.svg" />
+          <a class="footer__link" href="mailto:office@tusur.ru">office@tusur.ru</a>
+        </li>
+        <li>
+          <img alt="Time" src="/assets/footer_icon/time-b3c3215588789c1fb671dcd6711b1644.svg" />
+          Пн. – пт., 8:30 – 17:30, обед, 13:00 – 14:00
+        </li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+
+<script data-id="dgLoader" src="//maps.api.2gis.ru/2.0/loader.js?pkg=full&amp;lazy=true"></script>
+
+  <!-- Yandex.Metrika counter -->
+<script type="text/javascript">
+  (function (m, e, t, r, i, k, a) {
+    m[i] = m[i] || function () { (m[i].a = m[i].a || []).push(arguments) };
+    m[i].l = 1 * new Date();
+    for (var j = 0; j < document.scripts.length; j++) { if (document.scripts[j].src === r) { return; } }
+    k = e.createElement(t), a = e.getElementsByTagName(t)[0], k.async = 1, k.src = r, a.parentNode.insertBefore(k, a)
+  })
+    (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
+
+  ym(16843105, "init", {
+    clickmap: true,
+    trackLinks: true,
+    accurateTrackBounce: true,
+    webvisor: true
+  });
+</script>
+<noscript>
+  <div><img src="https://mc.yandex.ru/watch/16843105" style="position:absolute; left:-9999px;" alt="" /></div>
+</noscript>
+<!-- /Yandex.Metrika counter -->
+
+
+  <div id='js-note-updater-modal' class='modal hidden_for_print' tabindex='-1' role='dialog' aria-labelledby='note-updater-modal'>
+  <div class='modal-dialog' role='document'>
+    <div class='modal-content'>
+      <div class='modal-header'>
+        <h4 class='margin-top-0 margin-bottom-0'>
+          Добавление комментария в связку<br />
+          <span class='js-note-updater-modal-lesson-name-with-id'></span>
+        </h4>
+      </div>
+      <div class='modal-body'>
+        <form class='js-note-updater-modal-form' url='/update_lesson_week_note' method='post'>
+          <input type='hidden' name='lesson_week_id' id='js-lesson-week-id' />
+          <input type='text' name='note'
+            placeholder='Комментарий'
+            class='form-control'
+            id='js-note-input'
+            autofocus='autofocus' />
+          <div class='modal-footer'>
+            <button type='button' class='btn btn-default margin-top-15' data-dismiss='modal'>Закрыть</button>
+            <input type='submit' class='btn btn-success margin-top-15' value='Сохранить' />
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+  
+</body>
+</html>
