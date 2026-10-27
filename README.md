@@ -13,7 +13,7 @@
 
 Готовый APK лежит в разделе [Releases](https://github.com/Keisha2112/tusur-timetable/releases/latest).
 Прямая ссылка на файл:
-[`tusur-timetable-1.0.1.apk`](https://github.com/Keisha2112/tusur-timetable/releases/latest/download/tusur-timetable-1.0.1.apk).
+[`tusur-timetable-1.0.2.apk`](https://github.com/Keisha2112/tusur-timetable/releases/latest/download/tusur-timetable-1.0.2.apk).
 
 ## Возможности
 
@@ -61,10 +61,10 @@
 
 ## SHA-256
 
-Файл `tusur-timetable-1.0.1.apk` из раздела Releases:
+Файл `tusur-timetable-1.0.2.apk` из раздела Releases:
 
 ```text
-EA286915C3B9CFB44C283573EFF6A6C1819A579A3D533966BA6088FABB4B7FAF
+B0F344B0E581E1BB9B568B2DA8879601473F7B1E22EAE2716347FCCDE250E7AB
 ```
 
 Для сборки из исходников APK лежит в `app/build/outputs/apk/release/app-release.apk`.
@@ -119,10 +119,11 @@ Kotlin, Jetpack Compose, Material 3, Navigation Compose, Room, DataStore,
 OkHttp, Jsoup, biweekly, kotlinx.serialization, coroutines. minSdk 23,
 compileSdk/targetSdk 36, core library desugaring.
 
-Отдельно стоит отметить поддержку TLS на Android 6: сайт отдаёт только листовой
-сертификат `*.tusur.ru`, а корень GlobalSign R46 появился в системе лишь в Android 8.
-Приложение добавляет корень и промежуточный сертификат как дополнительные якоря
-(системная проверка не отключается), иначе на API 23 каталог не загружался бы.
+Отдельно стоит отметить TLS. Сайт отдаёт сертификат `*.tusur.ru` от GlobalSign
+GCC R46 AlphaSSL CA 2025, а корень R46 есть в системном хранилище только с Android 14.
+На Android 8–13 цепочка не проверяется, поэтому приложение добавляет корень R46
+и промежуточный сертификат как дополнительные якоря на всех версиях Android
+(системная проверка не отключается и выполняется первой).
 
 ## Структура
 

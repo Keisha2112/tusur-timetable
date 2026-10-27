@@ -100,7 +100,7 @@ class TusurClient(
                 .readTimeout(30, TimeUnit.SECONDS)
                 .callTimeout(30, TimeUnit.SECONDS)
 
-            // Android 6.0 не знает корневой сертификат GlobalSign R46.
+            // Android 8–13: в системном хранилище нет корня GlobalSign R46.
             LegacyTls.trustManager()?.let { trustManager ->
                 builder.sslSocketFactory(LegacyTls.sslContext(trustManager).socketFactory, trustManager)
             }

@@ -1,7 +1,6 @@
 package com.keisha.tusur.timetable.data.network
 
 import android.content.Context
-import android.os.Build
 import com.keisha.tusur.timetable.R
 import java.security.KeyStore
 import java.security.cert.CertificateException
@@ -12,17 +11,19 @@ import javax.net.ssl.TrustManagerFactory
 import javax.net.ssl.X509TrustManager
 
 /**
- * Сайт расписания отдаёт только листовой сертификат `*.tusur.ru`, без промежуточного
- * и корневого. Браузеры добирают промежуточный через AIA, а Android 6.0 просто
- * не может построить цепочку: корня GlobalSign R46 (2019) в системе ещё нет.
+ * Запасные якоря GlobalSign для систем, где корня R46 ещё нет в хранилище.
  *
- * Поэтому на API 23–25:
+ * Сайт выдаёт сертификат `*.tusur.ru` от GlobalSign GCC R46 AlphaSSL CA 2025,
+ * а корень R46 появился в системном хранилище только в Android 14. На Android 8–13
+ * цепочка не проверяется (`Trust anchor for certification path not found`),
+ * и приложение ошибочно сообщает об отсутствии интернета.
+ *
+ * Поэтому на всех версиях:
  *  - доверяем корень R46 и промежуточный AlphaSSL CA 2025 как дополнительным якорям;
- *  - если сервер прислал один лист, достраиваем цепочку промежуточным сертификатом.
+ *  - если сервер прислал только лист, достраиваем цепочку промежуточным сертификатом.
  *
- * Системная проверка не отключается: сначала пробуем штатный TrustManager,
- * и только если он не знает цепочку — свой. Начиная с Android 8.0 (API 26)
- * корень уже есть в системе, и подмена не нужна.
+ * Системная проверка не отключается и выполняется первой: дополнительные якоря
+ * используются, только если штатный TrustManager не смог построить цепочку.
  */
 object LegacyTls {
 
@@ -30,7 +31,7 @@ object LegacyTls {
     private var legacyTrustManager: X509TrustManager? = null
 
     fun init(context: Context) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O || legacyTrustManager != null) return
+        if (legacyTrustManager != null) return
         legacyTrustManager = buildTrustManager(context.applicationContext)
     }
 
