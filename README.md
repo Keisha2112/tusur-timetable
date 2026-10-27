@@ -1,11 +1,19 @@
 # Расписание ТУСУР
 
+[![Скачать APK](https://img.shields.io/badge/%D0%A1%D0%BA%D0%B0%D1%87%D0%B0%D1%82%D1%8C%20APK-2ea44f?style=for-the-badge&logo=android&logoColor=white)](https://github.com/Keisha2112/tusur-timetable/releases/latest)
+
 Неофициальное Android-приложение для просмотра расписания занятий групп ТУСУР.
 Показывает расписание выбранной группы на текущую неделю, позволяет листать недели,
 открывать детали занятия и работать без интернета за счёт локального кэша.
 
 **Приложение не связано с ТУСУР.** Данные берутся с открытого сайта
 [timetable.tusur.ru](https://timetable.tusur.ru).
+
+## Скачать
+
+Готовый APK лежит в разделе [Releases](https://github.com/Keisha2112/tusur-timetable/releases/latest).
+Прямая ссылка на файл:
+[`tusur-timetable-1.0.0.apk`](https://github.com/Keisha2112/tusur-timetable/releases/latest/download/tusur-timetable-1.0.0.apk).
 
 ## Возможности
 
@@ -39,7 +47,7 @@
 
 ## Установка
 
-1. Скачайте APK.
+1. Скачайте APK со страницы [Releases](https://github.com/Keisha2112/tusur-timetable/releases/latest).
 2. Android 6–7: «Настройки → Безопасность → Неизвестные источники» → разрешить для
    файлового менеджера или браузера.
 3. Android 8+: «Установка неизвестных приложений» → разрешить для приложения,
@@ -53,11 +61,13 @@
 
 ## SHA-256
 
-Готовый APK: `app/build/outputs/apk/release/app-release.apk`.
+Файл `tusur-timetable-1.0.0.apk` из раздела Releases:
 
 ```text
 D493C03CCB643469E5FF4288A426AC54E1CA0B84B41AB2D4666757AA55C2225D
 ```
+
+Для сборки из исходников APK лежит в `app/build/outputs/apk/release/app-release.apk`.
 
 ## Ограничения
 
