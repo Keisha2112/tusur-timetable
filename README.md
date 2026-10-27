@@ -13,7 +13,7 @@
 
 Готовый APK лежит в разделе [Releases](https://github.com/Keisha2112/tusur-timetable/releases/latest).
 Прямая ссылка на файл:
-[`tusur-timetable-1.0.0.apk`](https://github.com/Keisha2112/tusur-timetable/releases/latest/download/tusur-timetable-1.0.0.apk).
+[`tusur-timetable-1.0.1.apk`](https://github.com/Keisha2112/tusur-timetable/releases/latest/download/tusur-timetable-1.0.1.apk).
 
 ## Возможности
 
@@ -61,10 +61,10 @@
 
 ## SHA-256
 
-Файл `tusur-timetable-1.0.0.apk` из раздела Releases:
+Файл `tusur-timetable-1.0.1.apk` из раздела Releases:
 
 ```text
-D493C03CCB643469E5FF4288A426AC54E1CA0B84B41AB2D4666757AA55C2225D
+EA286915C3B9CFB44C283573EFF6A6C1819A579A3D533966BA6088FABB4B7FAF
 ```
 
 Для сборки из исходников APK лежит в `app/build/outputs/apk/release/app-release.apk`.
@@ -94,6 +94,10 @@ D493C03CCB643469E5FF4288A426AC54E1CA0B84B41AB2D4666757AA55C2225D
 
 `keystore.properties` и файл ключа не входят в репозиторий. Без них release-сборка
 получится неподписанной.
+
+Иконки генерируются из `docs/icon-source.png` скриптом `scripts/make_icons.py`
+(нужен Pillow): он собирает адаптивную иконку, монохромный слой и растровые PNG
+для Android 6–7.
 
 ### Если путь к проекту содержит кириллицу
 
