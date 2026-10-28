@@ -5,6 +5,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import com.keisha.tusur.timetable.data.local.SettingsKeys
 import com.keisha.tusur.timetable.data.local.settingsDataStore
+import com.keisha.tusur.timetable.domain.model.ThemeMode
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -12,7 +13,8 @@ import kotlinx.coroutines.flow.map
 import java.io.IOException
 
 /**
- * Выбор факультета и группы в DataStore Preferences, файл "settings".
+ * Настройки приложения в DataStore Preferences, файл "settings":
+ * выбор факультета и группы, режим оформления.
  *
  * DataStore должен быть один на процесс, поэтому репозиторий принимает Context,
  * а экземпляр берёт из делегата [settingsDataStore].
@@ -68,4 +70,32 @@ class SettingsRepositoryImpl(context: Context) : SettingsRepository {
             preferences.remove(SettingsKeys.GROUP_NAME)
         }
     }
+
+    override val themeMode: Flow<ThemeMode> = dataStore.data
+        .catch { e ->
+            if (e is IOException) emit(emptyPreferences()) else throw e
+        }
+        .map { preferences ->
+            // Ключа может не быть: настройки старых версий читаем как системную тему.
+            themeModeFrom(preferences[SettingsKeys.THEME_MODE])
+        }
+        .distinctUntilChanged()
+
+    override suspend fun setThemeMode(mode: ThemeMode) {
+        dataStore.edit { preferences ->
+            preferences[SettingsKeys.THEME_MODE] = mode.toPreferenceValue()
+        }
+    }
+}
+
+private fun themeModeFrom(raw: String?): ThemeMode = when (raw) {
+    "light" -> ThemeMode.LIGHT
+    "dark" -> ThemeMode.DARK
+    else -> ThemeMode.SYSTEM
+}
+
+private fun ThemeMode.toPreferenceValue(): String = when (this) {
+    ThemeMode.SYSTEM -> "system"
+    ThemeMode.LIGHT -> "light"
+    ThemeMode.DARK -> "dark"
 }

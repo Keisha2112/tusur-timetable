@@ -5,8 +5,10 @@ import androidx.lifecycle.viewModelScope
 import com.keisha.tusur.timetable.data.repository.CatalogRepository
 import com.keisha.tusur.timetable.data.repository.ScheduleRepository
 import com.keisha.tusur.timetable.data.repository.SettingsRepository
+import com.keisha.tusur.timetable.data.repository.TeacherScheduleRepository
 import com.keisha.tusur.timetable.data.repository.UserSelection
 import com.keisha.tusur.timetable.domain.model.AppError
+import com.keisha.tusur.timetable.domain.model.ThemeMode
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -28,6 +30,7 @@ data class SettingsUiState(
     val lastUpdated: Instant? = null,
     val isLoading: Boolean = true,
     val isClearingCache: Boolean = false,
+    val themeMode: ThemeMode = ThemeMode.SYSTEM,
 )
 
 sealed interface SettingsEvent {
@@ -38,6 +41,7 @@ sealed interface SettingsEvent {
 class SettingsViewModel(
     private val catalogRepository: CatalogRepository,
     private val scheduleRepository: ScheduleRepository,
+    private val teacherScheduleRepository: TeacherScheduleRepository,
     private val settingsRepository: SettingsRepository,
 ) : ViewModel() {
 
@@ -52,13 +56,15 @@ class SettingsViewModel(
 
     val state: StateFlow<SettingsUiState> = combine(
         settingsRepository.selection.catch { emit(null) },
+        settingsRepository.themeMode.catch { emit(ThemeMode.SYSTEM) },
         local,
-    ) { selection, localState ->
+    ) { selection, themeMode, localState ->
         SettingsUiState(
             selection = selection,
             lastUpdated = localState.lastUpdated,
             isLoading = false,
             isClearingCache = localState.isClearingCache,
+            themeMode = themeMode,
         )
     }.stateIn(
         scope = viewModelScope,
@@ -85,6 +91,19 @@ class SettingsViewModel(
         }
     }
 
+    fun setThemeMode(mode: ThemeMode) {
+        if (state.value.themeMode == mode) return
+        viewModelScope.launch {
+            try {
+                settingsRepository.setThemeMode(mode)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: Exception) {
+                // Запись не прошла — остаёмся на прежней теме, экран не ломаем.
+            }
+        }
+    }
+
     fun clearCache() {
         if (local.value.isClearingCache) return
         viewModelScope.launch {
@@ -92,6 +111,7 @@ class SettingsViewModel(
             try {
                 catalogRepository.clearCache()
                 scheduleRepository.clearCache()
+                teacherScheduleRepository.clearCache()
                 // Кэша больше нет — «последнее обновление» тоже сбрасывается.
                 local.update { it.copy(lastUpdated = null) }
                 _events.send(SettingsEvent.CacheCleared)

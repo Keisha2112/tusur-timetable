@@ -77,3 +77,22 @@ interface ScheduleCacheDao {
     @Query("DELETE FROM schedule_cache")
     suspend fun deleteAll()
 }
+
+@Dao
+interface TeacherScheduleCacheDao {
+
+    @Query("SELECT * FROM teacher_schedule_cache WHERE teacherKey = :teacherKey")
+    suspend fun get(teacherKey: String): TeacherScheduleCacheEntity?
+
+    @Query("SELECT updatedAt FROM teacher_schedule_cache WHERE teacherKey = :teacherKey")
+    suspend fun updatedAt(teacherKey: String): Long?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsert(entity: TeacherScheduleCacheEntity)
+
+    @Query("DELETE FROM teacher_schedule_cache WHERE teacherKey = :teacherKey")
+    suspend fun delete(teacherKey: String)
+
+    @Query("DELETE FROM teacher_schedule_cache")
+    suspend fun deleteAll()
+}

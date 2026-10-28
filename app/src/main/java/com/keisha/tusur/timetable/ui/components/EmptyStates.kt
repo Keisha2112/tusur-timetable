@@ -81,12 +81,13 @@ fun ScheduleErrorState(
     error: AppError?,
     groupNotFound: Boolean,
     onRetry: () -> Unit,
-    onOpenSettings: () -> Unit,
+    onOpenSettings: (() -> Unit)? = null,
+    notFoundMessageRes: Int = R.string.schedule_group_not_found,
     modifier: Modifier = Modifier,
 ) {
     val notFound = groupNotFound || error is AppError.NotFound
     val messageRes = when {
-        notFound -> R.string.schedule_group_not_found
+        notFound -> notFoundMessageRes
         error is AppError.Network -> R.string.error_network
         error is AppError.Server -> R.string.error_server
         error is AppError.Parse -> R.string.error_parse
@@ -111,7 +112,7 @@ fun ScheduleErrorState(
         ) {
             Text(text = stringResource(R.string.action_retry))
         }
-        if (notFound) {
+        if (notFound && onOpenSettings != null) {
             OutlinedButton(
                 onClick = onOpenSettings,
                 modifier = Modifier

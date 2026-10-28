@@ -39,4 +39,24 @@ object Urls {
         .addPathSegment("$slug.ics")
         .build()
         .toString()
+
+    fun teacher(id: String): String = base.newBuilder()
+        .addPathSegment("teachers")
+        .addPathSegment(id)
+        .build()
+        .toString()
+
+    fun teacherIcs(id: String): String = base.newBuilder()
+        .addPathSegment("teachers")
+        .addPathSegment("$id.ics")
+        .build()
+        .toString()
+
+    /** Общий поиск сайта: преподаватели, группы, аудитории. */
+    fun search(query: String): String = base.newBuilder()
+        .addPathSegment("searches")
+        .addPathSegment("common_search")
+        .addQueryParameter("search[common]", query)
+        .build()
+        .toString()
 }

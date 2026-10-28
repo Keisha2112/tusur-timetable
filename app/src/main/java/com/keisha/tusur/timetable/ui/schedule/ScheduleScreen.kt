@@ -1,10 +1,7 @@
 package com.keisha.tusur.timetable.ui.schedule
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,9 +9,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Settings
@@ -24,7 +18,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -35,7 +28,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -47,27 +39,25 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.keisha.tusur.timetable.AppContainer
 import com.keisha.tusur.timetable.R
+import com.keisha.tusur.timetable.data.network.Urls
 import com.keisha.tusur.timetable.data.repository.UserSelection
 import com.keisha.tusur.timetable.domain.model.AppError
 import com.keisha.tusur.timetable.domain.model.GroupSchedule
 import com.keisha.tusur.timetable.domain.model.Lesson
 import com.keisha.tusur.timetable.domain.model.Week
 import com.keisha.tusur.timetable.domain.time.ScheduleTime
-import com.keisha.tusur.timetable.ui.components.EmptyWeekState
-import com.keisha.tusur.timetable.ui.components.LessonCard
 import com.keisha.tusur.timetable.ui.components.NoSelectionState
 import com.keisha.tusur.timetable.ui.components.OfflineBanner
 import com.keisha.tusur.timetable.ui.components.ScheduleErrorState
 import com.keisha.tusur.timetable.ui.components.ScheduleLoadingState
 import com.keisha.tusur.timetable.ui.components.WeekPanel
-import kotlinx.coroutines.flow.first
 import java.time.Instant
-import java.time.LocalDate
 
 @Composable
 fun ScheduleScreen(
     container: AppContainer,
     onOpenSettings: () -> Unit,
+    onOpenTeacher: (String) -> Unit,
 ) {
     val viewModel: ScheduleViewModel = viewModel(
         factory = viewModelFactory {
@@ -84,6 +74,7 @@ fun ScheduleScreen(
     ScheduleScreenContent(
         state = state,
         onOpenSettings = onOpenSettings,
+        onOpenTeacher = onOpenTeacher,
         onRefresh = viewModel::refresh,
         onRetry = viewModel::retry,
         onPreviousWeek = viewModel::previousWeek,
@@ -98,6 +89,7 @@ fun ScheduleScreen(
 private fun ScheduleScreenContent(
     state: ScheduleUiState,
     onOpenSettings: () -> Unit,
+    onOpenTeacher: (String) -> Unit,
     onRefresh: () -> Unit,
     onRetry: () -> Unit,
     onPreviousWeek: () -> Unit,
@@ -174,6 +166,7 @@ private fun ScheduleScreenContent(
                     onToday = onToday,
                     onChooseWeek = { showWeekPicker = true },
                     onOpenLesson = { detailsLesson = it },
+                    onOpenTeacher = onOpenTeacher,
                 )
             }
         }
@@ -195,7 +188,13 @@ private fun ScheduleScreenContent(
     if (lesson != null && schedule != null) {
         LessonDetailsSheet(
             lesson = lesson,
-            group = schedule.group,
+            sourceUrl = Urls.group(schedule.group.facultyCode, schedule.group.slug),
+            showTeachers = true,
+            showGroups = false,
+            onTeacherClick = { teacher ->
+                detailsLesson = null
+                onOpenTeacher(teacher)
+            },
             onDismiss = { detailsLesson = null },
         )
     }
@@ -240,7 +239,7 @@ private fun ScheduleTopBar(
                 )
             }
         },
-        colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+        colors = TopAppBarDefaults.topAppBarColors(
             containerColor = MaterialTheme.colorScheme.background,
         ),
     )
@@ -260,13 +259,23 @@ private fun ScheduleBody(
     onToday: () -> Unit,
     onChooseWeek: () -> Unit,
     onOpenLesson: (Lesson) -> Unit,
+    onOpenTeacher: (String) -> Unit,
 ) {
     val selectedWeek = weeks.firstOrNull { it.id == state.selectedWeekId }
     val selectedIndex = weeks.indexOfFirst { it.id == state.selectedWeekId }
     val canGoPrevious = selectedIndex > 0
     val canGoNext = selectedIndex >= 0 && selectedIndex < weeks.lastIndex
 
-    Column(Modifier.fillMaxSize()) {
+    Column(
+        Modifier
+            .fillMaxSize()
+            .weekSwipe(
+                canGoPrevious = canGoPrevious,
+                canGoNext = canGoNext,
+                onPrevious = onPreviousWeek,
+                onNext = onNextWeek,
+            ),
+    ) {
         if (selectedWeek != null) {
             WeekPanel(
                 week = selectedWeek,
@@ -304,13 +313,15 @@ private fun ScheduleBody(
                 .fillMaxWidth()
                 .weight(1f),
         ) {
-            WeekLessonsList(
+            ScheduleWeekList(
                 lessons = schedule.lessons,
                 week = selectedWeek,
-                groupSlug = schedule.group.slug,
+                contentKey = schedule.group.slug,
                 currentWeekId = currentWeekId,
                 canGoPrevious = canGoPrevious,
                 canGoNext = canGoNext,
+                showTeachers = true,
+                showGroups = false,
                 onPreviousWeek = onPreviousWeek,
                 onNextWeek = onNextWeek,
                 onOpenLesson = onOpenLesson,
@@ -320,129 +331,7 @@ private fun ScheduleBody(
 }
 
 @Composable
-private fun WeekLessonsList(
-    lessons: List<Lesson>,
-    week: Week?,
-    groupSlug: String,
-    currentWeekId: Int?,
-    canGoPrevious: Boolean,
-    canGoNext: Boolean,
-    onPreviousWeek: () -> Unit,
-    onNextWeek: () -> Unit,
-    onOpenLesson: (Lesson) -> Unit,
-) {
-    val days = remember(lessons, week?.startDate) {
-        week?.let { ScheduleTime.daysForWeek(lessons, it.startDate) }.orEmpty()
-    }
-    val hasLessons = days.any { it.lessons.isNotEmpty() }
-    val listState = rememberLazyListState()
-    // Текущая неделя открывается на сегодняшнем дне, остальные — с понедельника.
-    // Пустая неделя показывает единственный элемент, поэтому для неё всегда 0.
-    val startIndex = remember(days, week?.id, currentWeekId) {
-        if (hasLessons) {
-            weekStartIndex(days, week?.id, currentWeekId, ScheduleTime.today())
-        } else {
-            0
-        }
-    }
-    val resetKey = "${week?.id}/$groupSlug"
-    // Ключ уже обработанной прокрутки переживает поворот экрана: rememberLazyListState
-    // восстановит позицию, а повторная прокрутка к сегодняшнему дню её бы сбросила.
-    var handledResetKey by rememberSaveable { mutableStateOf<String?>(null) }
-
-    LaunchedEffect(resetKey) {
-        if (handledResetKey == resetKey) return@LaunchedEffect
-        handledResetKey = resetKey
-        // До первой раскладки список ещё пуст — ждём, когда появятся элементы.
-        snapshotFlow { listState.layoutInfo.totalItemsCount }.first { it > 0 }
-        listState.scrollToItem(startIndex)
-    }
-
-    LazyColumn(
-        state = listState,
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 24.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp),
-    ) {
-        if (week == null || !hasLessons) {
-            item {
-                EmptyWeekState(
-                    canGoPrevious = canGoPrevious,
-                    canGoNext = canGoNext,
-                    onPrevious = onPreviousWeek,
-                    onNext = onNextWeek,
-                    modifier = Modifier.fillParentMaxSize(),
-                )
-            }
-        } else {
-            days.forEach { day ->
-                item(key = "day-${day.date}") {
-                    DayHeader(date = day.date)
-                }
-                if (day.lessons.isEmpty()) {
-                    item(key = "empty-${day.date}") {
-                        EmptyDayRow()
-                    }
-                } else {
-                    items(day.lessons) { lesson ->
-                        LessonCard(
-                            lesson = lesson,
-                            onClick = { onOpenLesson(lesson) },
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun DayHeader(date: LocalDate) {
-    val isToday = date == ScheduleTime.today()
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 6.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(
-            text = ScheduleTime.formatDayTitle(date),
-            style = MaterialTheme.typography.titleMedium,
-            color = if (isToday) {
-                MaterialTheme.colorScheme.primary
-            } else {
-                MaterialTheme.colorScheme.onSurface
-            },
-        )
-        if (isToday) {
-            Spacer(Modifier.width(8.dp))
-            Surface(
-                shape = CircleShape,
-                color = MaterialTheme.colorScheme.primaryContainer,
-                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-            ) {
-                Text(
-                    text = stringResource(R.string.schedule_today),
-                    style = MaterialTheme.typography.labelSmall,
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun EmptyDayRow() {
-    Text(
-        text = stringResource(R.string.schedule_empty_day),
-        style = MaterialTheme.typography.bodyMedium,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = Modifier.padding(start = 4.dp, bottom = 4.dp),
-    )
-}
-
-@Composable
-private fun UpdatedAtLabel(updatedAt: Instant) {
+internal fun UpdatedAtLabel(updatedAt: Instant) {
     Text(
         text = stringResource(
             R.string.schedule_updated_at,

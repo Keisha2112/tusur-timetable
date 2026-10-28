@@ -1,11 +1,11 @@
 package com.keisha.tusur.timetable
 
 import android.content.Context
-import androidx.room.Room
 import com.keisha.tusur.timetable.data.local.AppDatabase
 import com.keisha.tusur.timetable.data.network.TusurClient
 import com.keisha.tusur.timetable.data.parser.CatalogParser
 import com.keisha.tusur.timetable.data.parser.IcsParser
+import com.keisha.tusur.timetable.data.parser.TeacherParser
 import com.keisha.tusur.timetable.data.parser.WeekListParser
 import com.keisha.tusur.timetable.data.repository.CatalogRepository
 import com.keisha.tusur.timetable.data.repository.CatalogRepositoryImpl
@@ -13,6 +13,8 @@ import com.keisha.tusur.timetable.data.repository.ScheduleRepository
 import com.keisha.tusur.timetable.data.repository.ScheduleRepositoryImpl
 import com.keisha.tusur.timetable.data.repository.SettingsRepository
 import com.keisha.tusur.timetable.data.repository.SettingsRepositoryImpl
+import com.keisha.tusur.timetable.data.repository.TeacherScheduleRepository
+import com.keisha.tusur.timetable.data.repository.TeacherScheduleRepositoryImpl
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -36,7 +38,7 @@ class AppContainer(context: Context) {
     private val client: TusurClient by lazy { TusurClient(httpClient) }
 
     private val database: AppDatabase by lazy {
-        Room.databaseBuilder(appContext, AppDatabase::class.java, DATABASE_NAME).build()
+        AppDatabase.build(appContext)
     }
 
     private val catalogParser: CatalogParser by lazy { CatalogParser() }
@@ -44,6 +46,8 @@ class AppContainer(context: Context) {
     private val weekListParser: WeekListParser by lazy { WeekListParser() }
 
     private val icsParser: IcsParser by lazy { IcsParser() }
+
+    private val teacherParser: TeacherParser by lazy { TeacherParser() }
 
     val settingsRepository: SettingsRepository by lazy {
         SettingsRepositoryImpl(appContext)
@@ -68,7 +72,14 @@ class AppContainer(context: Context) {
         )
     }
 
-    private companion object {
-        const val DATABASE_NAME = "tusur-timetable.db"
+    val teacherScheduleRepository: TeacherScheduleRepository by lazy {
+        TeacherScheduleRepositoryImpl(
+            dao = database.teacherScheduleCacheDao(),
+            client = client,
+            weekListParser = weekListParser,
+            icsParser = icsParser,
+            teacherParser = teacherParser,
+            ioDispatcher = ioDispatcher,
+        )
     }
 }

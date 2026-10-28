@@ -266,6 +266,35 @@ class IcsParserTest {
     }
 
     @Test
+    fun `расписание преподавателя содержит группы вместо преподавателей`() {
+        val lessons = parser.parse(
+            ics = TEACHER_ICS,
+            descriptionMode = IcsParser.DescriptionMode.GROUPS,
+        )
+
+        val lecture = lessons.single { it.discipline == "История России" }
+        assertTrue(lecture.teachers.isEmpty())
+        assertEquals(listOf("716-1", "716-2"), lecture.groups)
+        assertEquals("2026-10-26T08:50|История России|716-1,716-2", lecture.id)
+
+        // «ЭИОС» — пометка, а не группа.
+        val practice = lessons.single { it.discipline == "Информатика" }
+        assertEquals(listOf("716-1"), practice.groups)
+    }
+
+    @Test
+    fun `занятия разных подгрупп не схлопываются`() {
+        val lessons = parser.parse(
+            ics = TEACHER_ICS,
+            descriptionMode = IcsParser.DescriptionMode.GROUPS,
+        )
+
+        val physics = lessons.filter { it.discipline == "Физика" }
+        assertEquals(2, physics.size)
+        assertEquals(2, physics.map { it.id }.distinct().size)
+    }
+
+    @Test
     fun `пустой файл даёт пустой список`() {
         assertTrue(parser.parse("").isEmpty())
         assertTrue(parser.parse("   \n  ").isEmpty())
@@ -275,5 +304,41 @@ class IcsParserTest {
         val stream = javaClass.getResourceAsStream("/fixtures/$name")
             ?: error("Фикстура не найдена: fixtures/$name")
         return stream.bufferedReader(StandardCharsets.UTF_8).use { it.readText() }
+    }
+
+    private companion object {
+        val TEACHER_ICS = """
+            BEGIN:VCALENDAR
+            VERSION:2.0
+            BEGIN:VEVENT
+            DTSTART;TZID=Asia/Novosibirsk:20261026T085000
+            DTEND;TZID=Asia/Novosibirsk:20261026T102500
+            SUMMARY:История России
+            DESCRIPTION:Лекция\, 716-1\, 716-2
+            LOCATION:улк 808
+            END:VEVENT
+            BEGIN:VEVENT
+            DTSTART;TZID=Asia/Novosibirsk:20261026T104000
+            DTEND;TZID=Asia/Novosibirsk:20261026T121500
+            SUMMARY:Информатика
+            DESCRIPTION:Практика\, 716-1\, ЭИОС
+            LOCATION:улк 311
+            END:VEVENT
+            BEGIN:VEVENT
+            DTSTART;TZID=Asia/Novosibirsk:20261027T131500
+            DTEND;TZID=Asia/Novosibirsk:20261027T145000
+            SUMMARY:Физика
+            DESCRIPTION:Лабораторная работа\, 716-1
+            LOCATION:улк 401
+            END:VEVENT
+            BEGIN:VEVENT
+            DTSTART;TZID=Asia/Novosibirsk:20261027T131500
+            DTEND;TZID=Asia/Novosibirsk:20261027T145000
+            SUMMARY:Физика
+            DESCRIPTION:Лабораторная работа\, 716-2
+            LOCATION:улк 402
+            END:VEVENT
+            END:VCALENDAR
+        """.trimIndent()
     }
 }

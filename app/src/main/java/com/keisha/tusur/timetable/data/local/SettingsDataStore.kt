@@ -16,6 +16,10 @@ internal object SettingsKeys {
     val FACULTY_NAME = stringPreferencesKey("faculty_name")
     val GROUP_SLUG = stringPreferencesKey("group_slug")
     val GROUP_NAME = stringPreferencesKey("group_name")
+
+    /** "system" | "light" | "dark". Отсутствие ключа равнозначно "system". */
+    val THEME_MODE = stringPreferencesKey("theme_mode")
+
     val SCHEMA_VERSION = intPreferencesKey("schema_version")
 
     const val CURRENT_SCHEMA_VERSION = 1

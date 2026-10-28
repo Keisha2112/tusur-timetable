@@ -1,6 +1,7 @@
 package com.keisha.tusur.timetable.data.local
 
 import com.keisha.tusur.timetable.domain.model.GroupSchedule
+import com.keisha.tusur.timetable.domain.model.TeacherSchedule
 import kotlinx.serialization.json.Json
 
 /**
@@ -27,6 +28,16 @@ object ScheduleCacheCodec {
             json.decodeFromString(GroupSchedule.serializer(), payload)
         } catch (e: Exception) {
             // Кэш — вспомогательные данные, поэтому любая ошибка разбора равнозначна его отсутствию.
+            null
+        }
+
+    fun encodeTeacher(schedule: TeacherSchedule): String =
+        json.encodeToString(TeacherSchedule.serializer(), schedule)
+
+    fun decodeTeacher(payload: String): TeacherSchedule? =
+        try {
+            json.decodeFromString(TeacherSchedule.serializer(), payload)
+        } catch (e: Exception) {
             null
         }
 }

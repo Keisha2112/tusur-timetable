@@ -4,6 +4,7 @@ import com.keisha.tusur.timetable.domain.model.AppError
 import com.keisha.tusur.timetable.domain.model.Faculty
 import com.keisha.tusur.timetable.domain.model.Group
 import com.keisha.tusur.timetable.domain.model.GroupSchedule
+import com.keisha.tusur.timetable.domain.model.ThemeMode
 import kotlinx.coroutines.flow.Flow
 import java.time.Instant
 
@@ -72,4 +73,9 @@ interface SettingsRepository {
     suspend fun saveSelection(selection: UserSelection)
 
     suspend fun clearSelection()
+
+    /** Оформление приложения. При отсутствии сохранённого значения — [ThemeMode.SYSTEM]. */
+    val themeMode: Flow<ThemeMode>
+
+    suspend fun setThemeMode(mode: ThemeMode)
 }

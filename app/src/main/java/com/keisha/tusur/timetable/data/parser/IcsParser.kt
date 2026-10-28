@@ -19,17 +19,27 @@ import java.time.format.DateTimeFormatter
  */
 class IcsParser {
 
-    fun parse(ics: String, zoneId: ZoneId = ScheduleTime.ZONE): List<Lesson> {
+    /**
+     * Что записано в DESCRIPTION после типа занятия: у группы это преподаватели,
+     * у преподавателя — группы. Разметка `тип, значение, значение…` одинаковая.
+     */
+    enum class DescriptionMode { TEACHERS, GROUPS }
+
+    fun parse(
+        ics: String,
+        zoneId: ZoneId = ScheduleTime.ZONE,
+        descriptionMode: DescriptionMode = DescriptionMode.TEACHERS,
+    ): List<Lesson> {
         if (ics.isBlank()) return emptyList()
 
         val calendar = ICalReader(ics).use { it.readNext() } ?: return emptyList()
         return calendar.events
-            .mapNotNull { event -> parseEvent(event, zoneId) }
+            .mapNotNull { event -> parseEvent(event, zoneId, descriptionMode) }
             // В экспорте встречаются полные дубли: одинаковые дата, время, дисциплина и участники.
             .distinct()
     }
 
-    private fun parseEvent(event: VEvent, zoneId: ZoneId): Lesson? {
+    private fun parseEvent(event: VEvent, zoneId: ZoneId, descriptionMode: DescriptionMode): Lesson? {
         val start = event.dateStart?.toDateTime(zoneId) ?: return null
         // Событие без названия показывать нечего.
         val discipline = event.summary?.value?.trim().orEmpty()
@@ -40,10 +50,29 @@ class IcsParser {
 
         val description = splitValues(event.description?.value)
         val rawType = description.firstOrNull().orEmpty()
+        val participants = description.drop(1)
+        val teachers = if (descriptionMode == DescriptionMode.TEACHERS) participants else emptyList()
+        // «ЭИОС» и прочие пометки в описании преподавателя группами не являются.
+        val groups = if (descriptionMode == DescriptionMode.GROUPS) {
+            participants.filter { GROUP_NAME.containsMatchIn(it) }
+        } else {
+            emptyList()
+        }
         val startTime = start.toLocalTime()
 
         return Lesson(
-            id = "${start.toLocalDate()}T${startTime.format(ID_TIME)}|$discipline",
+            // В расписании преподавателя на одно время могут прийти разные подгруппы.
+            id = buildString {
+                append(start.toLocalDate())
+                append('T')
+                append(startTime.format(ID_TIME))
+                append('|')
+                append(discipline)
+                if (groups.isNotEmpty()) {
+                    append('|')
+                    append(groups.joinToString(","))
+                }
+            },
             date = start.toLocalDate(),
             start = startTime,
             end = end.toLocalTime(),
@@ -52,7 +81,8 @@ class IcsParser {
             type = LessonTypeMapper.map(rawType),
             rawType = rawType,
             rooms = splitValues(event.location?.value),
-            teachers = description.drop(1),
+            teachers = teachers,
+            groups = groups,
         )
     }
 
@@ -87,5 +117,8 @@ class IcsParser {
 
     private companion object {
         val ID_TIME: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm")
+
+        /** «716-1», «716топ-1», «716-М»: три цифры и номер/литера после дефиса. */
+        val GROUP_NAME = Regex("""^\d{3}(?:топ)?-""", RegexOption.IGNORE_CASE)
     }
 }

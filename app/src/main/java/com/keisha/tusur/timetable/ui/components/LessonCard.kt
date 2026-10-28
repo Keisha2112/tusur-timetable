@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Groups
 import androidx.compose.material.icons.outlined.MeetingRoom
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.Card
@@ -36,6 +37,7 @@ import com.keisha.tusur.timetable.R
 import com.keisha.tusur.timetable.domain.model.Lesson
 import com.keisha.tusur.timetable.domain.model.LessonType
 import com.keisha.tusur.timetable.domain.time.ScheduleTime
+import com.keisha.tusur.timetable.ui.theme.lessonTypeColors
 
 /**
  * Карточка занятия в списке дня. Все данные читаются текстом, цвет — только подсказка.
@@ -45,8 +47,10 @@ fun LessonCard(
     lesson: Lesson,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    showTeachers: Boolean = true,
+    showGroups: Boolean = false,
 ) {
-    val accent = lessonTypeAccent(lesson.type)
+    val colors = lessonTypeColors(lesson.type, lesson.rawType)
     val typeLabel = lessonTypeLabel(lesson)
     val timeText = stringResource(
         R.string.lesson_time,
@@ -76,7 +80,7 @@ fun LessonCard(
                 Modifier
                     .width(4.dp)
                     .fillMaxHeight()
-                    .background(accent),
+                    .background(colors.accent),
             )
             Column(
                 Modifier
@@ -132,7 +136,12 @@ fun LessonCard(
                     }
                 }
 
-                if (lesson.teachers.isNotEmpty()) {
+                if (showGroups && lesson.groups.isNotEmpty()) {
+                    Spacer(Modifier.height(6.dp))
+                    GroupsLine(groups = lesson.groups)
+                }
+
+                if (showTeachers && lesson.teachers.isNotEmpty()) {
                     Spacer(Modifier.height(6.dp))
                     TeachersLine(teachers = lesson.teachers)
                 }
@@ -146,17 +155,39 @@ fun LessonTypeBadge(
     lesson: Lesson,
     modifier: Modifier = Modifier,
 ) {
-    val accent = lessonTypeAccent(lesson.type)
+    val colors = lessonTypeColors(lesson.type, lesson.rawType)
     Surface(
         modifier = modifier,
         shape = RoundedCornerShape(6.dp),
-        color = accent.copy(alpha = 0.14f),
+        color = colors.container,
     ) {
         Text(
             text = lessonTypeLabel(lesson),
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
             style = MaterialTheme.typography.labelMedium,
-            color = accent,
+            color = colors.content,
+        )
+    }
+}
+
+@Composable
+private fun GroupsLine(groups: List<String>) {
+    Row(verticalAlignment = Alignment.Top) {
+        Icon(
+            imageVector = Icons.Outlined.Groups,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier
+                .padding(top = 1.dp)
+                .size(16.dp),
+        )
+        Spacer(Modifier.width(6.dp))
+        Text(
+            text = groups.joinToString(", "),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
         )
     }
 }
@@ -209,16 +240,3 @@ fun lessonTypeLabel(lesson: Lesson): String =
             },
         )
     }
-
-/**
- * Акцент типа занятия берём из цветовой схемы, чтобы он автоматически
- * подстраивался под светлую и тёмную тему.
- */
-@Composable
-fun lessonTypeAccent(type: LessonType): Color = when (type) {
-    LessonType.LECTURE -> MaterialTheme.colorScheme.primary
-    LessonType.PRACTICE -> MaterialTheme.colorScheme.secondary
-    LessonType.LABORATORY -> MaterialTheme.colorScheme.tertiary
-    LessonType.EXAM, LessonType.CREDIT -> MaterialTheme.colorScheme.error
-    LessonType.RESEARCH, LessonType.CONSULTATION, LessonType.OTHER -> MaterialTheme.colorScheme.onSurfaceVariant
-}

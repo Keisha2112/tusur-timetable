@@ -34,6 +34,7 @@
     <string name="schedule_empty_week">На эту неделю расписание ещё не опубликовано</string>
     <string name="schedule_empty_week_hint">Попробуйте соседнюю неделю или обновите позже</string>
     <string name="schedule_empty_day">Занятий нет</string>
+    <string name="schedule_free_pair">Пара %1$d · нет занятия</string>
     <string name="schedule_offline">Нет подключения. Показано сохранённое расписание.</string>
     <string name="schedule_stale">Не удалось обновить. Показано сохранённое расписание.</string>
     <string name="schedule_updated_at">Обновлено %1$s</string>
@@ -58,11 +59,16 @@
     <string name="lesson_room">ауд. %1$s</string>
     <string name="lesson_rooms_title">Аудитории</string>
     <string name="lesson_teachers_title">Преподаватели</string>
+    <string name="lesson_groups_title">Группы</string>
     <string name="lesson_details_source">Открыть источник</string>
     <string name="lesson_details_date">Дата</string>
     <string name="lesson_details_time">Время</string>
     <string name="lesson_more_teachers">и ещё %1$d</string>
     <string name="lesson_teacher_unknown">Преподаватель не указан</string>
+
+    <!-- Расписание преподавателя -->
+    <string name="teacher_schedule_title">Расписание преподавателя</string>
+    <string name="teacher_not_found">Преподаватель не найден на сайте расписания.</string>
 
     <!-- Недели -->
     <string name="weeks_title">Недели</string>
@@ -83,8 +89,6 @@
     <string name="settings_clear_cache">Очистить кэш</string>
     <string name="settings_clear_cache_confirm">Удалить сохранённое расписание и каталог?</string>
     <string name="settings_clear_cache_done">Кэш очищен</string>
-    <string name="settings_theme">Тема</string>
-    <string name="settings_theme_system">Как в системе</string>
     <string name="settings_disclaimer">Приложение неофициальное и не связано с ТУСУР. Данные берутся с открытого сайта timetable.tusur.ru.</string>
     <string name="settings_last_update">Последнее обновление: %1$s</string>
     <string name="settings_never_updated">Расписание ещё не загружалось</string>
@@ -96,6 +100,8 @@
     <string name="cd_next_week">Следующая неделя</string>
     <string name="cd_choose_week">Выбрать неделю</string>
     <string name="cd_lesson_card">Занятие: %1$s, %2$s, %3$s</string>
+    <string name="cd_open_teacher">Открыть расписание преподавателя</string>
+    <string name="cd_back">Назад</string>
 
     <!-- Ошибки -->
     <string name="error_network">Нет подключения к интернету</string>

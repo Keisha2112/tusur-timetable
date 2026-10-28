@@ -76,7 +76,7 @@ fun TusurTimetableTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit,
 ) {
-    // Dynamic color РЅР°РјРµСЂРµРЅРЅРѕ РѕС‚РєР»СЋС‡С‘РЅ: С„РёСЂРјРµРЅРЅС‹Рµ С†РІРµС‚Р° РЅРµ РґРѕР»Р¶РЅС‹ РїРѕРґРјРµРЅСЏС‚СЊСЃСЏ СЃРёСЃС‚РµРјРѕР№.
+    // Dynamic color намеренно отключён: фирменные цвета не должны подменяться системой.
     MaterialTheme(
         colorScheme = if (darkTheme) DarkColors else LightColors,
         typography = TusurTypography,

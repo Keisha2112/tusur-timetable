@@ -9,8 +9,9 @@ import java.time.LocalDate
 import java.time.Month
 
 /**
- * Список недель со страницы группы.
+ * Список недель со страницы группы или преподавателя.
  *
+ * У группы ссылки содержат `?week_id=`, у преподавателя — путь `/weeks/<id>`.
  * Месяцы разбираем по явной таблице, а не через DateTimeFormatter: названия в родительном
  * падеже («31 августа») зависят от данных CLDR в конкретной версии Android и легко
  * ломаются при смене локали. Таблица даёт одинаковый результат на JVM и на устройстве.
@@ -65,7 +66,7 @@ class WeekListParser {
     }
 
     private companion object {
-        val WEEK_ID = Regex("""[?&]week_id=(\d+)""")
+        val WEEK_ID = Regex("""(?:[?&]week_id=|/teachers/\d+/weeks/)(\d+)""")
         val NUMBER = Regex("""^(\d+)""")
         val START_DATE = Regex(
             """с\s+(\d{1,2})\s+([а-яёА-ЯЁ]+)\s+(\d{4})""",

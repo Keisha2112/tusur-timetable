@@ -4,6 +4,8 @@ import com.keisha.tusur.timetable.domain.model.Group
 import com.keisha.tusur.timetable.domain.model.GroupSchedule
 import com.keisha.tusur.timetable.domain.model.Lesson
 import com.keisha.tusur.timetable.domain.model.LessonType
+import com.keisha.tusur.timetable.domain.model.Teacher
+import com.keisha.tusur.timetable.domain.model.TeacherSchedule
 import com.keisha.tusur.timetable.domain.model.Week
 import com.keisha.tusur.timetable.domain.model.WeekKind
 import org.junit.Assert.assertEquals
@@ -131,15 +133,49 @@ class ScheduleCacheCodecTest {
     }
 
     @Test
-    fun `invalid date inside valid json decodes to null`() {
-        val broken = """
+    fun `teacher schedule round trip keeps groups and identity`() {
+        val schedule = TeacherSchedule(
+            teacher = Teacher(
+                id = "35144",
+                shortName = "Жидова Л.А.",
+                fullName = "Жидова Любовь Александровна",
+            ),
+            weeks = listOf(
+                Week(9, 9, LocalDate.of(2026, 10, 26), WeekKind.THEORETICAL, true),
+            ),
+            lessons = listOf(
+                Lesson(
+                    id = "teacher-lesson",
+                    date = LocalDate.of(2026, 10, 26),
+                    start = LocalTime.of(8, 50),
+                    end = LocalTime.of(10, 25),
+                    pairNumber = 1,
+                    discipline = "История России",
+                    type = LessonType.LECTURE,
+                    rawType = "Лекция",
+                    groups = listOf("716-1", "716-2"),
+                ),
+            ),
+            fetchedAt = Instant.parse("2026-10-27T03:15:42Z"),
+        )
+
+        val json = ScheduleCacheCodec.encodeTeacher(schedule)
+
+        assertEquals(schedule, ScheduleCacheCodec.decodeTeacher(json))
+        assertTrue(json.contains("\"716-1\""))
+        assertNull(ScheduleCacheCodec.decodeTeacher("{})"))
+    }
+
+    @Test
+    fun `старый кэш без групп читается с пустым списком`() {
+        val legacy = """
             {
               "group": {"facultyCode": "fb", "slug": "714-2", "name": "714-2"},
               "weeks": [],
               "lessons": [
                 {
                   "id": "x",
-                  "date": "26.10.2026",
+                  "date": "2026-10-26",
                   "start": "08:50",
                   "end": "10:25",
                   "discipline": "Физика",
@@ -151,6 +187,9 @@ class ScheduleCacheCodecTest {
             }
         """.trimIndent()
 
-        assertNull(ScheduleCacheCodec.decode(broken))
+        val decoded = ScheduleCacheCodec.decode(legacy)
+
+        assertTrue(decoded != null)
+        assertTrue(decoded!!.lessons.single().groups.isEmpty())
     }
 }

@@ -36,6 +36,19 @@ data class ScheduleCacheEntity(
     val checkedAt: Long,
 )
 
+/**
+ * Расписание преподавателя. Ключ — нормализованное короткое имя: по нему приходит
+ * переход из карточки занятия, а id преподавателя лежит внутри JSON.
+ * [updatedAt] — время последнего изменения данных, [checkedAt] — последней проверки.
+ */
+@Entity(tableName = "teacher_schedule_cache")
+data class TeacherScheduleCacheEntity(
+    @PrimaryKey val teacherKey: String,
+    val payload: String,
+    val updatedAt: Long,
+    val checkedAt: Long,
+)
+
 fun FacultyEntity.toDomain(): Faculty = Faculty(code = code, name = name)
 
 fun Faculty.toEntity(updatedAt: Long): FacultyEntity =

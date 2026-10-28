@@ -90,6 +90,8 @@ data class Lesson(
     val rawType: String,
     val rooms: List<String> = emptyList(),
     val teachers: List<String> = emptyList(),
+    /** Группы занятия: заполняется только в расписании преподавателя. */
+    val groups: List<String> = emptyList(),
 )
 
 @Serializable
@@ -102,6 +104,24 @@ data class DaySchedule(
 @Serializable
 data class GroupSchedule(
     val group: Group,
+    val weeks: List<Week>,
+    val lessons: List<Lesson>,
+    @Serializable(with = InstantSerializer::class)
+    val fetchedAt: Instant,
+)
+
+@Serializable
+data class Teacher(
+    val id: String,
+    /** Короткое имя как на сайте: «Жидова Л.А.». */
+    val shortName: String,
+    /** Полное ФИО из заголовка страницы преподавателя. */
+    val fullName: String = shortName,
+)
+
+@Serializable
+data class TeacherSchedule(
+    val teacher: Teacher,
     val weeks: List<Week>,
     val lessons: List<Lesson>,
     @Serializable(with = InstantSerializer::class)

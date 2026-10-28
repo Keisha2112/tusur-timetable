@@ -19,6 +19,11 @@ data class HttpResult(
     val etag: String?,
     val notModified: Boolean,
     val statusCode: Int,
+    /**
+     * URL после всех редиректов. Нужен поиску: единственное совпадение сайт
+     * перенаправляет сразу на страницу преподавателя.
+     */
+    val finalUrl: String? = null,
 )
 
 /**
@@ -72,6 +77,7 @@ class TusurClient(
             etag = previousEtag,
             notModified = true,
             statusCode = code,
+            finalUrl = request.url.toString(),
         )
 
         isSuccessful -> HttpResult(
@@ -80,6 +86,7 @@ class TusurClient(
             etag = header("ETag"),
             notModified = false,
             statusCode = code,
+            finalUrl = request.url.toString(),
         )
 
         code == HTTP_NOT_FOUND -> throw AppError.NotFound()

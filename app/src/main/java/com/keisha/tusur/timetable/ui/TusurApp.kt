@@ -22,6 +22,7 @@ import com.keisha.tusur.timetable.AppContainer
 import com.keisha.tusur.timetable.ui.onboarding.FacultyPickerScreen
 import com.keisha.tusur.timetable.ui.onboarding.GroupPickerScreen
 import com.keisha.tusur.timetable.ui.schedule.ScheduleScreen
+import com.keisha.tusur.timetable.ui.schedule.TeacherScheduleScreen
 import com.keisha.tusur.timetable.ui.settings.SettingsScreen
 import kotlinx.coroutines.flow.first
 
@@ -30,9 +31,13 @@ private object Routes {
     const val ONBOARDING_GROUP = "onboarding/group/{facultyCode}/{facultyName}"
     const val SCHEDULE = "schedule"
     const val SETTINGS = "settings"
+    const val TEACHER = "teacher/{teacherName}"
 
     fun group(facultyCode: String, facultyName: String): String =
         "onboarding/group/${Uri.encode(facultyCode)}/${Uri.encode(facultyName)}"
+
+    fun teacher(teacherName: String): String =
+        "teacher/${Uri.encode(teacherName)}"
 }
 
 /**
@@ -98,6 +103,20 @@ fun TusurApp(container: AppContainer) {
             ScheduleScreen(
                 container = container,
                 onOpenSettings = { navController.navigate(Routes.SETTINGS) },
+                onOpenTeacher = { teacherName ->
+                    navController.navigate(Routes.teacher(teacherName))
+                },
+            )
+        }
+
+        composable(
+            route = Routes.TEACHER,
+            arguments = listOf(navArgument("teacherName") { type = NavType.StringType }),
+        ) { entry ->
+            TeacherScheduleScreen(
+                container = container,
+                teacherName = entry.arguments?.getString("teacherName").orEmpty(),
+                onBack = { navController.popBackStack() },
             )
         }
 

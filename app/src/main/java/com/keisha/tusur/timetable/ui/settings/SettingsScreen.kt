@@ -24,11 +24,13 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.Link
-import androidx.compose.material.icons.filled.OpenInNew
+import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material.icons.filled.Update
 import androidx.compose.material3.AlertDialog
@@ -40,6 +42,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -72,6 +75,7 @@ import com.keisha.tusur.timetable.BuildConfig
 import com.keisha.tusur.timetable.R
 import com.keisha.tusur.timetable.data.repository.UserSelection
 import com.keisha.tusur.timetable.domain.model.AppError
+import com.keisha.tusur.timetable.domain.model.ThemeMode
 import com.keisha.tusur.timetable.domain.time.ScheduleTime
 import java.time.Instant
 import kotlinx.coroutines.launch
@@ -91,6 +95,7 @@ fun SettingsScreen(
                 SettingsViewModel(
                     catalogRepository = container.catalogRepository,
                     scheduleRepository = container.scheduleRepository,
+                    teacherScheduleRepository = container.teacherScheduleRepository,
                     settingsRepository = container.settingsRepository,
                 )
             }
@@ -147,6 +152,12 @@ fun SettingsScreen(
                     selection = state.selection,
                     isLoading = state.isLoading,
                     onChangeGroup = onChangeGroup,
+                )
+            }
+            item {
+                AppearanceCard(
+                    themeMode = state.themeMode,
+                    onThemeModeChange = viewModel::setThemeMode,
                 )
             }
             item {
@@ -271,6 +282,63 @@ private fun CurrentGroupCard(
 }
 
 @Composable
+private fun AppearanceCard(
+    themeMode: ThemeMode,
+    onThemeModeChange: (ThemeMode) -> Unit,
+) {
+    SettingsCard(title = stringResource(R.string.settings_appearance_title)) {
+        Column(modifier = Modifier.selectableGroup()) {
+            ThemeModeRow(
+                label = stringResource(R.string.settings_theme_system),
+                selected = themeMode == ThemeMode.SYSTEM,
+                onClick = { onThemeModeChange(ThemeMode.SYSTEM) },
+            )
+            RowDivider()
+            ThemeModeRow(
+                label = stringResource(R.string.settings_theme_light),
+                selected = themeMode == ThemeMode.LIGHT,
+                onClick = { onThemeModeChange(ThemeMode.LIGHT) },
+            )
+            RowDivider()
+            ThemeModeRow(
+                label = stringResource(R.string.settings_theme_dark),
+                selected = themeMode == ThemeMode.DARK,
+                onClick = { onThemeModeChange(ThemeMode.DARK) },
+            )
+        }
+    }
+}
+
+@Composable
+private fun ThemeModeRow(
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .selectable(selected = selected, role = Role.RadioButton, onClick = onClick)
+            .heightIn(min = 56.dp)
+            .padding(start = 8.dp, end = 16.dp, top = 4.dp, bottom = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        // onClick = null: клик обрабатывает вся строка, чтобы не было двух целей для TalkBack.
+        RadioButton(selected = selected, onClick = null)
+        Spacer(Modifier.width(8.dp))
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyLarge,
+            color = if (selected) {
+                MaterialTheme.colorScheme.primary
+            } else {
+                MaterialTheme.colorScheme.onSurface
+            },
+        )
+    }
+}
+
+@Composable
 private fun DataCard(
     lastUpdated: Instant?,
     isClearingCache: Boolean,
@@ -305,21 +373,6 @@ private fun AboutCard() {
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = stringResource(R.string.settings_theme),
-                    style = MaterialTheme.typography.bodyLarge,
-                )
-                Text(
-                    text = stringResource(R.string.settings_theme_system),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
         }
     }
 }
@@ -389,7 +442,7 @@ private fun SourceRow(onClick: () -> Unit) {
             )
         }
         Icon(
-            imageVector = Icons.Filled.OpenInNew,
+            imageVector = Icons.AutoMirrored.Filled.OpenInNew,
             contentDescription = stringResource(R.string.cd_open_source),
             tint = MaterialTheme.colorScheme.onSurfaceVariant,
         )

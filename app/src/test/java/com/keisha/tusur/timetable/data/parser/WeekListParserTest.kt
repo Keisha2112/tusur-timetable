@@ -147,6 +147,26 @@ class WeekListParserTest {
         assertTrue(weeks.last().isCurrent)
     }
 
+    @Test
+    fun `список недель преподавателя по пути weeks`() {
+        val html = """
+            <ul class="weeks">
+              <li class="tile day_color_theoretical current-week">
+                <a href="/teachers/35144/weeks/847"><div>9 нечётная</div><div>с 26 октября 2026</div></a>
+              </li>
+              <li class="tile day_color_theoretical">
+                <a href="/teachers/35144/weeks/848"><div>10 чётная</div><div>с 2 ноября 2026</div></a>
+              </li>
+            </ul>
+        """.trimIndent()
+
+        val weeks = parser.parse(html)
+
+        assertEquals(listOf(847, 848), weeks.map { it.id })
+        assertEquals(LocalDate.of(2026, 10, 26), weeks.first().startDate)
+        assertTrue(weeks.first().isCurrent)
+    }
+
     /** Фикстуры — реальные снимки сайта в UTF-8, поэтому читаем их напрямую с явной кодировкой. */
     private fun readFixture(name: String): String {
         val stream = javaClass.getResourceAsStream("/fixtures/$name")
