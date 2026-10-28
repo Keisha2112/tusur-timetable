@@ -35,6 +35,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -59,6 +60,7 @@ import com.keisha.tusur.timetable.ui.components.OfflineBanner
 import com.keisha.tusur.timetable.ui.components.ScheduleErrorState
 import com.keisha.tusur.timetable.ui.components.ScheduleLoadingState
 import com.keisha.tusur.timetable.ui.components.WeekPanel
+import kotlinx.coroutines.flow.first
 import java.time.Instant
 import java.time.LocalDate
 
@@ -306,6 +308,7 @@ private fun ScheduleBody(
                 lessons = schedule.lessons,
                 week = selectedWeek,
                 groupSlug = schedule.group.slug,
+                currentWeekId = currentWeekId,
                 canGoPrevious = canGoPrevious,
                 canGoNext = canGoNext,
                 onPreviousWeek = onPreviousWeek,
@@ -321,6 +324,7 @@ private fun WeekLessonsList(
     lessons: List<Lesson>,
     week: Week?,
     groupSlug: String,
+    currentWeekId: Int?,
     canGoPrevious: Boolean,
     canGoNext: Boolean,
     onPreviousWeek: () -> Unit,
@@ -332,16 +336,26 @@ private fun WeekLessonsList(
     }
     val hasLessons = days.any { it.lessons.isNotEmpty() }
     val listState = rememberLazyListState()
-    val resetKey = week?.id to groupSlug
-    var previousResetKey by remember { mutableStateOf(resetKey) }
-
-    // При переходе на другую неделю или группу список начинается с понедельника.
-    // После поворота экрана позиция не сбрасывается: previousResetKey инициализируется текущим значением.
-    LaunchedEffect(resetKey) {
-        if (previousResetKey != resetKey) {
-            previousResetKey = resetKey
-            listState.scrollToItem(0)
+    // Текущая неделя открывается на сегодняшнем дне, остальные — с понедельника.
+    // Пустая неделя показывает единственный элемент, поэтому для неё всегда 0.
+    val startIndex = remember(days, week?.id, currentWeekId) {
+        if (hasLessons) {
+            weekStartIndex(days, week?.id, currentWeekId, ScheduleTime.today())
+        } else {
+            0
         }
+    }
+    val resetKey = "${week?.id}/$groupSlug"
+    // Ключ уже обработанной прокрутки переживает поворот экрана: rememberLazyListState
+    // восстановит позицию, а повторная прокрутка к сегодняшнему дню её бы сбросила.
+    var handledResetKey by rememberSaveable { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(resetKey) {
+        if (handledResetKey == resetKey) return@LaunchedEffect
+        handledResetKey = resetKey
+        // До первой раскладки список ещё пуст — ждём, когда появятся элементы.
+        snapshotFlow { listState.layoutInfo.totalItemsCount }.first { it > 0 }
+        listState.scrollToItem(startIndex)
     }
 
     LazyColumn(
