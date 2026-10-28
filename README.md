@@ -13,13 +13,14 @@
 
 Готовый APK лежит в разделе [Releases](https://github.com/Keisha2112/tusur-timetable/releases/latest).
 Прямая ссылка на файл:
-[`tusur-timetable-1.0.2.apk`](https://github.com/Keisha2112/tusur-timetable/releases/latest/download/tusur-timetable-1.0.2.apk).
+[`tusur-timetable-1.0.3.apk`](https://github.com/Keisha2112/tusur-timetable/releases/latest/download/tusur-timetable-1.0.3.apk).
 
 ## Возможности
 
 - выбор факультета и группы при первом запуске, с поиском и разбивкой по курсам;
 - автоматическое открытие расписания выбранной группы при следующих запусках;
 - расписание на текущую неделю, переход по неделям, выбор недели из списка;
+- текущая неделя открывается сразу на сегодняшнем дне, остальные — с понедельника;
 - карточки занятий с временем, номером пары, типом, аудиторией и преподавателями;
 - детали занятия в отдельном окне и ссылка на источник;
 - смена факультета и группы в настройках;
@@ -61,10 +62,10 @@
 
 ## SHA-256
 
-Файл `tusur-timetable-1.0.2.apk` из раздела Releases:
+Файл `tusur-timetable-1.0.3.apk` из раздела Releases:
 
 ```text
-B0F344B0E581E1BB9B568B2DA8879601473F7B1E22EAE2716347FCCDE250E7AB
+22BA679E2CCD634FCAA86117FA43DFC7B7182A5EC97A4680F3168994AF068E10
 ```
 
 Для сборки из исходников APK лежит в `app/build/outputs/apk/release/app-release.apk`.
