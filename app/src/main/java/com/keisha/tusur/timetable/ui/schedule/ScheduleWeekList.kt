@@ -62,7 +62,6 @@ internal fun ScheduleWeekList(
     }
     val hasLessons = days.any { it.lessons.isNotEmpty() }
     val maxPair = remember(days) { weekMaxPair(days) }
-    val listState = rememberLazyListState()
 
     // Текущая неделя открывается на сегодняшнем дне, остальные — с понедельника.
     // Пустая неделя показывает единственный элемент, поэтому для неё всегда 0.
@@ -73,6 +72,9 @@ internal fun ScheduleWeekList(
             0
         }
     }
+    // Стартовая позиция задаётся сразу, иначе при анимации неделя успевает
+    // показаться с понедельника и прыгнуть на сегодняшний день.
+    val listState = rememberLazyListState(initialFirstVisibleItemIndex = startIndex)
     val resetKey = "${week?.id}/$contentKey"
     // Ключ уже обработанной прокрутки переживает поворот экрана: rememberLazyListState
     // восстановит позицию, а повторная прокрутка к сегодняшнему дню её бы сбросила.

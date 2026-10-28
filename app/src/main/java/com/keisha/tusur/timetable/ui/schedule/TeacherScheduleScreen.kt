@@ -25,8 +25,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -119,18 +121,22 @@ private fun TeacherScheduleContent(
                     }
                 },
                 title = {
-                    Column {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
-                            text = state.teacher?.shortName ?: state.teacherName,
-                            style = MaterialTheme.typography.titleLarge,
+                            text = state.teacher?.fullName?.takeIf { it.isNotBlank() }
+                                ?: state.teacher?.shortName
+                                ?: state.teacherName,
+                            style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.onSurface,
-                            maxLines = 1,
+                            textAlign = TextAlign.Center,
+                            maxLines = 2,
                             overflow = TextOverflow.Ellipsis,
                         )
                         Text(
                             text = stringResource(R.string.teacher_schedule_title),
-                            style = MaterialTheme.typography.labelMedium,
+                            style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = TextAlign.Center,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                         )
@@ -217,19 +223,24 @@ private fun TeacherScheduleContent(
                                 .fillMaxWidth()
                                 .weight(1f),
                         ) {
-                            ScheduleWeekList(
-                                lessons = state.lessons,
+                            WeekTransition(
                                 week = selectedWeek,
-                                contentKey = state.teacher?.id ?: state.teacherName,
-                                currentWeekId = currentWeekId,
-                                canGoPrevious = canGoPrevious,
-                                canGoNext = canGoNext,
-                                showTeachers = false,
-                                showGroups = true,
-                                onPreviousWeek = onPreviousWeek,
-                                onNextWeek = onNextWeek,
-                                onOpenLesson = { detailsLesson = it },
-                            )
+                                modifier = Modifier.fillMaxSize(),
+                            ) { week ->
+                                ScheduleWeekList(
+                                    lessons = state.lessons,
+                                    week = week,
+                                    contentKey = state.teacher?.id ?: state.teacherName,
+                                    currentWeekId = currentWeekId,
+                                    canGoPrevious = canGoPrevious,
+                                    canGoNext = canGoNext,
+                                    showTeachers = false,
+                                    showGroups = true,
+                                    onPreviousWeek = onPreviousWeek,
+                                    onNextWeek = onNextWeek,
+                                    onOpenLesson = { detailsLesson = it },
+                                )
+                            }
                         }
                     }
 

@@ -313,19 +313,24 @@ private fun ScheduleBody(
                 .fillMaxWidth()
                 .weight(1f),
         ) {
-            ScheduleWeekList(
-                lessons = schedule.lessons,
+            WeekTransition(
                 week = selectedWeek,
-                contentKey = schedule.group.slug,
-                currentWeekId = currentWeekId,
-                canGoPrevious = canGoPrevious,
-                canGoNext = canGoNext,
-                showTeachers = true,
-                showGroups = false,
-                onPreviousWeek = onPreviousWeek,
-                onNextWeek = onNextWeek,
-                onOpenLesson = onOpenLesson,
-            )
+                modifier = Modifier.fillMaxSize(),
+            ) { week ->
+                ScheduleWeekList(
+                    lessons = schedule.lessons,
+                    week = week,
+                    contentKey = schedule.group.slug,
+                    currentWeekId = currentWeekId,
+                    canGoPrevious = canGoPrevious,
+                    canGoNext = canGoNext,
+                    showTeachers = true,
+                    showGroups = false,
+                    onPreviousWeek = onPreviousWeek,
+                    onNextWeek = onNextWeek,
+                    onOpenLesson = onOpenLesson,
+                )
+            }
         }
     }
 }
