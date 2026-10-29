@@ -41,6 +41,7 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
@@ -65,6 +66,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -77,7 +79,12 @@ import com.keisha.tusur.timetable.data.repository.UserSelection
 import com.keisha.tusur.timetable.domain.model.AppError
 import com.keisha.tusur.timetable.domain.model.ThemeMode
 import com.keisha.tusur.timetable.domain.time.ScheduleTime
+import com.keisha.tusur.timetable.ui.update.UpdateEvent
+import com.keisha.tusur.timetable.ui.update.UpdateUiState
+import com.keisha.tusur.timetable.ui.update.UpdateViewModel
+import com.keisha.tusur.timetable.ui.update.messageRes
 import java.time.Instant
+import kotlin.math.roundToInt
 import kotlinx.coroutines.launch
 
 private const val SOURCE_URL = "https://timetable.tusur.ru"
@@ -85,6 +92,7 @@ private const val SOURCE_URL = "https://timetable.tusur.ru"
 @Composable
 fun SettingsScreen(
     container: AppContainer,
+    updateViewModel: UpdateViewModel,
     onBack: () -> Unit,
     onChangeGroup: () -> Unit,
 ) {
@@ -102,6 +110,7 @@ fun SettingsScreen(
         },
     )
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val updateState by updateViewModel.state.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -122,6 +131,23 @@ fun SettingsScreen(
                 is SettingsEvent.CacheClearFailed -> context.getString(event.error.messageRes())
             }
             snackbarHostState.showSnackbar(message)
+        }
+    }
+
+    val updateUpToDateText = stringResource(R.string.settings_up_to_date)
+    val installStartedText = stringResource(R.string.update_install_started)
+    LaunchedEffect(updateViewModel) {
+        updateViewModel.events.collect { event ->
+            // PermissionRequired показывает отдельный диалог, снекбар тут лишний.
+            val message = when (event) {
+                UpdateEvent.UpToDate -> updateUpToDateText
+                UpdateEvent.InstallStarted -> installStartedText
+                UpdateEvent.PermissionRequired -> null
+                is UpdateEvent.Failed -> context.getString(event.error.messageRes())
+            }
+            if (message != null) {
+                snackbarHostState.showSnackbar(message)
+            }
         }
     }
 
@@ -166,6 +192,13 @@ fun SettingsScreen(
                     isClearingCache = state.isClearingCache,
                     onOpenSource = openSource,
                     onClearCache = { showClearDialog = true },
+                )
+            }
+            item {
+                UpdateCard(
+                    state = updateState,
+                    onCheck = updateViewModel::checkManually,
+                    onUpdate = updateViewModel::downloadAndInstall,
                 )
             }
             item {
@@ -354,6 +387,124 @@ private fun DataCard(
         )
         RowDivider()
         LastUpdatedRow(lastUpdated = lastUpdated)
+    }
+}
+
+@Composable
+private fun UpdateCard(
+    state: UpdateUiState,
+    onCheck: () -> Unit,
+    onUpdate: () -> Unit,
+) {
+    SettingsCard(title = stringResource(R.string.settings_updates_title)) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Text(
+                text = stringResource(R.string.settings_version, state.currentVersion),
+                style = MaterialTheme.typography.bodyLarge,
+            )
+            if (!state.isSupported) {
+                Text(
+                    text = stringResource(R.string.settings_update_debug),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                return@Column
+            }
+
+            val update = state.available
+            if (update != null) {
+                Text(
+                    text = stringResource(R.string.settings_update_available, update.versionName),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                val notes = update.notes
+                if (!notes.isNullOrBlank()) {
+                    Text(
+                        text = notes,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 4,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+                if (state.isDownloading) {
+                    val fraction = state.downloadFraction ?: 0f
+                    LinearProgressIndicator(
+                        progress = { fraction },
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                    Text(
+                        text = stringResource(
+                            R.string.settings_update_downloading,
+                            (fraction * 100).roundToInt(),
+                        ),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                state.error?.let { error ->
+                    Text(
+                        text = stringResource(error.messageRes()),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                }
+                FilledTonalButton(
+                    onClick = onUpdate,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 48.dp),
+                    enabled = !state.isDownloading && !state.isChecking,
+                ) {
+                    Text(stringResource(R.string.settings_update_download))
+                }
+                TextButton(
+                    onClick = onCheck,
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = !state.isChecking && !state.isDownloading,
+                ) {
+                    Text(stringResource(R.string.settings_check_again))
+                }
+            } else {
+                val error = state.error
+                when {
+                    state.isChecking -> Row(verticalAlignment = Alignment.CenterVertically) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(18.dp),
+                            strokeWidth = 2.dp,
+                        )
+                        Spacer(Modifier.width(10.dp))
+                        Text(
+                            text = stringResource(R.string.settings_update_checking),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    error != null -> Text(
+                        text = stringResource(error.messageRes()),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                    state.hasChecked -> Text(
+                        text = stringResource(R.string.settings_up_to_date),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                TextButton(
+                    onClick = onCheck,
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = !state.isChecking,
+                ) {
+                    Text(stringResource(R.string.settings_check_updates))
+                }
+            }
+        }
     }
 }
 

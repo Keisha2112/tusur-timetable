@@ -6,6 +6,10 @@ import com.keisha.tusur.timetable.domain.model.Group
 import com.keisha.tusur.timetable.domain.model.GroupSchedule
 import com.keisha.tusur.timetable.domain.model.ThemeMode
 import com.keisha.tusur.timetable.domain.model.Week
+import com.keisha.tusur.timetable.domain.update.AppUpdate
+import com.keisha.tusur.timetable.domain.update.DownloadProgress
+import com.keisha.tusur.timetable.domain.update.DownloadedApk
+import com.keisha.tusur.timetable.domain.update.InstallResult
 import kotlinx.coroutines.flow.Flow
 import java.time.Instant
 
@@ -100,4 +104,30 @@ interface SettingsRepository {
     val themeMode: Flow<ThemeMode>
 
     suspend fun setThemeMode(mode: ThemeMode)
+}
+
+interface UpdateRepository {
+    val currentVersionName: String
+    val isSupported: Boolean
+
+    /** null — обновления нет. Бросает AppError при сетевой/серверной ошибке. */
+    suspend fun checkForUpdate(): AppUpdate?
+
+    /** Пора ли автоматически проверять обновления (не чаще 1 раза в 24 часа). */
+    suspend fun shouldAutoCheck(now: Instant = Instant.now()): Boolean
+
+    suspend fun markChecked(at: Instant = Instant.now())
+
+    suspend fun isVersionSkipped(version: String): Boolean
+    suspend fun skipVersion(version: String)
+
+    fun canInstallPackages(): Boolean
+    fun openInstallPermissionSettings()
+
+    suspend fun download(
+        update: AppUpdate,
+        onProgress: (DownloadProgress) -> Unit,
+    ): DownloadedApk
+
+    suspend fun install(apk: DownloadedApk): InstallResult
 }

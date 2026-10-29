@@ -94,6 +94,25 @@
     <string name="settings_never_updated">Расписание ещё не загружалось</string>
     <string name="settings_change_group_hint">После выбора расписание загрузится заново</string>
 
+    <!-- Обновления -->
+    <string name="settings_updates_title">Обновления</string>
+    <string name="settings_check_updates">Проверить обновления</string>
+    <string name="settings_check_again">Проверить снова</string>
+    <string name="settings_update_available">Доступна версия %1$s</string>
+    <string name="settings_up_to_date">Установлена последняя версия</string>
+    <string name="settings_update_checking">Проверяем обновления…</string>
+    <string name="settings_update_download">Скачать и установить</string>
+    <string name="settings_update_downloading">Загрузка… %1$d%%</string>
+    <string name="settings_update_debug">Обновления недоступны в этой сборке</string>
+    <string name="update_dialog_title">Доступно обновление</string>
+    <string name="update_dialog_later">Позже</string>
+    <string name="update_dialog_skip">Пропустить версию</string>
+    <string name="update_dialog_update">Обновить</string>
+    <string name="update_permission_title">Разрешите установку</string>
+    <string name="update_permission_text">Чтобы установить обновление, разрешите приложению устанавливать неизвестные приложения в настройках Android.</string>
+    <string name="update_permission_open">Открыть настройки</string>
+    <string name="update_install_started">Открываю установку обновления</string>
+
     <!-- Доступность -->
     <string name="cd_settings">Настройки</string>
     <string name="cd_previous_week">Предыдущая неделя</string>
@@ -107,4 +126,9 @@
     <string name="error_network">Нет подключения к интернету</string>
     <string name="error_server">Сайт расписания недоступен</string>
     <string name="error_parse">Не удалось разобрать данные сайта</string>
+    <string name="error_update_network">Нет подключения к интернету. Не удалось проверить обновление</string>
+    <string name="error_update_server">GitHub сейчас недоступен. Попробуйте позже</string>
+    <string name="error_update_parse">Не удалось разобрать ответ GitHub</string>
+    <string name="error_update_verification">Файл обновления повреждён</string>
+    <string name="error_update_install">Не удалось запустить установку</string>
 </resources>

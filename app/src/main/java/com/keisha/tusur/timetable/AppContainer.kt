@@ -16,11 +16,18 @@ import com.keisha.tusur.timetable.data.repository.SettingsRepository
 import com.keisha.tusur.timetable.data.repository.SettingsRepositoryImpl
 import com.keisha.tusur.timetable.data.repository.TeacherScheduleRepository
 import com.keisha.tusur.timetable.data.repository.TeacherScheduleRepositoryImpl
+import com.keisha.tusur.timetable.data.repository.UpdateRepository
+import com.keisha.tusur.timetable.data.repository.UpdateRepositoryImpl
+import com.keisha.tusur.timetable.data.update.ApkDownloader
+import com.keisha.tusur.timetable.data.update.ApkInstaller
+import com.keisha.tusur.timetable.data.update.GitHubReleaseClient
+import com.keisha.tusur.timetable.data.update.UpdatePreferences
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import okhttp3.OkHttpClient
+import java.util.concurrent.TimeUnit
 
 /**
  * Ручной DI-контейнер: всё создаётся лениво и живёт столько же, сколько процесс.
@@ -35,6 +42,20 @@ class AppContainer(context: Context) {
     val applicationScope: CoroutineScope = CoroutineScope(SupervisorJob() + ioDispatcher)
 
     private val httpClient: OkHttpClient by lazy { TusurClient.defaultClient() }
+
+    /**
+     * Для APK общий 30-секундный `callTimeout` не подходит: на медленной сети
+     * он обрывает скачивание до конца файла. Ограничение на одно чтение
+     * остаётся, чтобы зависшее соединение не висело бесконечно.
+     */
+    private val apkDownloadClient: OkHttpClient by lazy {
+        httpClient.newBuilder()
+            .callTimeout(10, TimeUnit.MINUTES)
+            .readTimeout(60, TimeUnit.SECONDS)
+            // HTTPS→HTTP OkHttp иначе сначала выполнит, а потом мы заметим.
+            .followSslRedirects(false)
+            .build()
+    }
 
     private val client: TusurClient by lazy { TusurClient(httpClient) }
 
@@ -51,6 +72,16 @@ class AppContainer(context: Context) {
     private val icsParser: IcsParser by lazy { IcsParser() }
 
     private val teacherParser: TeacherParser by lazy { TeacherParser() }
+
+    private val updatePreferences: UpdatePreferences by lazy { UpdatePreferences(appContext) }
+
+    private val releaseClient: GitHubReleaseClient by lazy { GitHubReleaseClient(httpClient) }
+
+    private val apkDownloader: ApkDownloader by lazy {
+        ApkDownloader(apkDownloadClient, appContext, ioDispatcher)
+    }
+
+    private val apkInstaller: ApkInstaller by lazy { ApkInstaller(appContext) }
 
     val settingsRepository: SettingsRepository by lazy {
         SettingsRepositoryImpl(appContext)
@@ -83,6 +114,16 @@ class AppContainer(context: Context) {
             weekListParser = weekListParser,
             icsParser = icsParser,
             teacherParser = teacherParser,
+            ioDispatcher = ioDispatcher,
+        )
+    }
+
+    val updateRepository: UpdateRepository by lazy {
+        UpdateRepositoryImpl(
+            releaseClient = releaseClient,
+            downloader = apkDownloader,
+            installer = apkInstaller,
+            preferences = updatePreferences,
             ioDispatcher = ioDispatcher,
         )
     }

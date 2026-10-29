@@ -18,5 +18,8 @@ sealed class AppError(message: String, cause: Throwable? = null) : Exception(mes
     /** Сайт ответил, но разметка или формат не совпали с ожиданиями. */
     class Parse(cause: Throwable? = null) : AppError("parse", cause)
 
+    /** APK обновления повреждён или не совпал по подписи/пакету/версии. */
+    class InvalidUpdate(cause: Throwable? = null) : AppError("invalid_update", cause)
+
     class Unknown(cause: Throwable? = null) : AppError("unknown", cause)
 }
