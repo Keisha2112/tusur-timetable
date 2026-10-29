@@ -33,6 +33,8 @@ data class ScheduleUiState(
     val selectedWeekId: Int? = null,
     val isInitialLoading: Boolean = true,
     val isRefreshing: Boolean = false,
+    /** Какая неделя сейчас догружается со страницы сайта. */
+    val loadingWeekId: Int? = null,
     val isOffline: Boolean = false,
     val error: AppError? = null,
     val lastUpdated: Instant? = null,
@@ -50,6 +52,8 @@ class ScheduleViewModel(
     private var appliedSelection: UserSelection? = null
     private var selectionResolved = false
     private var loadJob: Job? = null
+    private var weekLoadJob: Job? = null
+    private var weekLoadJobWeekId: Int? = null
 
     init {
         viewModelScope.launch {
@@ -66,6 +70,74 @@ class ScheduleViewModel(
     }
 
     fun retry() = refresh()
+
+    /**
+     * Вызывается при возврате на экран. TTL решает репозиторий, поэтому частые
+     * возвраты из настроек не приводят к лишним запросам.
+     */
+    fun onScreenShown() {
+        val selection = _state.value.selection ?: return
+        if (loadJob?.isActive == true || weekLoadJob?.isActive == true) return
+        load(selection, forceRefresh = false)
+    }
+
+    /**
+     * Догружает выбранную неделю из HTML. Это основной путь для будущих недель:
+     * `.ics` сайта обрезан текущим учебным периодом.
+     */
+    fun ensureWeekLoaded(weekId: Int, forceRefresh: Boolean = false) {
+        val current = _state.value
+        val schedule = current.schedule ?: return
+        val week = schedule.weeks.firstOrNull { it.id == weekId } ?: return
+        // Во время ручной загрузки всех недель отдельный запрос не нужен:
+        // выбранная неделя уже входит в общий список.
+        if (!forceRefresh && current.isRefreshing) return
+        if (weekLoadJob?.isActive == true) {
+            if (weekLoadJobWeekId == weekId) return
+            // Пользователь уже пролистнул дальше — старый запрос больше не нужен.
+            weekLoadJob?.cancel()
+        }
+
+        val range = week.startDate..week.startDate.plusDays(6)
+        val hasLessons = schedule.lessons.any { it.date in range }
+        val isPast = week.startDate.plusDays(6).isBefore(ScheduleTime.today())
+        if (!forceRefresh) {
+            // Если занятия уже есть в ICS, HTML не должен их подменять.
+            // Для недель, загруженных из HTML, отметка в checkedWeeks разрешает
+            // обновление: иначе будущая неделя останется в старом кэше.
+            if (hasLessons && !schedule.checkedWeeks.containsKey(weekId)) return
+            // Прошлые недели уже полностью приходят в ICS; HTML нужен только
+            // для пустых архивных недель или будущих/текущих.
+            if (isPast && hasLessons) return
+
+            val checkedAt = schedule.checkedWeeks[weekId]
+            if (checkedAt != null) {
+                val age = System.currentTimeMillis() - checkedAt
+                if (age in 0 until WEEK_REFRESH_MS) return
+            }
+        }
+
+        val selection = current.selection ?: return
+        val group = Group(
+            facultyCode = selection.facultyCode,
+            slug = selection.groupSlug,
+            name = selection.groupName,
+        )
+
+        weekLoadJobWeekId = weekId
+        weekLoadJob = viewModelScope.launch {
+            _state.update { it.copy(loadingWeekId = weekId) }
+            try {
+                val result = loadWeekSchedule(group, week, forceRefresh)
+                _state.update { it.copy(loadingWeekId = null) }
+                applyLoadResult(result)
+            } finally {
+                if (weekLoadJobWeekId == weekId) {
+                    weekLoadJobWeekId = null
+                }
+            }
+        }
+    }
 
     fun selectWeek(weekId: Int) {
         val exists = _state.value.schedule?.weeks?.any { it.id == weekId } == true
@@ -91,12 +163,14 @@ class ScheduleViewModel(
 
         if (selection == null) {
             loadJob?.cancel()
+            weekLoadJob?.cancel()
             _state.value = ScheduleUiState(selection = null, isInitialLoading = false)
             return
         }
 
         val previous = _state.value.selection
         if (previous != null && previous.groupSlug != selection.groupSlug) {
+            weekLoadJob?.cancel()
             // Другая группа: старые данные на экране не показываем, ждём кэш новой.
             _state.update {
                 it.copy(
@@ -117,6 +191,8 @@ class ScheduleViewModel(
 
     private fun load(selection: UserSelection, forceRefresh: Boolean) {
         loadJob?.cancel()
+        weekLoadJob?.cancel()
+        weekLoadJob = null
         loadJob = viewModelScope.launch {
             val hasContent = _state.value.schedule != null
             _state.update {
@@ -124,6 +200,7 @@ class ScheduleViewModel(
                     selection = selection,
                     isInitialLoading = !hasContent,
                     isRefreshing = forceRefresh && hasContent,
+                    loadingWeekId = null,
                     error = null,
                     groupNotFound = false,
                 )
@@ -153,6 +230,46 @@ class ScheduleViewModel(
                 name = selection.groupName,
             )
             applyLoadResult(loadSchedule(group, forceRefresh))
+            if (forceRefresh) {
+                // Пользователь сам попросил обновление: подтягиваем не только
+                // выбранную неделю, а все недели, которых ещё нет в кэше.
+                refreshAllWeeks()
+            } else {
+                // Ответ мог быть 304, и объект расписания не изменился. Явно
+                // проверяем выбранную неделю, иначе пустая будущая неделя
+                // останется пустой до ручного обновления.
+                _state.value.selectedWeekId?.let { ensureWeekLoaded(it) }
+            }
+        }
+    }
+
+    private suspend fun refreshAllWeeks() {
+        val state = _state.value
+        val selection = state.selection ?: return
+        val schedule = state.schedule ?: return
+        if (schedule.weeks.isEmpty()) return
+
+        val weeksToLoad = schedule.weeks.filter { week ->
+            val range = week.startDate..week.startDate.plusDays(6)
+            val hasLessons = schedule.lessons.any { it.date in range }
+            // Недели, уже загруженные из HTML, тоже перечитываем: расписание
+            // могло измениться, а ICS их не обновляет.
+            !hasLessons || schedule.checkedWeeks.containsKey(week.id)
+        }
+        if (weeksToLoad.isEmpty()) return
+
+        _state.update { it.copy(isRefreshing = true) }
+        val group = Group(
+            facultyCode = selection.facultyCode,
+            slug = selection.groupSlug,
+            name = selection.groupName,
+        )
+        try {
+            applyLoadResult(
+                loadWeeksSchedule(group, weeksToLoad, forceRefresh = true),
+            )
+        } finally {
+            _state.update { it.copy(isRefreshing = false) }
         }
     }
 
@@ -213,6 +330,7 @@ class ScheduleViewModel(
                 selectedWeekId = weekId,
                 isInitialLoading = false,
                 isRefreshing = false,
+                loadingWeekId = null,
                 isOffline = isOffline,
                 error = error,
                 lastUpdated = updatedAt,
@@ -271,4 +389,62 @@ class ScheduleViewModel(
                 error = AppError.Unknown(e),
             )
         }
+
+    private suspend fun loadWeekSchedule(
+        group: Group,
+        week: Week,
+        forceRefresh: Boolean,
+    ): ScheduleLoadResult =
+        try {
+            scheduleRepository.loadWeek(group, week, forceRefresh)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: AppError) {
+            ScheduleLoadResult(
+                schedule = null,
+                updatedAt = null,
+                isFromCache = false,
+                isOffline = e is AppError.Network,
+                error = e,
+            )
+        } catch (e: Exception) {
+            ScheduleLoadResult(
+                schedule = null,
+                updatedAt = null,
+                isFromCache = false,
+                isOffline = false,
+                error = AppError.Unknown(e),
+            )
+        }
+
+    private suspend fun loadWeeksSchedule(
+        group: Group,
+        weeks: List<Week>,
+        forceRefresh: Boolean,
+    ): ScheduleLoadResult =
+        try {
+            scheduleRepository.loadWeeks(group, weeks, forceRefresh)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: AppError) {
+            ScheduleLoadResult(
+                schedule = null,
+                updatedAt = null,
+                isFromCache = false,
+                isOffline = e is AppError.Network,
+                error = e,
+            )
+        } catch (e: Exception) {
+            ScheduleLoadResult(
+                schedule = null,
+                updatedAt = null,
+                isFromCache = false,
+                isOffline = false,
+                error = AppError.Unknown(e),
+            )
+        }
+
+    private companion object {
+        const val WEEK_REFRESH_MS = 15L * 60 * 1000
+    }
 }

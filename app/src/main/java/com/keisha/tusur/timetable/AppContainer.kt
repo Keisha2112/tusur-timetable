@@ -7,6 +7,7 @@ import com.keisha.tusur.timetable.data.parser.CatalogParser
 import com.keisha.tusur.timetable.data.parser.IcsParser
 import com.keisha.tusur.timetable.data.parser.TeacherParser
 import com.keisha.tusur.timetable.data.parser.WeekListParser
+import com.keisha.tusur.timetable.data.parser.WeekScheduleParser
 import com.keisha.tusur.timetable.data.repository.CatalogRepository
 import com.keisha.tusur.timetable.data.repository.CatalogRepositoryImpl
 import com.keisha.tusur.timetable.data.repository.ScheduleRepository
@@ -45,6 +46,8 @@ class AppContainer(context: Context) {
 
     private val weekListParser: WeekListParser by lazy { WeekListParser() }
 
+    private val weekScheduleParser: WeekScheduleParser by lazy { WeekScheduleParser() }
+
     private val icsParser: IcsParser by lazy { IcsParser() }
 
     private val teacherParser: TeacherParser by lazy { TeacherParser() }
@@ -68,6 +71,7 @@ class AppContainer(context: Context) {
             client = client,
             weekListParser = weekListParser,
             icsParser = icsParser,
+            weekScheduleParser = weekScheduleParser,
             ioDispatcher = ioDispatcher,
         )
     }

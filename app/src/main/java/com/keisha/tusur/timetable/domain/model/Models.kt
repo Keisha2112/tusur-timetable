@@ -108,6 +108,14 @@ data class GroupSchedule(
     val lessons: List<Lesson>,
     @Serializable(with = InstantSerializer::class)
     val fetchedAt: Instant,
+    /**
+     * Когда неделя последний раз загружалась со страницы сайта.
+     *
+     * ICS-экспорт сайта не содержит будущие недели: он ограничен текущим учебным
+     * периодом. Поэтому опубликованную неделю приходится догружать из HTML и хранить
+     * отметку, чтобы не запрашивать её при каждом открытии экрана.
+     */
+    val checkedWeeks: Map<Int, Long> = emptyMap(),
 )
 
 @Serializable

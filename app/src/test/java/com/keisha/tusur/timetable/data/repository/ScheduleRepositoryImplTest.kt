@@ -181,6 +181,117 @@ class ScheduleRepositoryImplTest {
         assertNotNull(dao.get(group.slug))
     }
 
+    @Test
+    fun `empty schedule is revalidated soon and without stale etag`() = runBlocking {
+        var conditionalIcsRequest = false
+        val repository = repository(object : Dispatcher() {
+            override fun dispatch(request: RecordedRequest): MockResponse {
+                if (!request.path.orEmpty().endsWith(".ics")) {
+                    return MockResponse().setResponseCode(200).setBody(html)
+                }
+                if (request.getHeader("If-None-Match") != null) {
+                    conditionalIcsRequest = true
+                    return MockResponse().setResponseCode(304)
+                }
+                return MockResponse()
+                    .setResponseCode(200)
+                    .addHeader("ETag", "\"empty-1\"")
+                    .setBody("")
+            }
+        })
+
+        repository.load(group)
+        val stored = dao.get(group.slug)!!
+        // Сервер прислал ETag, но расписание пустое — сохранять метку нельзя.
+        assertNull(stored.icsEtag)
+        // Имитируем кэш, которому больше минуты: пустое расписание проверяем
+        // заметно чаще, чем обычные шесть часов.
+        dao.upsert(stored.copy(checkedAt = System.currentTimeMillis() - 2 * 60 * 1000))
+        val requestsBefore = server.requestCount
+
+        val result = repository.load(group)
+
+        assertTrue(server.requestCount > requestsBefore)
+        assertNotNull(result.schedule)
+        assertTrue(result.schedule!!.lessons.isEmpty())
+        assertTrue("для пустого ICS нельзя отправлять ETag", !conditionalIcsRequest)
+    }
+
+    @Test
+    fun `empty week html does not erase lessons from ics`() = runBlocking {
+        val emptyWeek = FixtureLoader.text("group_empty.html")
+        val repository = repository(object : Dispatcher() {
+            override fun dispatch(request: RecordedRequest): MockResponse {
+                val path = request.path.orEmpty()
+                return when {
+                    path.endsWith(".ics") -> MockResponse().setResponseCode(200).setBody(ics)
+                    path.contains("week_id=") -> MockResponse().setResponseCode(200).setBody(emptyWeek)
+                    else -> MockResponse().setResponseCode(200).setBody(html)
+                }
+            }
+        })
+
+        val first = repository.load(group)
+        val week = WeekListParser().parse(html).single { it.number == 9 }
+        val result = repository.loadWeek(group, week)
+        val bulk = repository.loadWeeks(group, listOf(week), forceRefresh = true)
+
+        assertEquals(172, first.schedule!!.lessons.size)
+        assertEquals(172, result.schedule!!.lessons.size)
+        assertEquals(172, bulk.schedule!!.lessons.size)
+        assertTrue(result.schedule!!.checkedWeeks.containsKey(week.id))
+    }
+
+    @Test
+    fun `manual refresh loads week in one pass`() = runBlocking {
+        val repository = repository(object : Dispatcher() {
+            override fun dispatch(request: RecordedRequest): MockResponse =
+                if (request.path.orEmpty().endsWith(".ics")) {
+                    MockResponse().setResponseCode(200).setBody("")
+                } else {
+                    MockResponse().setResponseCode(200).setBody(html)
+                }
+        })
+
+        repository.load(group)
+        val week = WeekListParser().parse(html).single { it.number == 9 }
+
+        val result = repository.loadWeeks(group, listOf(week), forceRefresh = true)
+
+        assertNotNull(result.schedule)
+        assertEquals(23, result.schedule!!.lessons.size)
+        assertEquals(setOf(week.id), result.schedule!!.checkedWeeks.keys)
+        assertNull(result.error)
+    }
+
+    @Test
+    fun `week html fills a week missing from ics and survives ics refresh`() = runBlocking {
+        val repository = repository(object : Dispatcher() {
+            override fun dispatch(request: RecordedRequest): MockResponse =
+                if (request.path.orEmpty().endsWith(".ics")) {
+                    MockResponse().setResponseCode(200).setBody("")
+                } else {
+                    MockResponse().setResponseCode(200).setBody(html)
+                }
+        })
+
+        // Первая загрузка: ICS пуст, но HTML уже отдаёт опубликованные недели.
+        val first = repository.load(group)
+        assertTrue(first.schedule!!.lessons.isEmpty())
+        val week = WeekListParser().parse(html).single { it.number == 9 }
+
+        val loadedWeek = repository.loadWeek(group, week)
+
+        assertEquals(23, loadedWeek.schedule!!.lessons.size)
+        assertTrue(loadedWeek.schedule!!.checkedWeeks.containsKey(week.id))
+        assertNull(loadedWeek.error)
+
+        // Повторное обновление ICS не должно выбросить занятия, догруженные из HTML.
+        val refreshed = repository.load(group, forceRefresh = true)
+        assertEquals(23, refreshed.schedule!!.lessons.size)
+        assertTrue(refreshed.schedule!!.checkedWeeks.containsKey(week.id))
+    }
+
     private fun fixtureDispatcher(): Dispatcher = object : Dispatcher() {
         override fun dispatch(request: RecordedRequest): MockResponse {
             val path = request.path.orEmpty()

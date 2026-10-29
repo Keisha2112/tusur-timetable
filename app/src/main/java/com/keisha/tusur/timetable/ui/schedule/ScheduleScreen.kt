@@ -16,6 +16,7 @@ import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -33,6 +34,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
@@ -70,6 +73,16 @@ fun ScheduleScreen(
         },
     )
     val state by viewModel.state.collectAsStateWithLifecycle()
+
+    // Возврат из фона или настроек должен проверить, не появилось ли расписание.
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+        viewModel.onScreenShown()
+    }
+
+    // Будущие недели отсутствуют в .ics — догружаем выбранную неделю из HTML.
+    LaunchedEffect(state.selectedWeekId, state.schedule, state.isRefreshing) {
+        state.selectedWeekId?.let { viewModel.ensureWeekLoaded(it) }
+    }
 
     ScheduleScreenContent(
         state = state,
@@ -313,23 +326,41 @@ private fun ScheduleBody(
                 .fillMaxWidth()
                 .weight(1f),
         ) {
-            WeekTransition(
-                week = selectedWeek,
-                modifier = Modifier.fillMaxSize(),
-            ) { week ->
-                ScheduleWeekList(
-                    lessons = schedule.lessons,
-                    week = week,
-                    contentKey = schedule.group.slug,
-                    currentWeekId = currentWeekId,
-                    canGoPrevious = canGoPrevious,
-                    canGoNext = canGoNext,
-                    showTeachers = true,
-                    showGroups = false,
-                    onPreviousWeek = onPreviousWeek,
-                    onNextWeek = onNextWeek,
-                    onOpenLesson = onOpenLesson,
-                )
+            val weekRange = selectedWeek?.let { it.startDate..it.startDate.plusDays(6) }
+            val hasSelectedWeekLessons = weekRange != null &&
+                schedule.lessons.any { it.date in weekRange }
+
+            // Не подменяем список на спиннер: PullToRefreshBox должен получать
+            // прокрутку от содержимого. Индикатор показываем поверх списка.
+            Box(Modifier.fillMaxSize()) {
+                WeekTransition(
+                    week = selectedWeek,
+                    modifier = Modifier.fillMaxSize(),
+                ) { week ->
+                    ScheduleWeekList(
+                        lessons = schedule.lessons,
+                        week = week,
+                        contentKey = schedule.group.slug,
+                        currentWeekId = currentWeekId,
+                        canGoPrevious = canGoPrevious,
+                        canGoNext = canGoNext,
+                        showTeachers = true,
+                        showGroups = false,
+                        onPreviousWeek = onPreviousWeek,
+                        onNextWeek = onNextWeek,
+                        onOpenLesson = onOpenLesson,
+                    )
+                }
+                if (selectedWeek != null &&
+                    state.loadingWeekId == selectedWeek.id &&
+                    !hasSelectedWeekLessons
+                ) {
+                    LinearProgressIndicator(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .align(Alignment.TopCenter),
+                    )
+                }
             }
         }
     }

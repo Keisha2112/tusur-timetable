@@ -40,6 +40,16 @@ object Urls {
         .build()
         .toString()
 
+    /** HTML одной недели группы: `?week_id=` показывает выбранную неделю. */
+    fun groupWeek(facultyCode: String, slug: String, weekId: Int): String = base.newBuilder()
+        .addPathSegment("faculties")
+        .addPathSegment(facultyCode)
+        .addPathSegment("groups")
+        .addPathSegment(slug)
+        .addQueryParameter("week_id", weekId.toString())
+        .build()
+        .toString()
+
     fun teacher(id: String): String = base.newBuilder()
         .addPathSegment("teachers")
         .addPathSegment(id)

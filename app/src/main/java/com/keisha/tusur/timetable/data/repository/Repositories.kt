@@ -5,6 +5,7 @@ import com.keisha.tusur.timetable.domain.model.Faculty
 import com.keisha.tusur.timetable.domain.model.Group
 import com.keisha.tusur.timetable.domain.model.GroupSchedule
 import com.keisha.tusur.timetable.domain.model.ThemeMode
+import com.keisha.tusur.timetable.domain.model.Week
 import kotlinx.coroutines.flow.Flow
 import java.time.Instant
 
@@ -61,6 +62,27 @@ interface ScheduleRepository {
      * Никогда не затирает кэш при ошибке сети или парсинга.
      */
     suspend fun load(group: Group, forceRefresh: Boolean = false): ScheduleLoadResult
+
+    /**
+     * Догружает занятия одной недели со страницы сайта. Нужен для будущих недель,
+     * которых нет в `.ics`, и для случаев, когда ICS ещё не пересобрался после публикации.
+     */
+    suspend fun loadWeek(
+        group: Group,
+        week: Week,
+        forceRefresh: Boolean = false,
+    ): ScheduleLoadResult
+
+    /**
+     * Обновляет набор недель за один проход. Нужен для ручного обновления:
+     * пользователь ожидает увидеть не только текущую неделю, но и все
+     * опубликованные недели, которых ещё нет в кэше.
+     */
+    suspend fun loadWeeks(
+        group: Group,
+        weeks: List<Week>,
+        forceRefresh: Boolean = false,
+    ): ScheduleLoadResult
 
     suspend fun clearCache()
 }
