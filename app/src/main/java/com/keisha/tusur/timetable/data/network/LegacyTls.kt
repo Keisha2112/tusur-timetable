@@ -11,16 +11,16 @@ import javax.net.ssl.TrustManagerFactory
 import javax.net.ssl.X509TrustManager
 
 /**
- * Запасные якоря GlobalSign для систем, где корня R46 ещё нет в хранилище.
+ * Запасные корневые сертификаты для старых систем.
  *
- * Сайт выдаёт сертификат `*.tusur.ru` от GlobalSign GCC R46 AlphaSSL CA 2025,
- * а корень R46 появился в системном хранилище только в Android 14. На Android 8–13
- * цепочка не проверяется (`Trust anchor for certification path not found`),
- * и приложение ошибочно сообщает об отсутствии интернета.
+ * Сайт ТУСУР выдаёт сертификат `*.tusur.ru` от GlobalSign GCC R46 AlphaSSL CA 2025,
+ * а корень R46 появился в системном хранилище только в Android 14. GitHub Releases
+ * отдаёт APK через `release-assets.githubusercontent.com` с цепочкой Let's Encrypt:
+ * на Android 6–7 корня ISRG Root X1 тоже может не быть.
  *
  * Поэтому на всех версиях:
- *  - доверяем корень R46 и промежуточный AlphaSSL CA 2025 как дополнительным якорям;
- *  - если сервер прислал только лист, достраиваем цепочку промежуточным сертификатом.
+ *  - доверяем корням R46 и ISRG Root X1 как дополнительным якорям;
+ *  - для ТУСУР дополнительно достраиваем цепочку промежуточным AlphaSSL CA 2025.
  *
  * Системная проверка не отключается и выполняется первой: дополнительные якоря
  * используются, только если штатный TrustManager не смог построить цепочку.
@@ -43,10 +43,11 @@ object LegacyTls {
     private fun buildTrustManager(context: Context): X509TrustManager? = runCatching {
         val root = loadCertificate(context, R.raw.globalsign_root_r46)
         val intermediate = loadCertificate(context, R.raw.globalsign_alphassl_ca_2025)
+        val isrgRoot = loadCertificate(context, R.raw.isrg_root_x1)
 
         CompositeTrustManager(
             system = trustManagerFor(null),
-            extra = trustManagerFor(keyStoreOf(root, intermediate)),
+            extra = trustManagerFor(keyStoreOf(root, isrgRoot, intermediate)),
             intermediate = intermediate,
         )
     }.getOrNull()

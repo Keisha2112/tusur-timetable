@@ -78,7 +78,7 @@
 Файл `tusur-timetable-1.2.0.apk` из раздела Releases:
 
 ```text
-42B21208DB77A4348D24D41CAA56574CA609C63A859F1AC69CAE7BB8D42B9CF7
+DA73D222D96D45E5E28897D2EC5B09CA9300358C0F91F0111EB469599FB0687D
 ```
 
 Для сборки из исходников APK лежит в `app/build/outputs/apk/release/app-release.apk`.
@@ -137,8 +137,10 @@ compileSdk/targetSdk 36, core library desugaring.
 Отдельно стоит отметить TLS. Сайт отдаёт сертификат `*.tusur.ru` от GlobalSign
 GCC R46 AlphaSSL CA 2025, а корень R46 есть в системном хранилище только с Android 14.
 На Android 8–13 цепочка не проверяется, поэтому приложение добавляет корень R46
-и промежуточный сертификат как дополнительные якоря на всех версиях Android
-(системная проверка не отключается и выполняется первой).
+и промежуточный сертификат как дополнительные якоря на всех версиях Android.
+Для загрузки APK с GitHub добавлен ISRG Root X1: без него Android 6–7 не доверяет
+сертификату `release-assets.githubusercontent.com`. Системная проверка не отключается
+и выполняется первой.
 
 ## Структура
 

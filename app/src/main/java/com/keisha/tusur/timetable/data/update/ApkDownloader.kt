@@ -1,6 +1,7 @@
 package com.keisha.tusur.timetable.data.update
 
 import android.content.Context
+import android.util.Log
 import com.keisha.tusur.timetable.data.network.TusurClient
 import com.keisha.tusur.timetable.domain.model.AppError
 import com.keisha.tusur.timetable.domain.update.AppUpdate
@@ -86,6 +87,7 @@ class ApkDownloader(
         val response = try {
             client.newCall(request).execute()
         } catch (e: IOException) {
+            Log.w(TAG, "APK download failed: ${e.message}", e)
             throw AppError.Network(e)
         }
 
@@ -178,6 +180,7 @@ class ApkDownloader(
     }
 
     private companion object {
+        const val TAG = "ApkDownloader"
         const val CACHE_DIRECTORY = "updates"
         const val PART_SUFFIX = ".part"
         const val APK_SUFFIX = ".apk"

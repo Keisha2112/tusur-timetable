@@ -30,9 +30,15 @@ class ApkInstaller(private val context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             context.packageManager.canRequestPackageInstalls()
         } else {
-            // Android 6–7: флаг «Неизвестные источники» общий и на части прошивок
-            // отсутствует. Не блокируем установку заранее — пробуем создать сессию.
-            true
+            // Android 6–7: разрешение общее для всех приложений, отдельного
+            // per-app переключателя нет. Если оно выключено, системный установщик
+            // покажет «Install blocked»; лучше заранее открыть настройки.
+            @Suppress("DEPRECATION")
+            Settings.Secure.getInt(
+                context.contentResolver,
+                Settings.Secure.INSTALL_NON_MARKET_APPS,
+                0,
+            ) == 1
         }
 
     /** Открывает системный экран «Установка неизвестных приложений». */
