@@ -2,6 +2,7 @@ package com.keisha.tusur.timetable.ui.schedule
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -13,7 +14,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -28,6 +28,8 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.keisha.tusur.timetable.R
 import com.keisha.tusur.timetable.domain.model.Lesson
@@ -92,7 +94,7 @@ internal fun ScheduleWeekList(
         state = listState,
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 24.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         if (week == null || !hasLessons) {
             item {
@@ -152,14 +154,16 @@ internal fun ScheduleWeekList(
 @Composable
 private fun DayHeader(date: LocalDate) {
     val isToday = date == ScheduleTime.today()
-    Row(
+    FlowRow(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 6.dp),
-        verticalAlignment = Alignment.CenterVertically,
+            .padding(top = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         Text(
             text = ScheduleTime.formatDayTitle(date),
+            modifier = Modifier.align(Alignment.CenterVertically).semantics { heading() },
             style = MaterialTheme.typography.titleMedium,
             color = if (isToday) {
                 MaterialTheme.colorScheme.primary
@@ -168,8 +172,8 @@ private fun DayHeader(date: LocalDate) {
             },
         )
         if (isToday) {
-            Spacer(Modifier.width(8.dp))
             Surface(
+                modifier = Modifier.align(Alignment.CenterVertically),
                 shape = CircleShape,
                 color = MaterialTheme.colorScheme.primaryContainer,
                 contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -177,7 +181,7 @@ private fun DayHeader(date: LocalDate) {
                 Text(
                     text = stringResource(R.string.schedule_today),
                     style = MaterialTheme.typography.labelSmall,
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
                 )
             }
         }
@@ -204,10 +208,10 @@ private fun EmptyPairRow(pairNumber: Int) {
         modifier = Modifier
             .fillMaxWidth()
             .background(
-                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f),
-                shape = RoundedCornerShape(10.dp),
+                color = MaterialTheme.colorScheme.surfaceContainerLow,
+                shape = MaterialTheme.shapes.small,
             )
-            .padding(horizontal = 12.dp, vertical = 7.dp),
+            .padding(horizontal = 12.dp, vertical = 5.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
@@ -220,14 +224,15 @@ private fun EmptyPairRow(pairNumber: Int) {
             } else {
                 stringResource(R.string.lesson_pair, pairNumber)
             },
-            style = MaterialTheme.typography.labelMedium,
+            modifier = Modifier.weight(1f),
+            style = MaterialTheme.typography.labelMedium.copy(fontFeatureSettings = "tnum"),
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-        Spacer(Modifier.weight(1f))
+        Spacer(Modifier.width(12.dp))
         Text(
             text = stringResource(R.string.schedule_free_pair, pairNumber),
             style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
 }

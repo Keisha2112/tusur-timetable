@@ -26,6 +26,8 @@
     <!-- Главный экран -->
     <string name="schedule_week_title">Неделя %1$d · %2$s</string>
     <string name="schedule_week_title_no_number">Неделя · %1$s</string>
+    <string name="week_number">Неделя %1$d</string>
+    <string name="week_without_number">Неделя</string>
     <string name="schedule_week_odd">нечётная</string>
     <string name="schedule_week_even">чётная</string>
     <string name="schedule_today">Сегодня</string>
@@ -118,6 +120,7 @@
     <string name="cd_previous_week">Предыдущая неделя</string>
     <string name="cd_next_week">Следующая неделя</string>
     <string name="cd_choose_week">Выбрать неделю</string>
+    <string name="cd_close_dialog">Закрыть</string>
     <string name="cd_lesson_card">Занятие: %1$s, %2$s, %3$s</string>
     <string name="cd_open_teacher">Открыть расписание преподавателя</string>
     <string name="cd_back">Назад</string>

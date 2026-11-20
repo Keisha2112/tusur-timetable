@@ -14,7 +14,7 @@
 
 Готовый APK лежит в разделе [Releases](https://github.com/Keisha2112/tusur-timetable/releases/latest).
 Прямая ссылка на файл:
-[`tusur-timetable-1.2.0.apk`](https://github.com/Keisha2112/tusur-timetable/releases/latest/download/tusur-timetable-1.2.0.apk).
+[`tusur-timetable-1.3.0.apk`](https://github.com/Keisha2112/tusur-timetable/releases/download/v1.3.0/tusur-timetable-1.3.0.apk).
 
 ## Возможности
 
@@ -40,17 +40,11 @@
 
 ## Скриншоты
 
-| Выбор факультета | Группы | Расписание |
+| Расписание в светлой теме | Расписание в тёмной теме | Детали занятия |
 | --- | --- | --- |
-| ![Выбор факультета](docs/screenshots/01-faculty.png) | ![Группы](docs/screenshots/04-groups.png) | ![Расписание](docs/screenshots/02-schedule.png) |
+| ![Светлая тема](docs/screenshots/redesign/light/03-schedule.png) | ![Тёмная тема](docs/screenshots/redesign/dark/03-schedule.png) | ![Детали занятия](docs/screenshots/redesign/light/05-lesson.png) |
 
-| Выбор недели | Детали занятия | Настройки |
-| --- | --- | --- |
-| ![Выбор недели](docs/screenshots/03-week-picker.png) | ![Детали занятия](docs/screenshots/05-lesson-details.png) | ![Настройки](docs/screenshots/06-settings.png) |
-
-| Без интернета | Тёмная тема | Расписание преподавателя |
-| --- | --- | --- |
-| ![Офлайн](docs/screenshots/08-offline.png) | ![Тёмная тема](docs/screenshots/09-schedule-dark.png) | ![Расписание преподавателя](docs/screenshots/10-teacher.png) |
+[Галерея из 18 скриншотов и результаты проверки](docs/screenshots/redesign/README.md).
 
 ## Требования
 
@@ -75,10 +69,10 @@
 
 ## SHA-256
 
-Файл `tusur-timetable-1.2.0.apk` из раздела Releases:
+Файл `tusur-timetable-1.3.0.apk` из раздела Releases:
 
 ```text
-DA73D222D96D45E5E28897D2EC5B09CA9300358C0F91F0111EB469599FB0687D
+5015C42F6ADC3CFFE0D82FFB97A85B6A81E1C1BF8F6C699CB4DC9723A4A82F7C
 ```
 
 Для сборки из исходников APK лежит в `app/build/outputs/apk/release/app-release.apk`.

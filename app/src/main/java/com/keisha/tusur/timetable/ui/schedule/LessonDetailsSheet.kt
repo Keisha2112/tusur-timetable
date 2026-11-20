@@ -6,12 +6,10 @@ import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -19,12 +17,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.outlined.OpenInNew
-import androidx.compose.material3.Button
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -33,23 +30,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import com.keisha.tusur.timetable.R
 import com.keisha.tusur.timetable.domain.model.Lesson
 import com.keisha.tusur.timetable.domain.time.ScheduleTime
 import com.keisha.tusur.timetable.ui.components.LessonTypeBadge
 
-/**
- * Подробности занятия: полные списки аудиторий, преподавателей или групп, ссылка на сайт.
- *
- * Диалог вместо ModalBottomSheet: лист Material3 падает на Android 6–7.
- */
+/** Полные списки преподавателей, аудиторий или групп и ссылка на занятие. */
 @Composable
 fun LessonDetailsSheet(
     lesson: Lesson,
@@ -69,48 +59,29 @@ fun LessonDetailsSheet(
     val pairText = lesson.pairNumber?.let { stringResource(R.string.lesson_pair, it) }
     val timeWithPair = if (pairText != null) "$timeText · $pairText" else timeText
 
-    Dialog(
-        onDismissRequest = onDismiss,
-        properties = DialogProperties(usePlatformDefaultWidth = false),
-    ) {
-        Box(
+    ScheduleSheet(onDismiss = onDismiss) {
+        Column(
             modifier = Modifier
-                .fillMaxSize()
-                .pointerInput(Unit) { detectTapGestures { onDismiss() } }
-                .padding(16.dp),
-            contentAlignment = Alignment.BottomCenter,
+                .fillMaxWidth()
+                .heightIn(max = 560.dp)
+                .verticalScroll(rememberScrollState())
+                .padding(start = 18.dp, end = 18.dp, top = 8.dp, bottom = 18.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .pointerInput(Unit) { detectTapGestures { } },
-                shape = RoundedCornerShape(24.dp),
-                color = MaterialTheme.colorScheme.surfaceContainerLow,
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(max = 560.dp)
-                        .verticalScroll(rememberScrollState())
-                        .padding(24.dp),
-                ) {
-                    Text(
-                        text = lesson.discipline,
-                        style = MaterialTheme.typography.headlineSmall,
-                        color = MaterialTheme.colorScheme.onSurface,
-                    )
-                    Spacer(Modifier.height(10.dp))
-                    LessonTypeBadge(lesson = lesson)
-                    Spacer(Modifier.height(20.dp))
+            ScheduleSheetTitle(title = lesson.discipline, onDismiss = onDismiss)
+            LessonTypeBadge(lesson = lesson)
 
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                color = MaterialTheme.colorScheme.surfaceContainerLow,
+                shape = MaterialTheme.shapes.medium,
+            ) {
+                Column(Modifier.padding(horizontal = 14.dp, vertical = 6.dp)) {
                     DetailRow(
                         label = stringResource(R.string.lesson_details_date),
                         value = ScheduleTime.formatFullDate(lesson.date),
                     )
-                    DetailRow(
-                        label = stringResource(R.string.lesson_details_time),
-                        value = timeWithPair,
-                    )
+                    DetailRow(label = stringResource(R.string.lesson_details_time), value = timeWithPair)
                     if (lesson.rooms.isNotEmpty()) {
                         DetailRow(
                             label = stringResource(R.string.lesson_rooms_title),
@@ -123,29 +94,24 @@ fun LessonDetailsSheet(
                             value = lesson.groups.joinToString(", "),
                         )
                     }
-                    if (showTeachers) {
-                        TeachersRow(
-                            teachers = lesson.teachers,
-                            onTeacherClick = onTeacherClick,
-                        )
-                    }
-
-                    Spacer(Modifier.height(24.dp))
-                    Button(
-                        onClick = { openSource(context, sourceUrl) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .heightIn(min = 48.dp),
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Outlined.OpenInNew,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp),
-                        )
-                        Spacer(Modifier.width(8.dp))
-                        Text(text = stringResource(R.string.lesson_details_source))
-                    }
                 }
+            }
+            if (showTeachers) {
+                TeachersRow(teachers = lesson.teachers, onTeacherClick = onTeacherClick)
+            }
+
+            OutlinedButton(
+                onClick = { openSource(context, sourceUrl) },
+                modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+                shape = MaterialTheme.shapes.medium,
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Outlined.OpenInNew,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp),
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(text = stringResource(R.string.lesson_details_source))
             }
         }
     }
@@ -159,7 +125,7 @@ private fun TeachersRow(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 6.dp),
+            .padding(vertical = 4.dp),
     ) {
         Text(
             text = stringResource(R.string.lesson_teachers_title),
@@ -179,13 +145,14 @@ private fun TeachersRow(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clip(RoundedCornerShape(8.dp))
+                            .clip(MaterialTheme.shapes.small)
                             .clickable(
                                 role = Role.Button,
                                 onClickLabel = stringResource(R.string.cd_open_teacher),
                                 onClick = { onTeacherClick(teacher) },
                             )
-                            .padding(vertical = 6.dp, horizontal = 2.dp),
+                            .heightIn(min = 48.dp)
+                            .padding(vertical = 6.dp, horizontal = 8.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Text(
@@ -222,7 +189,7 @@ private fun DetailRow(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 6.dp),
+            .padding(vertical = 4.dp),
     ) {
         Text(
             text = label,

@@ -32,6 +32,8 @@ fun UpdateAvailableDialog(
             // Пока идёт загрузка, случайный тап по фону не должен её обрывать.
             if (!state.isDownloading) onLater()
         },
+        shape = MaterialTheme.shapes.extraLarge,
+        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
         title = { Text(stringResource(R.string.update_dialog_title)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -108,6 +110,8 @@ fun UpdatePermissionDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
+        shape = MaterialTheme.shapes.extraLarge,
+        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
         title = { Text(stringResource(R.string.update_permission_title)) },
         text = { Text(stringResource(R.string.update_permission_text)) },
         confirmButton = {

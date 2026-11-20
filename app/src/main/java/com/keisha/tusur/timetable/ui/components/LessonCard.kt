@@ -1,24 +1,25 @@
 package com.keisha.tusur.timetable.ui.components
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Groups
 import androidx.compose.material.icons.outlined.MeetingRoom
 import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material3.Card
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -27,7 +28,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -50,7 +50,6 @@ fun LessonCard(
     showTeachers: Boolean = true,
     showGroups: Boolean = false,
 ) {
-    val colors = lessonTypeColors(lesson.type, lesson.rawType)
     val typeLabel = lessonTypeLabel(lesson)
     val timeText = stringResource(
         R.string.lesson_time,
@@ -65,86 +64,85 @@ fun LessonCard(
     )
     val room = lesson.rooms.firstOrNull()
 
-    Card(
+    OutlinedCard(
         onClick = onClick,
         modifier = modifier
             .fillMaxWidth()
             .heightIn(min = 48.dp)
             .semantics { contentDescription = description },
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+        shape = MaterialTheme.shapes.medium,
+        colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
     ) {
-        Row(Modifier.height(IntrinsicSize.Min)) {
-            Box(
-                Modifier
-                    .width(4.dp)
-                    .fillMaxHeight()
-                    .background(colors.accent),
-            )
-            Column(
-                Modifier
-                    .weight(1f)
-                    .padding(start = 14.dp, end = 14.dp, top = 12.dp, bottom = 12.dp),
+        Column(Modifier.padding(horizontal = 14.dp, vertical = 12.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = timeText,
-                        style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.onSurface,
-                    )
-                    if (lesson.pairNumber != null) {
-                        Spacer(Modifier.weight(1f))
+                Text(
+                    text = timeText,
+                    modifier = Modifier.weight(1f),
+                    style = MaterialTheme.typography.labelLarge.copy(fontFeatureSettings = "tnum"),
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                if (lesson.pairNumber != null) {
+                    Surface(
+                        shape = MaterialTheme.shapes.extraSmall,
+                        color = MaterialTheme.colorScheme.surfaceContainer,
+                        contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    ) {
                         Text(
                             text = stringResource(R.string.lesson_pair, lesson.pairNumber),
                             style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
                         )
                     }
                 }
+            }
 
-                Spacer(Modifier.height(6.dp))
+            Spacer(Modifier.height(6.dp))
+            Text(
+                text = lesson.discipline,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Spacer(Modifier.height(8.dp))
 
-                Text(
-                    text = lesson.discipline,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    maxLines = 3,
-                    overflow = TextOverflow.Ellipsis,
-                )
-
-                Spacer(Modifier.height(8.dp))
-
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    LessonTypeBadge(lesson = lesson)
-                    if (room != null) {
-                        Spacer(Modifier.width(12.dp))
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                LessonTypeBadge(lesson = lesson, modifier = Modifier.align(Alignment.CenterVertically))
+                if (room != null) {
+                    Row(
+                        modifier = Modifier.align(Alignment.CenterVertically),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    ) {
                         Icon(
                             imageVector = Icons.Outlined.MeetingRoom,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(16.dp),
                         )
-                        Spacer(Modifier.width(4.dp))
                         Text(
                             text = stringResource(R.string.lesson_room, room),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
                         )
                     }
                 }
+            }
 
-                if (showGroups && lesson.groups.isNotEmpty()) {
-                    Spacer(Modifier.height(6.dp))
-                    GroupsLine(groups = lesson.groups)
-                }
+            if (showGroups && lesson.groups.isNotEmpty()) {
+                Spacer(Modifier.height(7.dp))
+                GroupsLine(groups = lesson.groups)
+            }
 
-                if (showTeachers && lesson.teachers.isNotEmpty()) {
-                    Spacer(Modifier.height(6.dp))
-                    TeachersLine(teachers = lesson.teachers)
-                }
+            if (showTeachers && lesson.teachers.isNotEmpty()) {
+                Spacer(Modifier.height(7.dp))
+                TeachersLine(teachers = lesson.teachers)
             }
         }
     }
@@ -158,15 +156,21 @@ fun LessonTypeBadge(
     val colors = lessonTypeColors(lesson.type, lesson.rawType)
     Surface(
         modifier = modifier,
-        shape = RoundedCornerShape(6.dp),
+        shape = MaterialTheme.shapes.extraSmall,
         color = colors.container,
+        contentColor = colors.content,
     ) {
-        Text(
-            text = lessonTypeLabel(lesson),
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
-            style = MaterialTheme.typography.labelMedium,
-            color = colors.content,
-        )
+        Row(
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Box(Modifier.size(6.dp).background(colors.accent, CircleShape))
+            Text(
+                text = lessonTypeLabel(lesson),
+                style = MaterialTheme.typography.labelMedium,
+            )
+        }
     }
 }
 

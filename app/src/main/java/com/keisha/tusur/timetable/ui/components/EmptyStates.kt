@@ -1,6 +1,7 @@
 package com.keisha.tusur.timetable.ui.components
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Spacer
@@ -21,6 +22,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -41,7 +43,7 @@ fun ScheduleLoadingState(modifier: Modifier = Modifier) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        CircularProgressIndicator()
+        CircularProgressIndicator(modifier = Modifier.size(28.dp), strokeWidth = 3.dp)
         Spacer(Modifier.height(16.dp))
         Text(
             text = stringResource(R.string.schedule_loading),
@@ -98,7 +100,7 @@ fun ScheduleErrorState(
     val hint = if (error is AppError.Network) stringResource(R.string.schedule_error_no_cache) else null
 
     EmptyMessage(
-        icon = { EmptyIcon(icon) },
+        icon = { EmptyIcon(icon, isError = true) },
         title = stringResource(R.string.schedule_error_title),
         message = stringResource(messageRes),
         hint = hint,
@@ -162,13 +164,17 @@ fun EmptyWeekState(
 }
 
 @Composable
-private fun EmptyIcon(icon: ImageVector) {
-    Icon(
-        imageVector = icon,
-        contentDescription = null,
-        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = Modifier.size(56.dp),
-    )
+private fun EmptyIcon(icon: ImageVector, isError: Boolean = false) {
+    val colors = MaterialTheme.colorScheme
+    Surface(
+        shape = MaterialTheme.shapes.large,
+        color = if (isError) colors.errorContainer else colors.primaryContainer,
+        contentColor = if (isError) colors.onErrorContainer else colors.onPrimaryContainer,
+    ) {
+        Box(Modifier.size(56.dp), contentAlignment = Alignment.Center) {
+            Icon(icon, contentDescription = null, modifier = Modifier.size(26.dp))
+        }
+    }
 }
 
 @Composable
@@ -183,7 +189,7 @@ private fun EmptyMessage(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 24.dp, vertical = 32.dp),
+            .padding(horizontal = 24.dp, vertical = 20.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
@@ -211,7 +217,7 @@ private fun EmptyMessage(
                 textAlign = TextAlign.Center,
             )
         }
-        Spacer(Modifier.height(24.dp))
+        Spacer(Modifier.height(16.dp))
         Column(
             modifier = Modifier
                 .widthIn(max = 320.dp)

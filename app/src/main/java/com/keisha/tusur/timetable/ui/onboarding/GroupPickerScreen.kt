@@ -14,20 +14,14 @@ import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Error
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -40,7 +34,6 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
@@ -104,7 +97,7 @@ fun GroupPickerScreen(
         ) {
             OnboardingHeader(
                 step = stringResource(R.string.onboarding_step, 2, 2),
-                subtitle = stringResource(R.string.onboarding_group_subtitle, facultyName),
+                subtitle = facultyName,
             )
             OnboardingSearchField(
                 value = state.query,
@@ -184,9 +177,9 @@ private fun GroupList(
                 CourseHeader(course = section.course)
             }
             items(items = section.groups, key = { it.slug }) { group ->
-                GroupCard(
-                    group = group,
-                    current = group.slug == currentGroupSlug,
+                SelectionRow(
+                    title = group.name,
+                    selected = group.slug == currentGroupSlug,
                     saving = group.slug == savingSlug,
                     enabled = savingSlug == null,
                     onClick = { onGroupClick(group) },
@@ -206,81 +199,9 @@ private fun CourseHeader(course: Int?) {
         },
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 12.dp, bottom = 2.dp)
+            .padding(start = 2.dp, top = 10.dp)
             .semantics { heading() },
-        style = MaterialTheme.typography.titleSmall,
-        color = MaterialTheme.colorScheme.primary,
+        style = MaterialTheme.typography.labelLarge,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
     )
-}
-
-@Composable
-private fun GroupCard(
-    group: Group,
-    current: Boolean,
-    saving: Boolean,
-    enabled: Boolean,
-    onClick: () -> Unit,
-) {
-    val containerColor = if (current) {
-        MaterialTheme.colorScheme.primaryContainer
-    } else {
-        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
-    }
-    val contentColor = if (current) {
-        MaterialTheme.colorScheme.onPrimaryContainer
-    } else {
-        MaterialTheme.colorScheme.onSurface
-    }
-    // Пока идёт сохранение, карточки недоступны. Отдельные disabled-цвета
-    // оставляют подсветку выбранной группы и не приглушают весь список.
-    val colors = CardDefaults.cardColors(
-        containerColor = containerColor,
-        contentColor = contentColor,
-        disabledContainerColor = containerColor,
-        disabledContentColor = contentColor,
-    )
-    Card(
-        onClick = onClick,
-        enabled = enabled,
-        modifier = Modifier.fillMaxWidth(),
-        colors = colors,
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(min = 48.dp)
-                .padding(horizontal = 16.dp, vertical = 14.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                text = group.name,
-                modifier = Modifier.weight(1f),
-                style = MaterialTheme.typography.titleMedium,
-            )
-            when {
-                saving -> {
-                    Spacer(Modifier.width(12.dp))
-                    val savingDescription = stringResource(R.string.onboarding_saving)
-                    CircularProgressIndicator(
-                        modifier = Modifier
-                            .size(20.dp)
-                            .semantics { contentDescription = savingDescription },
-                        strokeWidth = 2.dp,
-                        color = if (current) {
-                            MaterialTheme.colorScheme.onPrimaryContainer
-                        } else {
-                            MaterialTheme.colorScheme.primary
-                        },
-                    )
-                }
-                current -> {
-                    Spacer(Modifier.width(12.dp))
-                    Icon(
-                        imageVector = Icons.Filled.Check,
-                        contentDescription = stringResource(R.string.onboarding_selected),
-                    )
-                }
-            }
-        }
-    }
 }

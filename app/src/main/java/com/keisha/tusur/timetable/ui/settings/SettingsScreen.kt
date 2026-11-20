@@ -7,6 +7,7 @@ import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.BackHandler
 import androidx.annotation.StringRes
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -33,9 +34,15 @@ import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material.icons.filled.Update
+import androidx.compose.material.icons.outlined.CheckCircle
+import androidx.compose.material.icons.outlined.DarkMode
+import androidx.compose.material.icons.outlined.LightMode
+import androidx.compose.material.icons.outlined.SettingsBrightness
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
@@ -48,6 +55,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.Surface
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -61,10 +69,13 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -73,7 +84,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.keisha.tusur.timetable.AppContainer
-import com.keisha.tusur.timetable.BuildConfig
 import com.keisha.tusur.timetable.R
 import com.keisha.tusur.timetable.data.repository.UserSelection
 import com.keisha.tusur.timetable.domain.model.AppError
@@ -171,7 +181,7 @@ fun SettingsScreen(
                 .fillMaxSize()
                 .padding(innerPadding),
             contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             item {
                 CurrentGroupCard(
@@ -221,7 +231,7 @@ fun SettingsScreen(
 @Composable
 private fun SettingsTopBar(onBack: () -> Unit) {
     TopAppBar(
-        title = { Text(stringResource(R.string.settings_title)) },
+        title = { Text(stringResource(R.string.settings_title), style = MaterialTheme.typography.titleLarge) },
         navigationIcon = {
             IconButton(onClick = onBack) {
                 Icon(
@@ -244,6 +254,7 @@ private fun CurrentGroupCard(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.large,
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer,
             contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -252,12 +263,12 @@ private fun CurrentGroupCard(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(20.dp),
+                .padding(16.dp),
         ) {
             Text(
                 text = stringResource(R.string.settings_current_group),
                 style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.75f),
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
             )
             Spacer(Modifier.height(10.dp))
             when {
@@ -286,13 +297,15 @@ private fun CurrentGroupCard(
                     Text(
                         text = selection.facultyName,
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f),
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
                     )
                 }
             }
             Spacer(Modifier.height(16.dp))
-            FilledTonalButton(
+            OutlinedButton(
                 onClick = onChangeGroup,
+                shape = MaterialTheme.shapes.medium,
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
                 modifier = Modifier
                     .fillMaxWidth()
                     .heightIn(min = 48.dp),
@@ -304,12 +317,6 @@ private fun CurrentGroupCard(
                 Spacer(Modifier.width(8.dp))
                 Text(stringResource(R.string.settings_change_group))
             }
-            Spacer(Modifier.height(8.dp))
-            Text(
-                text = stringResource(R.string.settings_change_group_hint),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
-            )
         }
     }
 }
@@ -320,21 +327,25 @@ private fun AppearanceCard(
     onThemeModeChange: (ThemeMode) -> Unit,
 ) {
     SettingsCard(title = stringResource(R.string.settings_appearance_title)) {
-        Column(modifier = Modifier.selectableGroup()) {
+        Column(
+            modifier = Modifier.padding(start = 8.dp, end = 8.dp, bottom = 4.dp).selectableGroup(),
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+        ) {
             ThemeModeRow(
                 label = stringResource(R.string.settings_theme_system),
+                icon = Icons.Outlined.SettingsBrightness,
                 selected = themeMode == ThemeMode.SYSTEM,
                 onClick = { onThemeModeChange(ThemeMode.SYSTEM) },
             )
-            RowDivider()
             ThemeModeRow(
                 label = stringResource(R.string.settings_theme_light),
+                icon = Icons.Outlined.LightMode,
                 selected = themeMode == ThemeMode.LIGHT,
                 onClick = { onThemeModeChange(ThemeMode.LIGHT) },
             )
-            RowDivider()
             ThemeModeRow(
                 label = stringResource(R.string.settings_theme_dark),
+                icon = Icons.Outlined.DarkMode,
                 selected = themeMode == ThemeMode.DARK,
                 onClick = { onThemeModeChange(ThemeMode.DARK) },
             )
@@ -345,29 +356,34 @@ private fun AppearanceCard(
 @Composable
 private fun ThemeModeRow(
     label: String,
+    icon: ImageVector,
     selected: Boolean,
     onClick: () -> Unit,
 ) {
-    Row(
+    val colors = MaterialTheme.colorScheme
+    Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .selectable(selected = selected, role = Role.RadioButton, onClick = onClick)
-            .heightIn(min = 56.dp)
-            .padding(start = 8.dp, end = 16.dp, top = 4.dp, bottom = 4.dp),
-        verticalAlignment = Alignment.CenterVertically,
+            .clip(MaterialTheme.shapes.small)
+            .selectable(selected = selected, role = Role.RadioButton, onClick = onClick),
+        shape = MaterialTheme.shapes.small,
+        color = if (selected) colors.primaryContainer else colors.surfaceContainerLow,
+        contentColor = if (selected) colors.onPrimaryContainer else colors.onSurface,
     ) {
-        // onClick = null: клик обрабатывает вся строка, чтобы не было двух целей для TalkBack.
-        RadioButton(selected = selected, onClick = null)
-        Spacer(Modifier.width(8.dp))
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodyLarge,
-            color = if (selected) {
-                MaterialTheme.colorScheme.primary
-            } else {
-                MaterialTheme.colorScheme.onSurface
-            },
-        )
+        Row(
+            modifier = Modifier.heightIn(min = 48.dp).padding(horizontal = 12.dp, vertical = 6.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                modifier = Modifier.size(20.dp),
+                tint = if (selected) colors.primary else colors.onSurfaceVariant,
+            )
+            Text(text = label, modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
+            RadioButton(selected = selected, onClick = null)
+        }
     }
 }
 
@@ -490,15 +506,32 @@ private fun UpdateCard(
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.error,
                     )
-                    state.hasChecked -> Text(
-                        text = stringResource(R.string.settings_up_to_date),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
+                    state.hasChecked -> Surface(
+                        color = MaterialTheme.colorScheme.primaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        shape = MaterialTheme.shapes.small,
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.CheckCircle,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp),
+                            )
+                            Text(
+                                text = stringResource(R.string.settings_up_to_date),
+                                style = MaterialTheme.typography.bodyMedium,
+                            )
+                        }
+                    }
                 }
-                TextButton(
+                OutlinedButton(
                     onClick = onCheck,
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+                    shape = MaterialTheme.shapes.medium,
                     enabled = !state.isChecking,
                 ) {
                     Text(stringResource(R.string.settings_check_updates))
@@ -516,10 +549,6 @@ private fun AboutCard() {
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             Text(
-                text = stringResource(R.string.settings_version, BuildConfig.VERSION_NAME),
-                style = MaterialTheme.typography.bodyLarge,
-            )
-            Text(
                 text = stringResource(R.string.settings_disclaimer),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -533,11 +562,11 @@ private fun SettingsCard(
     title: String? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    Card(
+    OutlinedCard(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-        ),
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
     ) {
         Column(
             modifier = Modifier
@@ -547,9 +576,10 @@ private fun SettingsCard(
             if (title != null) {
                 Text(
                     text = title,
-                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 4.dp),
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier
+                        .padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 6.dp)
+                        .semantics { heading() },
+                    style = MaterialTheme.typography.titleMedium,
                 )
             }
             content()
@@ -682,6 +712,8 @@ private fun ClearCacheDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
+        shape = MaterialTheme.shapes.extraLarge,
+        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
         icon = {
             Icon(
                 imageVector = Icons.Filled.DeleteSweep,

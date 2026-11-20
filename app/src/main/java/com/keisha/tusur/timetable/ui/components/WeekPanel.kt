@@ -1,6 +1,7 @@
-﻿package com.keisha.tusur.timetable.ui.components
+package com.keisha.tusur.timetable.ui.components
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -14,15 +15,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
+import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.Today
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -32,7 +33,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.keisha.tusur.timetable.R
 import com.keisha.tusur.timetable.domain.model.Week
@@ -57,65 +57,89 @@ fun WeekPanel(
 ) {
     val showToday = currentWeekId != null && week.id != currentWeekId
 
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.surface),
-    ) {
-        Row(
+    Column(modifier = modifier.fillMaxWidth()) {
+        Surface(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 4.dp),
-            verticalAlignment = Alignment.CenterVertically,
+                .padding(horizontal = 16.dp),
+            shape = MaterialTheme.shapes.large,
+            color = MaterialTheme.colorScheme.surfaceContainerLow,
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
         ) {
-            IconButton(
-                onClick = onPrevious,
-                enabled = canGoPrevious,
-                modifier = Modifier.size(48.dp),
-            ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowLeft,
-                    contentDescription = stringResource(R.string.cd_previous_week),
-                )
-            }
-
-            Column(
+            Row(
                 modifier = Modifier
-                    .weight(1f)
-                    .clip(RoundedCornerShape(12.dp))
-                    .clickable(
-                        onClickLabel = stringResource(R.string.cd_choose_week),
-                        role = Role.Button,
-                        onClick = onChooseWeek,
+                    .fillMaxWidth()
+                    .padding(horizontal = 2.dp, vertical = 2.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                IconButton(
+                    onClick = onPrevious,
+                    enabled = canGoPrevious,
+                    modifier = Modifier.size(48.dp),
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowLeft,
+                        contentDescription = stringResource(R.string.cd_previous_week),
                     )
-                    .padding(horizontal = 4.dp, vertical = 8.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Text(
-                    text = weekTitleText(week),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    textAlign = TextAlign.Center,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                Spacer(Modifier.height(6.dp))
-                WeekDots(
-                    weeks = weeks,
-                    selectedWeekId = week.id,
-                    weeksWithLessons = weeksWithLessons,
-                )
-            }
+                }
 
-            IconButton(
-                onClick = onNext,
-                enabled = canGoNext,
-                modifier = Modifier.size(48.dp),
-            ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
-                    contentDescription = stringResource(R.string.cd_next_week),
-                )
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(MaterialTheme.shapes.medium)
+                        .clickable(
+                            onClickLabel = stringResource(R.string.cd_choose_week),
+                            role = Role.Button,
+                            onClick = onChooseWeek,
+                        )
+                        .padding(horizontal = 4.dp, vertical = 8.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    val title = week.number?.let { stringResource(R.string.week_number, it) }
+                        ?: stringResource(R.string.week_without_number)
+                    val parity = weekParityText(week)
+                    Text(
+                        text = listOfNotNull(title, parity).joinToString(" · "),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center,
+                    )
+                    Row(
+                        modifier = Modifier.padding(top = 2.dp),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.CalendarMonth,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(16.dp),
+                        )
+                        Text(
+                            text = ScheduleTime.formatWeekRange(week.startDate),
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            textAlign = TextAlign.Center,
+                        )
+                    }
+                    Spacer(Modifier.height(6.dp))
+                    WeekDots(
+                        weeks = weeks,
+                        selectedWeekId = week.id,
+                        weeksWithLessons = weeksWithLessons,
+                    )
+                }
+
+                IconButton(
+                    onClick = onNext,
+                    enabled = canGoNext,
+                    modifier = Modifier.size(48.dp),
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
+                        contentDescription = stringResource(R.string.cd_next_week),
+                    )
+                }
             }
         }
 
@@ -128,15 +152,13 @@ fun WeekPanel(
                     Icon(
                         imageVector = Icons.Outlined.Today,
                         contentDescription = null,
-                        modifier = Modifier.size(18.dp),
+                        modifier = Modifier.size(16.dp),
                     )
                     Spacer(Modifier.width(6.dp))
                     Text(text = stringResource(R.string.schedule_today))
                 }
             }
         }
-
-        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
     }
 }
 
@@ -193,10 +215,12 @@ internal fun weekTitleText(week: Week): String {
     } else {
         stringResource(R.string.schedule_week_title_no_number, range)
     }
-    val parity = when (ScheduleTime.weekNumberParity(number)) {
-        true -> stringResource(R.string.schedule_week_even)
-        false -> stringResource(R.string.schedule_week_odd)
-        null -> null
-    }
-    return if (parity != null) "$base · $parity" else base
+    return listOfNotNull(base, weekParityText(week)).joinToString(" · ")
+}
+
+@Composable
+private fun weekParityText(week: Week): String? = when (ScheduleTime.weekNumberParity(week.number)) {
+    true -> stringResource(R.string.schedule_week_even)
+    false -> stringResource(R.string.schedule_week_odd)
+    null -> null
 }
