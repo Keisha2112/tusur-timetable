@@ -7,4 +7,8 @@
 
     <!-- Детали занятия -->
     <string name="lesson_source_unavailable">Не удалось открыть браузер</string>
+    <string name="lesson_cancelled">Отменено</string>
+    <string name="lesson_note">Примечание</string>
+    <string name="lesson_time_other_day">%1$s – %2$s (%3$s)</string>
+    <string name="schedule_holiday">Праздничный день</string>
 </resources>

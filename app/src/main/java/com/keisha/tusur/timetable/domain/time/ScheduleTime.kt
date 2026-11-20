@@ -1,6 +1,7 @@
 package com.keisha.tusur.timetable.domain.time
 
 import com.keisha.tusur.timetable.domain.model.DaySchedule
+import com.keisha.tusur.timetable.domain.model.HolidayDay
 import com.keisha.tusur.timetable.domain.model.Lesson
 import com.keisha.tusur.timetable.domain.model.Week
 import java.time.DayOfWeek
@@ -8,18 +9,23 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
+import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util.Locale
 
 /**
- * Вся работа с датами идёт в часовом поясе Новосибирска,
+ * Вся работа с датами идёт в часовом поясе Томска,
  * независимо от часового пояса устройства.
  */
 object ScheduleTime {
 
-    val ZONE: ZoneId = ZoneId.of("Asia/Novosibirsk")
+    private val TOMSK_OFFSET = ZoneOffset.ofHours(7)
+    val ZONE: ZoneId = runCatching { ZoneId.of("Asia/Tomsk") }.getOrNull()
+        // В старой базе поясов Android 6 зона может отсутствовать или иметь смещение +06.
+        ?.takeIf { it.rules.getOffset(Instant.parse("2026-01-01T00:00:00Z")) == TOMSK_OFFSET }
+        ?: TOMSK_OFFSET
 
     private val RU: Locale = Locale("ru", "RU")
 
@@ -55,6 +61,11 @@ object ScheduleTime {
     fun today(): LocalDate = LocalDate.now(ZONE)
 
     fun now(): ZonedDateTime = ZonedDateTime.now(ZONE)
+
+    fun startsAt(lesson: Lesson): Instant = lesson.date.atTime(lesson.start).atZone(ZONE).toInstant()
+
+    fun endsAt(lesson: Lesson): Instant =
+        (lesson.endDate ?: lesson.date).atTime(lesson.end).atZone(ZONE).toInstant()
 
     /** Номер пары по времени начала, либо null для нестандартного времени. */
     fun pairNumber(start: LocalTime): Int? = PAIRS.firstOrNull { it.start == start }?.number
@@ -96,20 +107,27 @@ object ScheduleTime {
 
     /**
      * Раскладывает занятия по дням недели: понедельник — воскресенье.
-     * Воскресенье попадает в результат только если там есть занятия.
+     * Воскресенье включается, если на эту дату есть занятия или метка праздника.
      */
-    fun daysForWeek(lessons: List<Lesson>, weekStart: LocalDate): List<DaySchedule> {
+    fun daysForWeek(
+        lessons: List<Lesson>,
+        weekStart: LocalDate,
+        holidays: List<HolidayDay> = emptyList(),
+    ): List<DaySchedule> {
         val weekEnd = weekEnd(weekStart)
         val byDate = lessons
             .filter { !it.date.isBefore(weekStart) && !it.date.isAfter(weekEnd) }
             .sortedWith(compareBy<Lesson> { it.start }.thenBy { it.discipline })
             .groupBy { it.date }
 
+        val holidaysByDate = holidays.associateBy { it.date }
         val days = (0L..6L).map { offset ->
             val date = weekStart.plusDays(offset)
-            DaySchedule(date, byDate[date].orEmpty())
+            val holiday = holidaysByDate[date]
+            val dayLessons = byDate[date].orEmpty().filterNot { holiday?.blocks(it) == true }
+            DaySchedule(date, dayLessons, isHoliday = holiday != null)
         }
-        return days.filter { it.lessons.isNotEmpty() || it.date.dayOfWeek != DayOfWeek.SUNDAY }
+        return days.filter { it.isHoliday || it.lessons.isNotEmpty() || it.date.dayOfWeek != DayOfWeek.SUNDAY }
     }
 
     /** Неделя, в которую попадает дата, с допуском по границам. */

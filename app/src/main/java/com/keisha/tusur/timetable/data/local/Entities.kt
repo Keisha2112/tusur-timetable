@@ -36,6 +36,14 @@ data class ScheduleCacheEntity(
     val checkedAt: Long,
 )
 
+@Entity(tableName = "schedule_notifications")
+data class ScheduleNotificationEntity(
+    @PrimaryKey val id: String,
+    val generation: String,
+    val payload: String,
+    val createdAt: Long,
+)
+
 /**
  * Расписание преподавателя. Ключ — нормализованное короткое имя: по нему приходит
  * переход из карточки занятия, а id преподавателя лежит внутри JSON.

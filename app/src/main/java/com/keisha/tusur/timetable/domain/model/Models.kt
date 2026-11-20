@@ -76,6 +76,12 @@ enum class LessonType {
 }
 
 @Serializable
+enum class LessonStatus {
+    SCHEDULED,
+    CANCELLED,
+}
+
+@Serializable
 data class Lesson(
     val id: String,
     @Serializable(with = LocalDateSerializer::class)
@@ -92,13 +98,38 @@ data class Lesson(
     val teachers: List<String> = emptyList(),
     /** Группы занятия: заполняется только в расписании преподавателя. */
     val groups: List<String> = emptyList(),
+    /** Идентификатор серии из HTML. Может повторяться у занятий на разных датах. */
+    val siteSeriesId: String? = null,
+    val teacherIds: List<String> = emptyList(),
+    val note: String? = null,
+    val status: LessonStatus = LessonStatus.SCHEDULED,
+    @Serializable(with = LocalDateSerializer::class)
+    val endDate: LocalDate? = null,
 )
+
+/** Пустой список [closedStarts] означает, что на сайте закрыт весь день. */
+@Serializable
+data class HolidayDay(
+    @Serializable(with = LocalDateSerializer::class)
+    val date: LocalDate,
+    val closedStarts: List<@Serializable(with = LocalTimeSerializer::class) LocalTime> = emptyList(),
+) {
+    fun blocks(lesson: Lesson): Boolean =
+        lesson.date == date && (closedStarts.isEmpty() || lesson.start in closedStarts)
+}
+
+@Serializable
+enum class WeekPublication {
+    PUBLISHED,
+    UNPUBLISHED,
+}
 
 @Serializable
 data class DaySchedule(
     @Serializable(with = LocalDateSerializer::class)
     val date: LocalDate,
     val lessons: List<Lesson>,
+    val isHoliday: Boolean = false,
 )
 
 @Serializable
@@ -116,6 +147,9 @@ data class GroupSchedule(
      * отметку, чтобы не запрашивать её при каждом открытии экрана.
      */
     val checkedWeeks: Map<Int, Long> = emptyMap(),
+    val holidays: List<HolidayDay> = emptyList(),
+    val publications: Map<Int, WeekPublication> = emptyMap(),
+    val staleWeeks: Set<Int> = emptySet(),
 )
 
 @Serializable

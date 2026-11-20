@@ -11,7 +11,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
@@ -32,8 +33,10 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.keisha.tusur.timetable.R
+import com.keisha.tusur.timetable.domain.model.HolidayDay
 import com.keisha.tusur.timetable.domain.model.Lesson
 import com.keisha.tusur.timetable.domain.model.Week
+import com.keisha.tusur.timetable.domain.model.WeekPublication
 import com.keisha.tusur.timetable.domain.time.ScheduleTime
 import com.keisha.tusur.timetable.ui.components.EmptyWeekState
 import com.keisha.tusur.timetable.ui.components.LessonCard
@@ -58,18 +61,28 @@ internal fun ScheduleWeekList(
     onNextWeek: () -> Unit,
     onOpenLesson: (Lesson) -> Unit,
     modifier: Modifier = Modifier,
+    holidays: List<HolidayDay> = emptyList(),
+    publication: WeekPublication? = null,
+    focusDate: LocalDate? = null,
+    onDateFocused: (LocalDate) -> Unit = {},
 ) {
-    val days = remember(lessons, week?.startDate) {
-        week?.let { ScheduleTime.daysForWeek(lessons, it.startDate) }.orEmpty()
+    val days = remember(lessons, holidays, week?.startDate, publication) {
+        val scheduledDays = week?.let { ScheduleTime.daysForWeek(lessons, it.startDate, holidays) }.orEmpty()
+        if (publication == WeekPublication.UNPUBLISHED && scheduledDays.none { it.lessons.isNotEmpty() }) {
+            scheduledDays.filter { it.isHoliday }
+        } else scheduledDays
     }
-    val hasLessons = days.any { it.lessons.isNotEmpty() }
+    val hasDays = week != null && (publication == WeekPublication.PUBLISHED ||
+        days.any { it.isHoliday || it.lessons.isNotEmpty() })
     val maxPair = remember(days) { weekMaxPair(days) }
+    val hasUnpublishedHeader = hasDays && publication == WeekPublication.UNPUBLISHED
 
     // Текущая неделя открывается на сегодняшнем дне, остальные — с понедельника.
     // Пустая неделя показывает единственный элемент, поэтому для неё всегда 0.
-    val startIndex = remember(days, week?.id, currentWeekId, maxPair) {
-        if (hasLessons) {
-            weekStartIndex(days, week?.id, currentWeekId, ScheduleTime.today(), maxPair)
+    val startIndex = remember(days, week?.id, currentWeekId, maxPair, hasUnpublishedHeader) {
+        if (hasDays) {
+            val start = weekStartIndex(days, week?.id, currentWeekId, ScheduleTime.today(), maxPair)
+            if (hasUnpublishedHeader && start > 0) start + 1 else start
         } else {
             0
         }
@@ -82,12 +95,22 @@ internal fun ScheduleWeekList(
     // восстановит позицию, а повторная прокрутка к сегодняшнему дню её бы сбросила.
     var handledResetKey by rememberSaveable { mutableStateOf<String?>(null) }
 
-    LaunchedEffect(resetKey) {
-        if (handledResetKey == resetKey) return@LaunchedEffect
+    LaunchedEffect(resetKey, hasDays) {
+        if (handledResetKey == resetKey || !hasDays) return@LaunchedEffect
         handledResetKey = resetKey
         // До первой раскладки список ещё пуст — ждём, когда появятся элементы.
         snapshotFlow { listState.layoutInfo.totalItemsCount }.first { it > 0 }
-        listState.scrollToItem(startIndex)
+        if (focusDate == null) listState.scrollToItem(startIndex)
+    }
+
+    val focusIndex = focusDate?.let { dayHeaderIndex(days, it, maxPair) }
+    LaunchedEffect(focusDate, focusIndex, hasDays) {
+        if (focusDate != null && hasDays) {
+            val index = (focusIndex ?: 0) + if (hasUnpublishedHeader) 1 else 0
+            snapshotFlow { listState.layoutInfo.totalItemsCount }.first { it > index }
+            listState.scrollToItem(index)
+            onDateFocused(focusDate)
+        }
     }
 
     LazyColumn(
@@ -96,7 +119,7 @@ internal fun ScheduleWeekList(
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 24.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        if (week == null || !hasLessons) {
+        if (!hasDays) {
             item {
                 EmptyWeekState(
                     canGoPrevious = canGoPrevious,
@@ -107,14 +130,25 @@ internal fun ScheduleWeekList(
                 )
             }
         } else {
+            if (hasUnpublishedHeader) {
+                item(key = "unpublished") {
+                    Text(
+                        text = stringResource(R.string.schedule_empty_week),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
             days.forEach { day ->
                 item(key = "day-${day.date}") {
-                    DayHeader(date = day.date)
+                    DayHeader(date = day.date, showHoliday = day.isHoliday && day.lessons.isNotEmpty())
                 }
                 if (day.lessons.isEmpty()) {
                     item(key = "empty-${day.date}") {
-                        EmptyDayRow()
+                        EmptyDayRow(day.isHoliday)
                     }
+                } else if (day.isHoliday) {
+                    lessonRows(day.lessons, showTeachers, showGroups, onOpenLesson)
                 } else {
                     for (pair in 1..maxPair) {
                         val pairLessons = day.lessons.filter { it.pairNumber == pair }
@@ -123,36 +157,36 @@ internal fun ScheduleWeekList(
                                 EmptyPairRow(pairNumber = pair)
                             }
                         } else {
-                            items(pairLessons, key = { "lesson-${it.id}" }) { lesson ->
-                                LessonCard(
-                                    lesson = lesson,
-                                    onClick = { onOpenLesson(lesson) },
-                                    showTeachers = showTeachers,
-                                    showGroups = showGroups,
-                                )
-                            }
+                            lessonRows(pairLessons, showTeachers, showGroups, onOpenLesson)
                         }
                     }
                     // Занятия с нестандартным временем не привязаны к паре — показываем после сетки.
                     val unslotted = day.lessons.filter { it.pairNumber == null }
-                    if (unslotted.isNotEmpty()) {
-                        items(unslotted, key = { "lesson-${it.id}" }) { lesson ->
-                            LessonCard(
-                                lesson = lesson,
-                                onClick = { onOpenLesson(lesson) },
-                                showTeachers = showTeachers,
-                                showGroups = showGroups,
-                            )
-                        }
-                    }
+                    lessonRows(unslotted, showTeachers, showGroups, onOpenLesson)
                 }
             }
         }
     }
 }
 
+private fun LazyListScope.lessonRows(
+    lessons: List<Lesson>,
+    showTeachers: Boolean,
+    showGroups: Boolean,
+    onOpenLesson: (Lesson) -> Unit,
+) {
+    itemsIndexed(lessons, key = { index, lesson -> "lesson-${lesson.date}-${lesson.start}-${lesson.id}-$index" }) { _, lesson ->
+        LessonCard(
+            lesson = lesson,
+            onClick = { onOpenLesson(lesson) },
+            showTeachers = showTeachers,
+            showGroups = showGroups,
+        )
+    }
+}
+
 @Composable
-private fun DayHeader(date: LocalDate) {
+private fun DayHeader(date: LocalDate, showHoliday: Boolean) {
     val isToday = date == ScheduleTime.today()
     FlowRow(
         modifier = Modifier
@@ -185,15 +219,23 @@ private fun DayHeader(date: LocalDate) {
                 )
             }
         }
+        if (showHoliday) {
+            Text(
+                text = stringResource(R.string.schedule_holiday),
+                modifier = Modifier.align(Alignment.CenterVertically),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.primary,
+            )
+        }
     }
 }
 
 @Composable
-private fun EmptyDayRow() {
+private fun EmptyDayRow(isHoliday: Boolean) {
     Text(
-        text = stringResource(R.string.schedule_empty_day),
+        text = stringResource(if (isHoliday) R.string.schedule_holiday else R.string.schedule_empty_day),
         style = MaterialTheme.typography.bodyMedium,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        color = if (isHoliday) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = Modifier.padding(start = 4.dp, bottom = 4.dp),
     )
 }

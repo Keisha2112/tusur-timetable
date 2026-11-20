@@ -1,0 +1,21 @@
+<resources>
+    <string name="schedule_notifications_title">Изменения расписания</string>
+    <string name="schedule_notifications_summary">Уведомлять об изменениях в расписании выбранной группы</string>
+    <string name="schedule_notifications_blocked">Уведомления отключены в настройках Android</string>
+    <string name="schedule_notifications_open_settings">Настройки уведомлений</string>
+    <string name="schedule_notifications_save_failed">Не удалось сохранить настройку уведомлений</string>
+    <string name="schedule_notice_title">Расписание группы %1$s</string>
+    <string name="schedule_notice_unspecified_change">Расписание на %1$s изменилось</string>
+    <string name="schedule_notice_added">%1$s — добавлено на %2$s, %3$s</string>
+    <string name="schedule_notice_removed">%1$s — убрано из расписания на %2$s</string>
+    <string name="schedule_notice_cancelled">%1$s — отменено, %2$s</string>
+    <string name="schedule_notice_restored">%1$s снова в расписании, %2$s</string>
+    <string name="schedule_notice_missing_value">не указано</string>
+    <string name="schedule_notice_move">перенос %1$s → %2$s</string>
+    <string name="schedule_notice_room">аудитория %1$s → %2$s</string>
+    <string name="schedule_notice_teacher">преподаватель %1$s → %2$s</string>
+    <string name="schedule_notice_type">тип %1$s → %2$s</string>
+    <string name="schedule_notice_note">примечание %1$s → %2$s</string>
+    <string name="schedule_notice_detail">%1$s, %2$s — %3$s</string>
+    <string name="schedule_notice_more">Ещё %1$d</string>
+</resources>

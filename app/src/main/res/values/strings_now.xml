@@ -1,0 +1,21 @@
+<resources>
+    <string name="schedule_now">Сейчас</string>
+    <string name="now_no_schedule">Расписание ещё не загружено</string>
+    <string name="now_in_progress">Идёт занятие</string>
+    <string name="now_before_first">Занятия ещё не начались</string>
+    <string name="now_break">Перемена</string>
+    <string name="now_finished">Занятия на сегодня закончились</string>
+    <string name="now_empty">Сегодня занятий нет</string>
+    <string name="now_all_cancelled">Сегодня все занятия отменены</string>
+    <string name="now_unpublished">Расписание на сегодня ещё не опубликовано</string>
+    <string name="now_unknown_day">На сегодня нет проверенного расписания</string>
+    <string name="now_time_note">Уточните время в примечании</string>
+    <string name="now_time_unknown">Время окончания не указано</string>
+    <string name="now_no_following">В загруженном расписании больше занятий нет</string>
+    <string name="now_following">Ближайший учебный день · %1$s</string>
+    <string name="now_remaining">Осталось %1$s</string>
+    <string name="now_until">До начала %1$s</string>
+    <string name="now_break_length">Свободный промежуток · %1$s</string>
+    <string name="now_minutes">%1$d мин</string>
+    <string name="now_hours_minutes">%1$d ч %2$d мин</string>
+</resources>

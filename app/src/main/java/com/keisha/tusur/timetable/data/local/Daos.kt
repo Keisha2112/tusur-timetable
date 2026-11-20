@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
+import kotlinx.coroutines.flow.Flow
 
 /**
  * Кэш каталога. Замена списка идёт транзакцией: либо старая версия целиком,
@@ -62,6 +63,9 @@ interface ScheduleCacheDao {
     @Query("SELECT * FROM schedule_cache WHERE groupSlug = :groupSlug")
     suspend fun get(groupSlug: String): ScheduleCacheEntity?
 
+    @Query("SELECT * FROM schedule_cache WHERE groupSlug = :groupSlug")
+    fun observe(groupSlug: String): Flow<ScheduleCacheEntity?>
+
     @Query("SELECT updatedAt FROM schedule_cache WHERE groupSlug = :groupSlug")
     suspend fun updatedAt(groupSlug: String): Long?
 
@@ -76,6 +80,24 @@ interface ScheduleCacheDao {
 
     @Query("DELETE FROM schedule_cache")
     suspend fun deleteAll()
+}
+
+@Dao
+interface ScheduleNotificationDao {
+    @Insert
+    suspend fun insert(entity: ScheduleNotificationEntity)
+
+    @Query("SELECT * FROM schedule_notifications WHERE generation = :generation ORDER BY createdAt, id")
+    suspend fun pending(generation: String): List<ScheduleNotificationEntity>
+
+    @Query("DELETE FROM schedule_notifications WHERE id = :id")
+    suspend fun claim(id: String): Int
+
+    @Query("DELETE FROM schedule_notifications WHERE generation != :generation OR createdAt < :oldest")
+    suspend fun discardOther(generation: String, oldest: Long)
+
+    @Query("DELETE FROM schedule_notifications")
+    suspend fun clear()
 }
 
 @Dao

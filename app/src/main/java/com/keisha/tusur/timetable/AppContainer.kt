@@ -3,6 +3,7 @@ package com.keisha.tusur.timetable
 import android.content.Context
 import com.keisha.tusur.timetable.data.local.AppDatabase
 import com.keisha.tusur.timetable.data.network.TusurClient
+import com.keisha.tusur.timetable.data.notification.ScheduleNotificationScheduler
 import com.keisha.tusur.timetable.data.parser.CatalogParser
 import com.keisha.tusur.timetable.data.parser.IcsParser
 import com.keisha.tusur.timetable.data.parser.TeacherParser
@@ -67,7 +68,7 @@ class AppContainer(context: Context) {
 
     private val weekListParser: WeekListParser by lazy { WeekListParser() }
 
-    private val weekScheduleParser: WeekScheduleParser by lazy { WeekScheduleParser() }
+    private val weekScheduleParser: WeekScheduleParser by lazy { WeekScheduleParser(weekListParser) }
 
     private val icsParser: IcsParser by lazy { IcsParser() }
 
@@ -104,7 +105,12 @@ class AppContainer(context: Context) {
             icsParser = icsParser,
             weekScheduleParser = weekScheduleParser,
             ioDispatcher = ioDispatcher,
+            database = database,
         )
+    }
+
+    internal val scheduleNotifications by lazy {
+        ScheduleNotificationScheduler(appContext, settingsRepository, scheduleRepository, database.scheduleNotificationDao())
     }
 
     val teacherScheduleRepository: TeacherScheduleRepository by lazy {

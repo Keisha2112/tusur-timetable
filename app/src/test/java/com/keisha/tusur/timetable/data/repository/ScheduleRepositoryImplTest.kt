@@ -1,6 +1,7 @@
 package com.keisha.tusur.timetable.data.repository
 
 import com.keisha.tusur.timetable.data.local.ScheduleCacheDao
+import com.keisha.tusur.timetable.data.local.ScheduleCacheCodec
 import com.keisha.tusur.timetable.data.local.ScheduleCacheEntity
 import com.keisha.tusur.timetable.data.network.TusurClient
 import com.keisha.tusur.timetable.data.parser.FixtureLoader
@@ -9,6 +10,8 @@ import com.keisha.tusur.timetable.data.parser.WeekListParser
 import com.keisha.tusur.timetable.domain.model.AppError
 import com.keisha.tusur.timetable.domain.model.Group
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
 import okhttp3.OkHttpClient
 import okhttp3.mockwebserver.Dispatcher
@@ -17,11 +20,13 @@ import okhttp3.mockwebserver.MockWebServer
 import okhttp3.mockwebserver.RecordedRequest
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import java.time.LocalDate
 
 /**
  * Поведение репозитория на реальных фикстурах: кэш, ETag/304, офлайн и ошибки.
@@ -218,7 +223,7 @@ class ScheduleRepositoryImplTest {
     }
 
     @Test
-    fun `empty week html does not erase lessons from ics`() = runBlocking {
+    fun `unpublished page of a different group does not erase lessons from ics`() = runBlocking {
         val emptyWeek = FixtureLoader.text("group_empty.html")
         val repository = repository(object : Dispatcher() {
             override fun dispatch(request: RecordedRequest): MockResponse {
@@ -239,7 +244,8 @@ class ScheduleRepositoryImplTest {
         assertEquals(172, first.schedule!!.lessons.size)
         assertEquals(172, result.schedule!!.lessons.size)
         assertEquals(172, bulk.schedule!!.lessons.size)
-        assertTrue(result.schedule!!.checkedWeeks.containsKey(week.id))
+        assertFalse(result.schedule!!.checkedWeeks.containsKey(week.id))
+        assertTrue(result.error is AppError.Parse)
     }
 
     @Test
@@ -292,6 +298,42 @@ class ScheduleRepositoryImplTest {
         assertTrue(refreshed.schedule!!.checkedWeeks.containsKey(week.id))
     }
 
+    @Test
+    fun `holiday survives offline cache and a new ics response containing the hidden lesson`() = runBlocking {
+        val holidayHtml = FixtureLoader.text("holiday_714-2_november.html")
+        val holidayIcs = FixtureLoader.text("holiday_714-2.ics")
+        val repository = repository(object : Dispatcher() {
+            override fun dispatch(request: RecordedRequest): MockResponse {
+                val path = request.path.orEmpty()
+                return MockResponse().setResponseCode(200).setBody(when {
+                    path.endsWith(".ics") -> holidayIcs
+                    path.contains("week_id=848") -> holidayHtml
+                    else -> html
+                })
+            }
+        })
+        val initial = repository.load(group).schedule!!
+        assertEquals(1, initial.lessons.size)
+        val week = initial.weeks.single { it.id == 848 }
+        val holiday = LocalDate.of(2026, 11, 4)
+        val verified = repository.loadWeek(group, week).schedule!!
+        assertEquals(holiday, verified.holidays.single().date)
+        assertTrue(verified.lessons.isEmpty())
+
+        val refreshed = repository.load(group, forceRefresh = true).schedule!!
+        assertEquals(holiday, refreshed.holidays.single().date)
+        assertTrue(refreshed.lessons.isEmpty())
+        val saved = dao.get(group.slug)!!
+        val reopened = ScheduleCacheCodec.decodeStored(saved.payload)!!.display(saved.updatedAt)
+        assertEquals(refreshed, reopened)
+
+        server.shutdown()
+        val offline = repository.loadWeek(group, week, forceRefresh = true)
+        assertTrue(offline.isOffline)
+        assertEquals(holiday, offline.schedule!!.holidays.single().date)
+        assertTrue(offline.schedule!!.lessons.isEmpty())
+    }
+
     private fun fixtureDispatcher(): Dispatcher = object : Dispatcher() {
         override fun dispatch(request: RecordedRequest): MockResponse {
             val path = request.path.orEmpty()
@@ -323,6 +365,8 @@ class ScheduleRepositoryImplTest {
         private var entity: ScheduleCacheEntity? = null
 
         override suspend fun get(groupSlug: String): ScheduleCacheEntity? = entity
+
+        override fun observe(groupSlug: String): Flow<ScheduleCacheEntity?> = flowOf(entity)
 
         override suspend fun updatedAt(groupSlug: String): Long? = entity?.updatedAt
 

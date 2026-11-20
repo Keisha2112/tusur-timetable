@@ -3,6 +3,7 @@ package com.keisha.tusur.timetable.data.local
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
@@ -28,6 +29,9 @@ internal object SettingsKeys {
 
     /** Версия обновления, которую пользователь попросил больше не предлагать. */
     val UPDATE_SKIPPED_VERSION = stringPreferencesKey("update_skipped_version")
+
+    val SCHEDULE_MONITORING_GENERATION = stringPreferencesKey("schedule_monitoring_generation")
+    val SCHEDULE_NOTIFICATIONS_BLOCKED = booleanPreferencesKey("schedule_notifications_blocked")
 
     const val CURRENT_SCHEMA_VERSION = 1
 }

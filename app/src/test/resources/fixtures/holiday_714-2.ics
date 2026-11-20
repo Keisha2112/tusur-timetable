@@ -1,0 +1,10 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+BEGIN:VEVENT
+DTEND;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261104T102500
+DTSTART;TZID=Asia/Novosibirsk;VALUE=DATE-TIME:20261104T085000
+DESCRIPTION:Практика\, Головчук О.О.\, Гужов Ф.А.\, Давыдов Д.М.\, Максименко С.П.\, Марченко Н.В.\, Цвиринько В.Н.
+SUMMARY:Элективные дисциплины по физической культуре и спорту
+LOCATION:
+END:VEVENT
+END:VCALENDAR

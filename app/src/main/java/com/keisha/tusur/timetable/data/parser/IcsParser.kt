@@ -4,6 +4,8 @@ import biweekly.component.VEvent
 import biweekly.io.text.ICalReader
 import biweekly.property.DateOrDateTimeProperty
 import com.keisha.tusur.timetable.domain.model.Lesson
+import com.keisha.tusur.timetable.domain.model.LessonNotes
+import com.keisha.tusur.timetable.domain.model.LessonStatus
 import com.keisha.tusur.timetable.domain.time.ScheduleTime
 import java.time.Instant
 import java.time.LocalDateTime
@@ -14,8 +16,8 @@ import java.time.format.DateTimeFormatter
 /**
  * Занятия из экспорта .ics.
  *
- * UID в файле нет, поэтому идентификатор строим из даты, времени начала и дисциплины:
- * этого хватает, чтобы различать занятия и узнавать их при следующем обновлении.
+ * В экспорте ТУСУРа обычно нет UID. Идентификатор для списка строим из даты,
+ * времени и предмета. Для сравнения версий используется подтверждённый HTML.
  */
 class IcsParser {
 
@@ -50,7 +52,10 @@ class IcsParser {
 
         val description = splitValues(event.description?.value)
         val rawType = description.firstOrNull().orEmpty()
-        val participants = description.drop(1)
+        val details = description.drop(1)
+        val noteParts = details.takeWhile(LessonNotes::isExportedNote)
+        val note = noteParts.takeIf { it.isNotEmpty() }?.joinToString(", ")
+        val participants = details.drop(noteParts.size)
         val teachers = if (descriptionMode == DescriptionMode.TEACHERS) participants else emptyList()
         // «ЭИОС» и прочие пометки в описании преподавателя группами не являются.
         val groups = if (descriptionMode == DescriptionMode.GROUPS) {
@@ -83,6 +88,11 @@ class IcsParser {
             rooms = splitValues(event.location?.value),
             teachers = teachers,
             groups = groups,
+            note = note,
+            status = if (event.status?.value.equals("CANCELLED", ignoreCase = true) ||
+                LessonNotes.isCancellation(note)
+            ) LessonStatus.CANCELLED else LessonStatus.SCHEDULED,
+            endDate = end.toLocalDate().takeUnless { it == start.toLocalDate() },
         )
     }
 

@@ -3,6 +3,8 @@ package com.keisha.tusur.timetable.data.parser
 import com.keisha.tusur.timetable.domain.model.LessonType
 import com.keisha.tusur.timetable.domain.model.Week
 import com.keisha.tusur.timetable.domain.model.WeekKind
+import com.keisha.tusur.timetable.domain.model.WeekPublication
+import com.keisha.tusur.timetable.domain.model.LessonStatus
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -121,5 +123,62 @@ class WeekScheduleParserTest {
 
         assertFalse(parsed.hasSchedule)
         assertTrue(parsed.lessons.isEmpty())
+    }
+
+    @Test
+    fun `видимый праздник исключает пару из скрытой таблицы и экспорта`() {
+        val date = LocalDate.of(2026, 11, 4)
+        val week = Week(848, 10, date.minusDays(2), WeekKind.THEORETICAL, false)
+        val parsed = parser.parse(
+            FixtureLoader.text("holiday_714-2_november.html"), week,
+            "https://timetable.tusur.ru/faculties/fb/groups/714-2",
+        )
+
+        assertEquals(WeekPublication.PUBLISHED, parsed.publication)
+        assertEquals(date, parsed.holidays.single().date)
+        assertTrue(parsed.holidays.single().closedStarts.isEmpty())
+        assertTrue(parsed.holidays.single().blocks(IcsParser().parse(FixtureLoader.text("holiday_714-2.ics")).single()))
+        assertFalse(parsed.lessons.any { it.date == date })
+    }
+
+    @Test
+    fun `из неопубликованной недели извлекаются календарные даты через границу года`() {
+        val week = Week(856, 18, LocalDate.of(2026, 12, 28), WeekKind.WEEKEND, false)
+        val parsed = parser.parse(FixtureLoader.text("holiday_714-2_new_year.html"), week)
+        assertEquals(WeekPublication.UNPUBLISHED, parsed.publication)
+        assertEquals((3L..5L).map { week.startDate.plusDays(it) }, parsed.holidays.map { it.date })
+        assertFalse(parsed.holidays.any { it.date == week.startDate })
+        assertTrue(parsed.lessons.isEmpty())
+    }
+
+    @Test
+    fun `праздник в неопубликованном расписании читается без таблицы занятий`() {
+        val week = Week(848, 10, LocalDate.of(2026, 11, 2), WeekKind.THEORETICAL, false)
+        val parsed = parser.parse(FixtureLoader.text("holiday_716-1_unpublished.html"), week)
+        assertEquals(WeekPublication.UNPUBLISHED, parsed.publication)
+        assertEquals(listOf(week.startDate.plusDays(2)), parsed.holidays.map { it.date })
+    }
+
+    @Test
+    fun `комментарий о времени сохраняется отдельно в html и ics`() {
+        val week = Week(849, 11, LocalDate.of(2026, 11, 9), WeekKind.THEORETICAL, false)
+        val html = parser.parse(FixtureLoader.text("notes_016-1.html"), week).lessons.single()
+        val ics = IcsParser().parse(FixtureLoader.text("notes_016-1.ics")).single()
+        listOf(html, ics).forEach { lesson ->
+            assertEquals("с 12:30", lesson.note)
+            assertEquals(LocalTime.of(13, 15), lesson.start)
+            assertEquals(LessonStatus.SCHEDULED, lesson.status)
+            assertTrue(lesson.teachers.single().startsWith("Бирюкова"))
+        }
+    }
+
+    @Test
+    fun `явная отметка отмены сохраняет существующее занятие со статусом`() {
+        val week = Week(849, 11, LocalDate.of(2026, 11, 9), WeekKind.THEORETICAL, false)
+        val html = FixtureLoader.text("notes_016-1.html").replace("с 12:30", "Занятие отменено")
+        val ics = FixtureLoader.text("notes_016-1.ics").replace("END:VEVENT", "STATUS:CANCELLED\nEND:VEVENT")
+
+        assertEquals(LessonStatus.CANCELLED, parser.parse(html, week).lessons.single().status)
+        assertEquals(LessonStatus.CANCELLED, IcsParser().parse(ics).single().status)
     }
 }

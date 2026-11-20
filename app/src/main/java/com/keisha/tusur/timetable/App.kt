@@ -12,5 +12,6 @@ class App : Application() {
         super.onCreate()
         LegacyTls.init(this)
         container = AppContainer(this)
+        container.scheduleNotifications.start(container.applicationScope)
     }
 }

@@ -35,6 +35,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.keisha.tusur.timetable.R
 import com.keisha.tusur.timetable.domain.model.Lesson
+import com.keisha.tusur.timetable.domain.model.LessonStatus
 import com.keisha.tusur.timetable.domain.model.LessonType
 import com.keisha.tusur.timetable.domain.time.ScheduleTime
 import com.keisha.tusur.timetable.ui.theme.lessonTypeColors
@@ -51,11 +52,7 @@ fun LessonCard(
     showGroups: Boolean = false,
 ) {
     val typeLabel = lessonTypeLabel(lesson)
-    val timeText = stringResource(
-        R.string.lesson_time,
-        ScheduleTime.formatTime(lesson.start),
-        ScheduleTime.formatTime(lesson.end),
-    )
+    val timeText = lessonTimeText(lesson)
     val description = stringResource(
         R.string.cd_lesson_card,
         lesson.discipline,
@@ -63,13 +60,14 @@ fun LessonCard(
         timeText,
     )
     val room = lesson.rooms.firstOrNull()
+    val status = if (lesson.status == LessonStatus.CANCELLED) stringResource(R.string.lesson_cancelled) else null
 
     OutlinedCard(
         onClick = onClick,
         modifier = modifier
             .fillMaxWidth()
             .heightIn(min = 48.dp)
-            .semantics { contentDescription = description },
+            .semantics { contentDescription = listOfNotNull(description, status).joinToString(", ") },
         shape = MaterialTheme.shapes.medium,
         colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surface),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
@@ -114,6 +112,7 @@ fun LessonCard(
                 verticalArrangement = Arrangement.spacedBy(6.dp),
             ) {
                 LessonTypeBadge(lesson = lesson, modifier = Modifier.align(Alignment.CenterVertically))
+                LessonCancellationBadge(lesson, Modifier.align(Alignment.CenterVertically))
                 if (room != null) {
                     Row(
                         modifier = Modifier.align(Alignment.CenterVertically),
@@ -144,6 +143,44 @@ fun LessonCard(
                 Spacer(Modifier.height(7.dp))
                 TeachersLine(teachers = lesson.teachers)
             }
+            lesson.note?.let { note ->
+                Spacer(Modifier.height(7.dp))
+                Text(
+                    text = note,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+internal fun lessonTimeText(lesson: Lesson): String {
+    val start = ScheduleTime.formatTime(lesson.start)
+    val end = ScheduleTime.formatTime(lesson.end)
+    val endDate = lesson.endDate
+    return if (endDate != null && endDate != lesson.date) {
+        stringResource(R.string.lesson_time_other_day, start, end, ScheduleTime.formatDayTitle(endDate))
+    } else stringResource(R.string.lesson_time, start, end)
+}
+
+@Composable
+internal fun LessonCancellationBadge(lesson: Lesson, modifier: Modifier = Modifier) {
+    if (lesson.status == LessonStatus.CANCELLED) {
+        Surface(
+            modifier = modifier,
+            shape = MaterialTheme.shapes.extraSmall,
+            color = MaterialTheme.colorScheme.errorContainer,
+            contentColor = MaterialTheme.colorScheme.onErrorContainer,
+        ) {
+            Text(
+                text = stringResource(R.string.lesson_cancelled),
+                style = MaterialTheme.typography.labelMedium,
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+            )
         }
     }
 }

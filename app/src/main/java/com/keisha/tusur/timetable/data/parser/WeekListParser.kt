@@ -18,18 +18,27 @@ import java.time.Month
  */
 class WeekListParser {
 
-    fun parse(html: String): List<Week> {
-        val document = Jsoup.parse(html)
-        return document.select("ul.weeks li")
+    fun parse(html: String): List<Week> = parse(Jsoup.parse(html))
+
+    internal fun parse(document: Element): List<Week> =
+        document.select("ul.weeks li")
             .mapNotNull { item -> parseWeek(item) }
             // Одна и та же неделя иногда попадает в разметку дважды.
             .distinctBy { it.id }
-    }
+    internal fun selected(document: Element): Week? =
+        document.selectFirst("ul.weeks li.current")?.let(::parseWeek)
+
+    internal fun selected(html: String): Week? = selected(Jsoup.parse(html))
+
+    internal fun selectedLink(document: Element): String? =
+        document.selectFirst("ul.weeks li.current")?.let(::weekLink)?.attr("href")
+
+    private fun weekLink(item: Element): Element? =
+        item.select("a[href]").firstOrNull { WEEK_ID.containsMatchIn(it.attr("href")) }
 
     private fun parseWeek(item: Element): Week? {
         // Ссылку ищем по week_id: в li может оказаться иконка или другая ссылка без параметра.
-        val link = item.select("a[href]").firstOrNull { WEEK_ID.containsMatchIn(it.attr("href")) }
-            ?: return null
+        val link = weekLink(item) ?: return null
         // Без week_id неделю нельзя запросить у сайта, поэтому такие элементы пропускаем.
         val id = WEEK_ID.find(link.attr("href"))?.groupValues?.get(1)?.toIntOrNull() ?: return null
 

@@ -3,6 +3,7 @@ package com.keisha.tusur.timetable.ui.settings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.keisha.tusur.timetable.data.repository.CatalogRepository
+import com.keisha.tusur.timetable.data.repository.ScheduleMonitoring
 import com.keisha.tusur.timetable.data.repository.ScheduleRepository
 import com.keisha.tusur.timetable.data.repository.SettingsRepository
 import com.keisha.tusur.timetable.data.repository.TeacherScheduleRepository
@@ -31,11 +32,13 @@ data class SettingsUiState(
     val isLoading: Boolean = true,
     val isClearingCache: Boolean = false,
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
+    val notificationsEnabled: Boolean = false,
 )
 
 sealed interface SettingsEvent {
     data object CacheCleared : SettingsEvent
     data class CacheClearFailed(val error: AppError) : SettingsEvent
+    data object NotificationSettingFailed : SettingsEvent
 }
 
 class SettingsViewModel(
@@ -55,16 +58,17 @@ class SettingsViewModel(
     val events: Flow<SettingsEvent> = _events.receiveAsFlow()
 
     val state: StateFlow<SettingsUiState> = combine(
-        settingsRepository.selection.catch { emit(null) },
+        settingsRepository.monitoring.catch { emit(ScheduleMonitoring(null, null)) },
         settingsRepository.themeMode.catch { emit(ThemeMode.SYSTEM) },
         local,
-    ) { selection, themeMode, localState ->
+    ) { monitoring, themeMode, localState ->
         SettingsUiState(
-            selection = selection,
+            selection = monitoring.selection,
             lastUpdated = localState.lastUpdated,
             isLoading = false,
             isClearingCache = localState.isClearingCache,
             themeMode = themeMode,
+            notificationsEnabled = monitoring.generation != null,
         )
     }.stateIn(
         scope = viewModelScope,
@@ -100,6 +104,18 @@ class SettingsViewModel(
                 throw e
             } catch (_: Exception) {
                 // Запись не прошла — остаёмся на прежней теме, экран не ломаем.
+            }
+        }
+    }
+
+    fun setNotificationsEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            try {
+                settingsRepository.setScheduleNotifications(enabled)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: Exception) {
+                _events.send(SettingsEvent.NotificationSettingFailed)
             }
         }
     }

@@ -38,6 +38,8 @@ import com.keisha.tusur.timetable.R
 import com.keisha.tusur.timetable.domain.model.Lesson
 import com.keisha.tusur.timetable.domain.time.ScheduleTime
 import com.keisha.tusur.timetable.ui.components.LessonTypeBadge
+import com.keisha.tusur.timetable.ui.components.LessonCancellationBadge
+import com.keisha.tusur.timetable.ui.components.lessonTimeText
 
 /** Полные списки преподавателей, аудиторий или групп и ссылка на занятие. */
 @Composable
@@ -51,11 +53,7 @@ fun LessonDetailsSheet(
 ) {
     val context = LocalContext.current
 
-    val timeText = stringResource(
-        R.string.lesson_time,
-        ScheduleTime.formatTime(lesson.start),
-        ScheduleTime.formatTime(lesson.end),
-    )
+    val timeText = lessonTimeText(lesson)
     val pairText = lesson.pairNumber?.let { stringResource(R.string.lesson_pair, it) }
     val timeWithPair = if (pairText != null) "$timeText · $pairText" else timeText
 
@@ -70,6 +68,7 @@ fun LessonDetailsSheet(
         ) {
             ScheduleSheetTitle(title = lesson.discipline, onDismiss = onDismiss)
             LessonTypeBadge(lesson = lesson)
+            LessonCancellationBadge(lesson)
 
             Surface(
                 modifier = Modifier.fillMaxWidth(),
@@ -93,6 +92,9 @@ fun LessonDetailsSheet(
                             label = stringResource(R.string.lesson_groups_title),
                             value = lesson.groups.joinToString(", "),
                         )
+                    }
+                    lesson.note?.let {
+                        DetailRow(label = stringResource(R.string.lesson_note), value = it)
                     }
                 }
             }

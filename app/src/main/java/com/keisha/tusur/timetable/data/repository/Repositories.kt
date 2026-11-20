@@ -40,6 +40,16 @@ data class UserSelection(
     val facultyName: String,
     val groupSlug: String,
     val groupName: String,
+) {
+    fun toGroup() = Group(facultyCode, groupSlug, groupName)
+}
+
+enum class ScheduleRefreshReason { MANUAL, BACKGROUND }
+
+data class ScheduleMonitoring(
+    val selection: UserSelection?,
+    val generation: String?,
+    val blocked: Boolean = false,
 )
 
 interface CatalogRepository {
@@ -57,6 +67,8 @@ interface ScheduleRepository {
 
     /** Расписание из кэша без обращения к сети. */
     suspend fun cached(groupSlug: String): GroupSchedule?
+
+    fun observe(group: Group): Flow<GroupSchedule?>
 
     /** Время последнего успешного обновления, если кэш есть. */
     suspend fun lastUpdated(groupSlug: String): Instant?
@@ -88,6 +100,13 @@ interface ScheduleRepository {
         forceRefresh: Boolean = false,
     ): ScheduleLoadResult
 
+    suspend fun refresh(
+        group: Group,
+        reason: ScheduleRefreshReason,
+        selectedWeekId: Int? = null,
+        monitoringGeneration: String? = null,
+    ): ScheduleLoadResult
+
     suspend fun clearCache()
 }
 
@@ -104,6 +123,13 @@ interface SettingsRepository {
     val themeMode: Flow<ThemeMode>
 
     suspend fun setThemeMode(mode: ThemeMode)
+
+    /** Поколение меняется при включении уведомлений или смене группы. */
+    val monitoring: Flow<ScheduleMonitoring>
+
+    suspend fun setScheduleNotifications(enabled: Boolean)
+
+    suspend fun setScheduleNotificationsBlocked(blocked: Boolean)
 }
 
 interface UpdateRepository {

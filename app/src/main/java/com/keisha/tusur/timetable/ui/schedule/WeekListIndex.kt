@@ -15,7 +15,7 @@ internal fun weekMaxPair(days: List<DaySchedule>): Int =
 
 /** Сколько свободных пар внутри дня нужно показать при сетке до [maxPair]. */
 internal fun freeSlotCount(day: DaySchedule, maxPair: Int): Int {
-    if (day.lessons.isEmpty() || maxPair <= 0) return 0
+    if (day.isHoliday || day.lessons.isEmpty() || maxPair <= 0) return 0
     return (1..maxPair).count { pair ->
         day.lessons.none { it.pairNumber == pair }
     }

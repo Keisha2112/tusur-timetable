@@ -13,8 +13,9 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         GroupEntity::class,
         ScheduleCacheEntity::class,
         TeacherScheduleCacheEntity::class,
+        ScheduleNotificationEntity::class,
     ],
-    version = 2,
+    version = 3,
     exportSchema = true,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -25,13 +26,15 @@ abstract class AppDatabase : RoomDatabase() {
 
     abstract fun teacherScheduleCacheDao(): TeacherScheduleCacheDao
 
+    abstract fun scheduleNotificationDao(): ScheduleNotificationDao
+
     companion object {
 
         /**
          * v2 — кэш расписания преподавателей. Существующие таблицы не меняются,
          * поэтому миграция сводится к созданию новой таблицы.
          */
-        private val MIGRATION_1_2 = object : Migration(1, 2) {
+        internal val MIGRATION_1_2 = object : Migration(1, 2) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL(
                     """
@@ -47,13 +50,28 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        internal val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS schedule_notifications (
+                        id TEXT NOT NULL PRIMARY KEY,
+                        generation TEXT NOT NULL,
+                        payload TEXT NOT NULL,
+                        createdAt INTEGER NOT NULL
+                    )
+                    """.trimIndent(),
+                )
+            }
+        }
+
         fun build(context: Context): AppDatabase =
             Room.databaseBuilder(
                 context.applicationContext,
                 AppDatabase::class.java,
                 "tusur-timetable.db",
             )
-                .addMigrations(MIGRATION_1_2)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
                 .build()
     }
 }

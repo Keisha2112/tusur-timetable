@@ -25,20 +25,24 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.keisha.tusur.timetable.AppContainer
+import com.keisha.tusur.timetable.data.notification.ScheduleNoticeDestination
 import com.keisha.tusur.timetable.ui.onboarding.FacultyPickerScreen
 import com.keisha.tusur.timetable.ui.onboarding.GroupPickerScreen
 import com.keisha.tusur.timetable.ui.schedule.ScheduleScreen
+import com.keisha.tusur.timetable.ui.schedule.NowScreen
 import com.keisha.tusur.timetable.ui.schedule.TeacherScheduleScreen
 import com.keisha.tusur.timetable.ui.settings.SettingsScreen
 import com.keisha.tusur.timetable.ui.update.UpdateAvailableDialog
 import com.keisha.tusur.timetable.ui.update.UpdatePermissionDialog
 import com.keisha.tusur.timetable.ui.update.UpdateViewModel
 import kotlinx.coroutines.flow.first
+import java.time.LocalDate
 
 private object Routes {
     const val ONBOARDING_FACULTY = "onboarding/faculty"
     const val ONBOARDING_GROUP = "onboarding/group/{facultyCode}/{facultyName}"
     const val SCHEDULE = "schedule"
+    const val NOW = "now"
     const val SETTINGS = "settings"
     const val TEACHER = "teacher/{teacherName}"
 
@@ -49,12 +53,18 @@ private object Routes {
         "teacher/${Uri.encode(teacherName)}"
 }
 
+private const val NOTICE_DATE = "schedule_notice_date"
+
 /**
  * Корневая навигация. Стартовый экран зависит от сохранённого выбора группы,
  * поэтому сначала дожидаемся первого значения из DataStore.
  */
 @Composable
-fun TusurApp(container: AppContainer) {
+fun TusurApp(
+    container: AppContainer,
+    noticeDestination: ScheduleNoticeDestination? = null,
+    onNoticeHandled: () -> Unit = {},
+) {
     var startDestination by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(Unit) {
@@ -120,13 +130,26 @@ fun TusurApp(container: AppContainer) {
             )
         }
 
-        composable(Routes.SCHEDULE) {
+        composable(Routes.SCHEDULE) { entry ->
+            val target by entry.savedStateHandle.getStateFlow<String?>(NOTICE_DATE, null)
+                .collectAsStateWithLifecycle()
             ScheduleScreen(
                 container = container,
                 onOpenSettings = { navController.navigate(Routes.SETTINGS) },
                 onOpenTeacher = { teacherName ->
                     navController.navigate(Routes.teacher(teacherName))
                 },
+                onOpenNow = { navController.navigate(Routes.NOW) },
+                requestedDate = target?.let(LocalDate::parse),
+                onDateHandled = { entry.savedStateHandle[NOTICE_DATE] = null as String? },
+            )
+        }
+
+        composable(Routes.NOW) {
+            NowScreen(
+                container = container,
+                onBack = { navController.popBackStack() },
+                onOpenTeacher = { teacherName -> navController.navigate(Routes.teacher(teacherName)) },
             )
         }
 
@@ -149,6 +172,20 @@ fun TusurApp(container: AppContainer) {
                 onChangeGroup = { navController.navigate(Routes.ONBOARDING_FACULTY) },
             )
         }
+    }
+
+    LaunchedEffect(noticeDestination, navController) {
+        val requested = noticeDestination ?: return@LaunchedEffect
+        val selection = container.settingsRepository.selection.first()
+        if (selection?.facultyCode == requested.facultyCode && selection.groupSlug == requested.groupSlug) {
+            if (navController.currentDestination?.route != Routes.SCHEDULE &&
+                !navController.popBackStack(Routes.SCHEDULE, inclusive = false)
+            ) {
+                navController.navigate(Routes.SCHEDULE) { launchSingleTop = true }
+            }
+            navController.currentBackStackEntry?.savedStateHandle?.set(NOTICE_DATE, requested.date.toString())
+        }
+        onNoticeHandled()
     }
 
     val availableUpdate = updateState.available

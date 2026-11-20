@@ -1,18 +1,26 @@
 package com.keisha.tusur.timetable.data.repository
 
+import androidx.room.withTransaction
+import com.keisha.tusur.timetable.data.local.AppDatabase
 import com.keisha.tusur.timetable.data.local.ScheduleCacheCodec
 import com.keisha.tusur.timetable.data.local.ScheduleCacheDao
 import com.keisha.tusur.timetable.data.local.ScheduleCacheEntity
+import com.keisha.tusur.timetable.data.local.ScheduleNotificationEntity
+import com.keisha.tusur.timetable.data.local.StoredSchedule
+import com.keisha.tusur.timetable.data.local.StoredWeek
+import com.keisha.tusur.timetable.data.network.HttpResult
 import com.keisha.tusur.timetable.data.network.TusurClient
 import com.keisha.tusur.timetable.data.network.Urls
 import com.keisha.tusur.timetable.data.parser.IcsParser
 import com.keisha.tusur.timetable.data.parser.WeekListParser
 import com.keisha.tusur.timetable.data.parser.WeekScheduleParser
+import com.keisha.tusur.timetable.domain.change.ComparedWeek
+import com.keisha.tusur.timetable.domain.change.ScheduleChangeDetector
 import com.keisha.tusur.timetable.domain.model.AppError
 import com.keisha.tusur.timetable.domain.model.Group
 import com.keisha.tusur.timetable.domain.model.GroupSchedule
-import com.keisha.tusur.timetable.domain.model.Lesson
 import com.keisha.tusur.timetable.domain.model.Week
+import com.keisha.tusur.timetable.domain.model.WeekPublication
 import com.keisha.tusur.timetable.domain.time.ScheduleTime
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
@@ -20,646 +28,446 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
 import java.io.IOException
+import java.time.Clock
+import java.time.Duration
 import java.time.Instant
+import java.time.LocalDate
+import java.util.UUID
 
-/**
- * Расписание группы: JSON-кэш в Room плюс обновление из `.ics` и HTML-страницы недель.
- *
- * - TTL считается по `checkedAt`: 15 минут, пока в кэше есть занятия текущей недели,
- *   минута для пустого расписания и 6 часов, когда текущей недели в списке уже нет.
- *   Пустое расписание нужно перепроверять часто: сайт мог опубликовать его только что.
- * - Страница недель запрашивается только если её нет в кэше или ей больше 7 дней:
- *   список недель меняется раз в семестр, а страница генерируется несколько секунд.
- *   При ручном обновлении страница недель запрашивается принудительно.
- * - `.ics` не содержит будущие недели. Недостающие недели догружаются из HTML-таблицы
- *   по `?week_id=` и сохраняются в кэше вместе с отметкой [GroupSchedule.checkedWeeks].
- * - Оба запроса уходят с `If-None-Match`. Ответ 304 не перепарсивается: из кэша берутся
- *   готовые занятия, обновляется только время проверки. Для пустого кэша ETag не
- *   отправляется, иначе 304 мог бы навсегда закрепить пустой ответ.
- * - [mutex] — single-flight: второй вызов ждёт первый и забирает результат из кэша,
- *   вместо того чтобы тянуть тот же `.ics` параллельно.
- */
 class ScheduleRepositoryImpl(
     private val dao: ScheduleCacheDao,
     private val client: TusurClient,
     private val weekListParser: WeekListParser,
     private val icsParser: IcsParser,
-    private val weekScheduleParser: WeekScheduleParser = WeekScheduleParser(),
+    private val weekScheduleParser: WeekScheduleParser = WeekScheduleParser(weekListParser),
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
+    private val database: AppDatabase? = null,
+    private val clock: Clock = Clock.systemUTC(),
 ) : ScheduleRepository {
-
     private val mutex = Mutex()
+    private val detector = ScheduleChangeDetector()
 
     override suspend fun cached(groupSlug: String): GroupSchedule? =
-        withContext(ioDispatcher) { readCache(groupSlug)?.schedule }
+        withContext(ioDispatcher) { dao.get(groupSlug)?.toCache()?.display }
+
+    override fun observe(group: Group): Flow<GroupSchedule?> =
+        dao.observe(group.slug)
+            .map { entity ->
+                entity?.toCache()?.takeIf { it.data.group.facultyCode == group.facultyCode }?.display
+            }
+            .distinctUntilChanged()
+            .flowOn(ioDispatcher)
 
     override suspend fun lastUpdated(groupSlug: String): Instant? =
-        withContext(ioDispatcher) {
-            dao.updatedAt(groupSlug)?.let { Instant.ofEpochMilli(it) }
-        }
+        withContext(ioDispatcher) { dao.updatedAt(groupSlug)?.let(Instant::ofEpochMilli) }
 
     override suspend fun load(group: Group, forceRefresh: Boolean): ScheduleLoadResult =
         withContext(ioDispatcher) {
-            val startedAt = System.currentTimeMillis()
-            val cached = readCache(group.slug)
-
-            // Свежий кэш отдаём сразу, без сети: экран открывается мгновенно.
-            if (!forceRefresh && cached != null && isFresh(cached)) {
-                return@withContext fromCache(cached)
+            val startedAt = clock.millis()
+            if (!forceRefresh) {
+                val cached = read(group)
+                if (cached != null && isFresh(cached)) return@withContext result(cached.display)
             }
-
             mutex.withLock {
-                // Пока ждали блокировку, соседний вызов мог уже обновить кэш.
-                val current = readCache(group.slug)
-                if (current != null) {
-                    // Строго больше: запись в ту же миллисекунду — это наш же прошлый
-                    // вызов, а не параллельное обновление.
-                    val refreshedByAnotherCall = current.entity.checkedAt > startedAt
-                    if (refreshedByAnotherCall || (!forceRefresh && isFresh(current))) {
-                        return@withLock fromCache(current)
-                    }
+                val cache = read(group)
+                if (cache != null && (cache.entity.checkedAt > startedAt ||
+                        !forceRefresh && isFresh(cache))
+                ) {
+                    return@withLock result(cache.display)
                 }
-                loadFromNetwork(group, current, forceRefresh)
+                val update = Update(group, cache)
+                loadBasics(update, forceRefresh)
+                commit(update)
             }
         }
 
-    override suspend fun loadWeek(
-        group: Group,
-        week: Week,
-        forceRefresh: Boolean,
-    ): ScheduleLoadResult = withContext(ioDispatcher) {
-        val cached = readCache(group.slug)
-        if (!forceRefresh && cached != null && weekIsFresh(cached, week)) {
-            return@withContext fromCache(cached)
-        }
-
-        mutex.withLock {
-            val current = readCache(group.slug)
-            if (current != null && !forceRefresh && weekIsFresh(current, week)) {
-                return@withLock fromCache(current)
-            }
-            loadWeekFromNetwork(group, week, current)
-        }
-    }
+    override suspend fun loadWeek(group: Group, week: Week, forceRefresh: Boolean): ScheduleLoadResult =
+        loadWeeks(group, listOf(week), forceRefresh)
 
     override suspend fun loadWeeks(
         group: Group,
         weeks: List<Week>,
         forceRefresh: Boolean,
     ): ScheduleLoadResult = withContext(ioDispatcher) {
-        val targets = weeks.distinctBy { it.id }
-        if (targets.isEmpty()) {
-            val cached = readCache(group.slug)
-            return@withContext if (cached != null) {
-                fromCache(cached)
-            } else {
-                ScheduleLoadResult(null, null, false, false, AppError.Parse())
-            }
-        }
-
         mutex.withLock {
-            val current = readCache(group.slug)
-                ?: return@withLock ScheduleLoadResult(null, null, false, false, AppError.Parse())
+            val update = Update(group, read(group))
+            val targets = weeks.distinctBy { it.id }.filter { week ->
+                forceRefresh || update.data.htmlWeek(week)?.checkedAt?.let(::htmlIsFresh) != true
+            }
+            loadHtmlWeeks(update, targets)
+            commit(update)
+        }
+    }
 
-            val toLoad = targets.filter { week -> forceRefresh || !weekIsFresh(current, week) }
-            if (toLoad.isEmpty()) return@withLock fromCache(current)
+    override suspend fun refresh(
+        group: Group,
+        reason: ScheduleRefreshReason,
+        selectedWeekId: Int?,
+        monitoringGeneration: String?,
+    ): ScheduleLoadResult = withContext(ioDispatcher) {
+        val startedAt = clock.millis()
+        mutex.withLock {
+            val update = Update(group, read(group))
+            val today = today()
+            val html = when (reason) {
+                ScheduleRefreshReason.MANUAL -> loadBasics(update, force = true)
+                ScheduleRefreshReason.BACKGROUND -> {
+                    if (needsWeekList(update.data, today)) loadWeekList(update) else null
+                }
+            }
 
-            // Ручное обновление не должно растягиваться на минуты. Четыре
-            // параллельных запроса заметно быстрее, но не создают лавину на сайте.
-            val fetched = coroutineScope {
-                val semaphore = Semaphore(MAX_PARALLEL_WEEK_REQUESTS)
-                toLoad.map { week ->
-                    async {
-                        semaphore.withPermit {
-                            try {
-                                WeekFetch(
-                                    week = week,
-                                    html = client.get(
-                                        Urls.groupWeek(group.facultyCode, group.slug, week.id),
-                                    ).body.orEmpty(),
-                                )
-                            } catch (e: CancellationException) {
-                                throw e
-                            } catch (e: Exception) {
-                                WeekFetch(week = week, error = e.toAppError())
-                            }
-                        }
+            val targets = when (reason) {
+                ScheduleRefreshReason.MANUAL -> {
+                    val coveredStarts = update.data.display(0).lessons
+                        .mapTo(hashSetOf()) { ScheduleTime.weekStart(it.date) }
+                    update.data.weeks.filter {
+                        !ScheduleTime.weekEnd(it.startDate).isBefore(today) || it.id == selectedWeekId ||
+                            it.id in update.data.htmlWeeks || it.startDate !in coveredStarts
                     }
-                }.awaitAll()
-            }
-
-            val now = Instant.now()
-            var lessons = current.schedule.lessons
-            val checkedWeeks = current.schedule.checkedWeeks.toMutableMap()
-            var loadedCount = 0
-            var firstError: AppError? = null
-
-            for (item in fetched) {
-                if (item.html == null) {
-                    if (firstError == null) firstError = item.error
-                    continue
                 }
-
-                val parsed = try {
-                    weekScheduleParser.parse(item.html, item.week)
-                } catch (e: CancellationException) {
-                    throw e
-                } catch (e: Exception) {
-                    if (firstError == null) firstError = e.toAppError()
-                    continue
+                ScheduleRefreshReason.BACKGROUND -> {
+                    val current = ScheduleTime.weekStart(today)
+                    update.data.weeks.filter { it.startDate == current || it.startDate == current.plusWeeks(1) }
                 }
-
-                if (parsed.lessons.isEmpty() &&
-                    (!parsed.hasSchedule || item.html.contains("lesson-cell")) &&
-                    !isExplicitlyEmpty(item.html)
-                ) {
-                    if (firstError == null) firstError = AppError.Parse()
-                    continue
-                }
-
-                val oldWeekLessons = lessons.filter { it.date in weekDateRange(item.week) }
-                // Пустая HTML-страница не должна стирать занятия, которые уже
-                // пришли из ICS: сайт мог временно отдать неполную страницу.
-                val newWeekLessons = if (parsed.lessons.isEmpty() && oldWeekLessons.isNotEmpty()) {
-                    oldWeekLessons
-                } else {
-                    parsed.lessons
-                }
-                lessons = lessons
-                    .filterNot { it.date in weekDateRange(item.week) }
-                    .plus(newWeekLessons)
-                checkedWeeks[item.week.id] = now.toEpochMilli()
-                loadedCount++
             }
-
-            if (loadedCount == 0) {
-                return@withLock fromCache(
-                    cached = current,
-                    isOffline = firstError is AppError.Network,
-                    error = firstError,
-                )
-            }
-
-            val newLessons = lessons.sortedWith(
-                compareBy<Lesson> { it.date }.thenBy { it.start }.thenBy { it.discipline },
-            )
-            val newCheckedWeeks = checkedWeeks.filterKeys { id ->
-                current.schedule.weeks.any { it.id == id }
-            }
-            val dataChanged = newLessons != current.schedule.lessons
-            val updatedAt = if (dataChanged) {
-                now
-            } else {
-                Instant.ofEpochMilli(current.entity.updatedAt)
-            }
-            val schedule = current.schedule.copy(
-                lessons = newLessons,
-                fetchedAt = updatedAt,
-                checkedWeeks = newCheckedWeeks,
-            )
-            dao.upsert(
-                ScheduleCacheEntity(
-                    groupSlug = group.slug,
-                    payload = ScheduleCacheCodec.encode(schedule),
-                    icsEtag = current.entity.icsEtag,
-                    weeksEtag = current.entity.weeksEtag,
-                    updatedAt = updatedAt.toEpochMilli(),
-                    checkedAt = now.toEpochMilli(),
-                ),
-            )
-
-            ScheduleLoadResult(
-                schedule = schedule,
-                updatedAt = updatedAt,
-                isFromCache = false,
-                isOffline = firstError is AppError.Network,
-                error = firstError,
-            )
+            loadHtmlWeeks(update, targets, html, startedAt)
+            commit(update, monitoringGeneration, targets)
         }
     }
 
     override suspend fun clearCache() {
-        withContext(ioDispatcher) { dao.deleteAll() }
+        withContext(ioDispatcher) {
+            mutex.withLock {
+                val db = database
+                if (db == null) dao.deleteAll() else db.withTransaction {
+                    dao.deleteAll()
+                    db.scheduleNotificationDao().clear()
+                }
+            }
+        }
     }
 
-    private suspend fun loadFromNetwork(
-        group: Group,
-        cached: CachedSchedule?,
-        forceRefresh: Boolean,
-    ): ScheduleLoadResult =
-        try {
-            val requestWeeks = forceRefresh || cached == null || !weeksAreFresh(cached)
-
-            // `.ics` и страница недель независимы, поэтому идут параллельно.
-            // Для пустого кэша ETag не отправляем: иначе сервер может закрепить
-            // ответ, полученный до публикации расписания, и 304 будет вечно
-            // возвращать пустой список.
-            val icsEtag = cached?.entity?.icsEtag
-                ?.takeIf { cached?.let(::hasIcsLessons) == true }
-            val weeksEtag = cached?.entity?.weeksEtag
-                ?.takeIf { cached?.schedule?.weeks?.isNotEmpty() == true }
-
-            val (icsResponse, weeksResponse) = coroutineScope {
-                val ics = async {
+    /** ICS и список недель независимы. Частичный сбой не откатывает удавшийся запрос. */
+    private suspend fun loadBasics(update: Update, force: Boolean): HttpResult? {
+        val shouldFetchWeeks = force || needsWeekList(update.data, today())
+        val (ics, weeks) = coroutineScope {
+            val icsRequest = async {
+                request {
                     client.get(
-                        url = Urls.groupIcs(group.facultyCode, group.slug),
-                        etag = icsEtag,
+                        Urls.groupIcs(update.group.facultyCode, update.group.slug),
+                        update.icsEtag.takeIf { update.data.icsLessons.isNotEmpty() },
                     )
                 }
-                val weeks = if (requestWeeks) {
-                    async {
-                        client.get(
-                            url = Urls.group(group.facultyCode, group.slug),
-                            etag = weeksEtag,
-                        )
-                    }
-                } else {
-                    null
-                }
-                ics.await() to weeks?.await()
             }
-
-            // 304 — содержимое не изменилось, повторно разбирать нечего.
-            val icsLessons = if (icsResponse.notModified) {
-                // 304 без кэша возможен только при гонке с очисткой — считаем это сбоем.
-                cached?.schedule?.lessons ?: throw AppError.Parse()
-            } else {
-                parse { icsParser.parse(icsResponse.body.orEmpty()) }
-            }
-
-            val weeks = when {
-                weeksResponse == null -> cached?.schedule?.weeks.orEmpty()
-                weeksResponse.notModified -> cached?.schedule?.weeks ?: throw AppError.Parse()
-                else -> {
-                    val parsed = parse { weekListParser.parse(weeksResponse.body.orEmpty()) }
-                    // Пустой список недель при наличии кэша — вероятный сбой публикации,
-                    // старые недели полезнее пустого экрана.
-                    if (parsed.isEmpty()) cached?.schedule?.weeks.orEmpty() else parsed
-                }
-            }
-
-            // Недели, догруженные из HTML, важнее ICS только пока ICS их не знает.
-            // Если неделя уже есть в ICS, снимаем HTML-отметку: источником
-            // становится более свежий экспорт, а не кэшированная таблица.
-            val icsWeekIds = if (icsResponse.notModified) {
-                emptySet()
-            } else {
-                icsLessons.mapNotNull { lesson ->
-                    ScheduleTime.findWeek(weeks, lesson.date)?.id
-                }.toSet()
-            }
-            val checkedWeeks = cached?.schedule?.checkedWeeks.orEmpty()
-                .filterKeys { id -> weeks.any { it.id == id } && id !in icsWeekIds }
-            // 304 означает, что в ICS ничего не изменилось: кэш уже правильный,
-            // повторное слияние только может потерять HTML-недели.
-            val lessons = if (icsResponse.notModified && cached != null) {
-                cached.schedule.lessons
-            } else {
-                mergeWithLoadedWeeks(
-                    icsLessons = icsLessons,
-                    cached = cached?.schedule,
-                    weeks = weeks,
-                )
-            }
-
-            val now = Instant.now()
-            val dataChanged = !icsResponse.notModified || weeksResponse?.notModified == false
-            // `updatedAt` — время последнего изменения данных, `checkedAt` — последней проверки.
-            // После 304 данные те же, поэтому время обновления не двигаем.
-            val updatedAt = if (dataChanged || cached == null) {
-                now
-            } else {
-                Instant.ofEpochMilli(cached.entity.updatedAt)
-            }
-
-            val schedule = GroupSchedule(
-                group = group,
-                weeks = weeks,
-                lessons = lessons,
-                fetchedAt = updatedAt,
-                checkedWeeks = checkedWeeks,
-            )
-            // 304 может не повторять ETag — тогда оставляем прежний. Ответ 200
-            // без ETag означает, что старой метки больше нет: сохранять её
-            // нельзя, иначе следующий запрос получит ложный 304.
-            val storedIcsEtag = when {
-                icsResponse.notModified -> icsResponse.etag ?: cached?.entity?.icsEtag
-                icsLessons.isEmpty() -> null
-                else -> icsResponse.etag
-            }
-            val storedWeeksEtag = when {
-                weeksResponse == null -> cached?.entity?.weeksEtag
-                weeksResponse.notModified -> weeksResponse.etag ?: cached?.entity?.weeksEtag
-                else -> weeksResponse.etag
-            }
-            dao.upsert(
-                ScheduleCacheEntity(
-                    groupSlug = group.slug,
-                    payload = ScheduleCacheCodec.encode(schedule),
-                    icsEtag = storedIcsEtag,
-                    weeksEtag = storedWeeksEtag,
-                    updatedAt = updatedAt.toEpochMilli(),
-                    checkedAt = now.toEpochMilli(),
-                ),
-            )
-
-            ScheduleLoadResult(
-                schedule = schedule,
-                updatedAt = updatedAt,
-                isFromCache = false,
-                isOffline = false,
-                error = null,
-            )
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Exception) {
-            val error = e.toAppError()
-            // Кэш при ошибке не затираем: старые занятия лучше пустого экрана.
-            if (cached != null) {
-                fromCache(cached, isOffline = error is AppError.Network, error = error)
-            } else {
-                ScheduleLoadResult(
-                    schedule = null,
-                    updatedAt = null,
-                    isFromCache = false,
-                    isOffline = error is AppError.Network,
-                    error = error,
-                )
-            }
+            val weeksRequest = if (shouldFetchWeeks) async { requestWeekList(update) } else null
+            icsRequest.await() to weeksRequest?.await()
         }
-
-    /**
-     * Загружает HTML выбранной недели. Ответ сайта содержит и список недель,
-     * поэтому заодно обновляем его: новая неделя может появиться раньше, чем
-     * истечёт семидневный TTL страницы группы.
-     */
-    private suspend fun loadWeekFromNetwork(
-        group: Group,
-        week: Week,
-        cached: CachedSchedule?,
-    ): ScheduleLoadResult =
-        try {
-            val response = client.get(Urls.groupWeek(group.facultyCode, group.slug, week.id))
-            val html = response.body.orEmpty()
-            val parsedWeeks = parse { weekListParser.parse(html) }
-            // Страница недели может отдать неполный список: сохраняем недели,
-            // которых в ответе не оказалось, вместо полной замены.
-            val weeks = mergeWeeks(
-                cached = cached?.schedule?.weeks.orEmpty(),
-                parsed = parsedWeeks,
-                preferCached = true,
-            )
-
-            val parsed = parse { weekScheduleParser.parse(html, week) }
-            if (parsed.lessons.isEmpty() &&
-                (!parsed.hasSchedule || html.contains("lesson-cell")) &&
-                !isExplicitlyEmpty(html)
-            ) {
-                // Страница не похожа ни на расписание, ни на плашку «не опубликовано»:
-                // не затираем старые занятия случайным ответом.
-                throw AppError.Parse()
-            }
-
-            val oldSchedule = cached?.schedule
-            val oldLessons = oldSchedule?.lessons.orEmpty()
-            val oldWeekLessons = oldLessons.filter { it.date in weekDateRange(week) }
-            // Пустая страница не должна затирать занятия из ICS.
-            val newWeekLessons = if (parsed.lessons.isEmpty() && oldWeekLessons.isNotEmpty()) {
-                oldWeekLessons
-            } else {
-                parsed.lessons
-            }
-            val lessons = oldLessons
-                .filterNot { it.date in weekDateRange(week) }
-                .plus(newWeekLessons)
-                .sortedWith(compareBy<Lesson> { it.date }.thenBy { it.start }.thenBy { it.discipline })
-
-            val now = Instant.now()
-            val checkedWeeks = oldSchedule?.checkedWeeks.orEmpty().toMutableMap().apply {
-                put(week.id, now.toEpochMilli())
-            }.filterKeys { id -> weeks.any { it.id == id } || id == week.id }
-
-            val dataChanged = lessons != oldLessons || weeks != oldSchedule?.weeks.orEmpty()
-            val updatedAt = if (dataChanged || cached == null) {
-                now
-            } else {
-                Instant.ofEpochMilli(cached.entity.updatedAt)
-            }
-
-            val schedule = GroupSchedule(
-                group = group,
-                weeks = weeks,
-                lessons = lessons,
-                fetchedAt = updatedAt,
-                checkedWeeks = checkedWeeks,
-            )
-            dao.upsert(
-                ScheduleCacheEntity(
-                    groupSlug = group.slug,
-                    payload = ScheduleCacheCodec.encode(schedule),
-                    icsEtag = cached?.entity?.icsEtag,
-                    weeksEtag = cached?.entity?.weeksEtag,
-                    updatedAt = updatedAt.toEpochMilli(),
-                    checkedAt = now.toEpochMilli(),
-                ),
-            )
-
-            ScheduleLoadResult(
-                schedule = schedule,
-                updatedAt = updatedAt,
-                isFromCache = false,
-                isOffline = false,
-                error = null,
-            )
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Exception) {
-            val error = e.toAppError()
-            if (cached != null) {
-                fromCache(cached, isOffline = error is AppError.Network, error = error)
-            } else {
-                ScheduleLoadResult(
-                    schedule = null,
-                    updatedAt = null,
-                    isFromCache = false,
-                    isOffline = error is AppError.Network,
-                    error = error,
-                )
-            }
-        }
-
-    private fun mergeWithLoadedWeeks(
-        icsLessons: List<Lesson>,
-        cached: GroupSchedule?,
-        weeks: List<Week>,
-    ): List<Lesson> {
-        val loadedWeekIds = cached?.checkedWeeks.orEmpty().keys
-        if (loadedWeekIds.isEmpty()) return icsLessons
-
-        // HTML остаётся источником только для недель, которых нет в ICS.
-        // Если ICS уже отдаёт эту неделю, он свежее: переносы и замены не
-        // должны скрываться под кэшированной HTML-таблицей.
-        val icsWeekIds = icsLessons.mapNotNull { lesson ->
-            ScheduleTime.findWeek(weeks, lesson.date)?.id
-        }.toSet()
-        val htmlOnlyLessons = cached?.lessons.orEmpty().filter { lesson ->
-            val weekId = ScheduleTime.findWeek(weeks, lesson.date)?.id
-            weekId in loadedWeekIds && weekId !in icsWeekIds
-        }
-        return (icsLessons + htmlOnlyLessons)
-            .sortedWith(compareBy<Lesson> { it.date }.thenBy { it.start }.thenBy { it.discipline })
+        ics.onSuccess { response ->
+            request { applyIcs(update, response) }.onFailure { update.recordError(it) }
+        }.onFailure { update.recordError(it) }
+        return weeks?.fold(
+            onSuccess = { applyWeekList(update, it) },
+            onFailure = { update.recordError(it); null },
+        )
     }
 
-    /**
-     * Есть ли в кэше занятия, которые пришли не из HTML-недели. Если всё
-     * расписание загружено только из HTML, ETag пустого ICS отправлять нельзя.
-     */
-    private fun hasIcsLessons(cached: CachedSchedule): Boolean {
-        val loadedWeekIds = cached.schedule.checkedWeeks.keys
-        val weeks = cached.schedule.weeks
-        return cached.schedule.lessons.any { lesson ->
-            val weekId = ScheduleTime.findWeek(weeks, lesson.date)?.id
-            weekId == null || weekId !in loadedWeekIds
-        }
+    private suspend fun requestWeekList(update: Update): Result<HttpResult> = request {
+        client.get(
+            Urls.group(update.group.facultyCode, update.group.slug),
+            update.weeksEtag.takeIf { update.data.weekListCheckedAt > 0 && update.data.weeks.isNotEmpty() },
+        )
     }
 
-    private fun mergeWeeks(
-        cached: List<Week>,
-        parsed: List<Week>,
-        preferCached: Boolean = false,
-    ): List<Week> {
-        if (parsed.isEmpty()) return cached
-        if (cached.isEmpty()) return parsed
-        val cachedIds = cached.map { it.id }.toSet()
-        return if (preferCached) {
-            (cached + parsed.filterNot { it.id in cachedIds }).sortedBy { it.startDate }
-        } else {
-            val parsedIds = parsed.map { it.id }.toSet()
-            (parsed + cached.filterNot { it.id in parsedIds }).sortedBy { it.startDate }
-        }
-    }
+    private suspend fun loadWeekList(update: Update): HttpResult? = requestWeekList(update).fold(
+        onSuccess = { applyWeekList(update, it) },
+        onFailure = { update.recordError(it); null },
+    )
 
-    private fun weekDateRange(week: Week): ClosedRange<java.time.LocalDate> =
-        week.startDate..week.startDate.plusDays(6)
-
-    private fun isExplicitlyEmpty(html: String): Boolean =
-        html.contains("empty-schedule") ||
-            html.contains("На эту неделю") ||
-            html.contains("На данную неделю")
-
-    /**
-     * Отметка последней загрузки недели из HTML. ICS приходит отдельно, поэтому
-     * проверяем именно неделю, а не общий `checkedAt` расписания.
-     */
-    private fun weekIsFresh(cached: CachedSchedule, week: Week): Boolean {
-        val checkedAt = cached.schedule.checkedWeeks[week.id] ?: return false
-        val age = System.currentTimeMillis() - checkedAt
-        if (age < 0) return false
-        return age < TTL_WEEK_MS
-    }
-
-    private suspend fun readCache(groupSlug: String): CachedSchedule? {
-        val entity = dao.get(groupSlug) ?: return null
-        val schedule = ScheduleCacheCodec.decode(entity.payload)
-        if (schedule == null) {
-            // Битый JSON (например, после смены модели) — кэша нет, строку убираем,
-            // чтобы не разбирать её при каждом запуске.
-            dao.delete(groupSlug)
+    private fun applyWeekList(update: Update, response: HttpResult): HttpResult? {
+        val parsed = if (response.notModified) update.data.weeks else weekListParser.parse(response.body.orEmpty())
+        if (parsed.isEmpty()) {
+            update.recordError(AppError.Parse())
             return null
         }
-        return CachedSchedule(entity = entity, schedule = schedule)
+        update.data = update.data.copy(
+            weeks = mergeWeeks(update.data.weeks, parsed),
+            weekListCheckedAt = clock.millis(),
+        )
+        update.weeksEtag = response.etag
+        update.receivedData = true
+        return response.takeUnless { it.notModified }
     }
 
-    private fun isFresh(cached: CachedSchedule): Boolean {
-        val age = System.currentTimeMillis() - cached.entity.checkedAt
-        // Часы перевели назад: кэш нельзя считать свежим, иначе он может остаться
-        // «вечно актуальным» после публикации расписания.
-        if (age < 0) return false
-
-        val weeks = cached.schedule.weeks
-        val lessons = cached.schedule.lessons
-        val currentWeek = ScheduleTime.currentWeek(weeks)
-        val currentWeekHasLessons = currentWeek != null && lessons.any { lesson ->
-            lesson.date in weekDateRange(currentWeek)
+    private fun applyIcs(update: Update, response: HttpResult) {
+        if (response.notModified) {
+            if (update.data.icsLessons.isEmpty()) throw AppError.Parse()
+        } else {
+            val body = response.body.orEmpty().trim().removePrefix("\uFEFF")
+            if (body.isNotBlank() && (!body.startsWith("BEGIN:VCALENDAR", ignoreCase = true) ||
+                    !body.endsWith("END:VCALENDAR", ignoreCase = true))
+            ) {
+                throw AppError.Parse()
+            }
+            val lessons = icsParser.parse(body)
+            val coveredStarts = lessons.mapTo(hashSetOf()) { ScheduleTime.weekStart(it.date) }
+            val verifiedStarts = update.data.htmlWeeks.values.filter { it.lessons != null }
+                .mapTo(hashSetOf()) { it.startDate }
+            val fallback = (update.data.olderLessons + update.data.icsLessons).filter {
+                val week = ScheduleTime.weekStart(it.date)
+                week !in coveredStarts && week !in verifiedStarts
+            }.distinct()
+            update.data = update.data.copy(icsLessons = lessons, olderLessons = fallback)
         }
-        val ttl = when {
-            // Пустой ответ — это, скорее всего, ещё не опубликованное расписание.
-            // Проверяем его часто, чтобы новая публикация появилась сама.
-            lessons.isEmpty() || weeks.isEmpty() -> TTL_EMPTY_MS
-            currentWeek == null -> TTL_DEFAULT_MS
-            !currentWeekHasLessons -> TTL_EMPTY_MS
-            else -> TTL_CURRENT_WEEK_MS
+        update.icsCheckedAt = clock.millis()
+        update.icsEtag = response.etag.takeIf { update.data.icsLessons.isNotEmpty() }
+        update.receivedData = true
+    }
+
+    private suspend fun loadHtmlWeeks(
+        update: Update,
+        weeks: List<Week>,
+        groupPage: HttpResult? = null,
+        startedAt: Long? = null,
+    ) {
+        val groupUrl = Urls.group(update.group.facultyCode, update.group.slug)
+        val selected = groupPage?.body?.let(weekListParser::selected)
+        val semaphore = Semaphore(MAX_PARALLEL_WEEK_REQUESTS)
+        val responses = coroutineScope {
+            weeks.map { week ->
+                async {
+                    semaphore.withPermit {
+                        val previous = update.data.htmlWeek(week)
+                        val fetched = request {
+                            when {
+                                startedAt != null && previous != null && previous.checkedAt > startedAt ->
+                                    WeekResponse(week, previous, emptyList())
+                                else -> fetchWeek(
+                                    update.group, groupUrl, week, previous,
+                                    groupPage.takeIf { selected?.id == week.id && selected.startDate == week.startDate },
+                                )
+                            }
+                        }
+                        week to fetched
+                    }
+                }
+            }.awaitAll()
         }
-        return age < ttl
+
+        for ((week, response) in responses) {
+            response.onSuccess { fetched ->
+                val data = update.data
+                update.data = data.copy(
+                    weeks = mergeWeeks(data.weeks, fetched.weeks + fetched.week),
+                    htmlWeeks = data.htmlWeeks + (week.id to fetched.stored),
+                    olderLessons = if (fetched.stored.lessons != null) {
+                        data.olderLessons.filterNot { ScheduleTime.weekStart(it.date) == week.startDate }
+                    } else data.olderLessons,
+                )
+                update.checked += week.id
+                update.receivedData = true
+            }.onFailure {
+                update.recordError(it)
+                update.failed += week.id
+            }
+        }
     }
 
-    /**
-     * Страница недель живёт 7 дней. Отсчёт идёт от `updatedAt`, но если сегодняшняя дата
-     * не попадает ни в одну известную неделю, список заведомо устарел (начался новый семестр)
-     * и запрашивается заново, не дожидаясь конца TTL.
-     */
-    private fun weeksAreFresh(cached: CachedSchedule): Boolean {
-        val weeks = cached.schedule.weeks
-        if (weeks.isEmpty()) return false
-        if (ScheduleTime.findWeek(weeks, ScheduleTime.today()) == null) return false
+    private suspend fun fetchWeek(
+        group: Group,
+        groupUrl: String,
+        week: Week,
+        previous: StoredWeek?,
+        groupPage: HttpResult?,
+    ): WeekResponse {
+        val fromGroupPage = groupPage?.body?.let { weekScheduleParser.parse(it, week, groupUrl) }
+            ?.takeIf { it.publication != null }
 
-        val age = System.currentTimeMillis() - cached.entity.updatedAt
-        return age >= 0 && age < WEEKS_TTL_MS
+        val parsed: WeekScheduleParser.ParsedWeek
+        val etag: String?
+        if (fromGroupPage != null) {
+            parsed = fromGroupPage
+            // У страницы по умолчанию свой ETag, использовать его для week_id нельзя.
+            etag = null
+        } else {
+            val response = client.get(Urls.groupWeek(group.facultyCode, group.slug, week.id), previous?.etag)
+            if (response.notModified) {
+                if (previous?.etag == null) throw AppError.Parse()
+                return WeekResponse(week, previous.copy(checkedAt = clock.millis()), emptyList())
+            }
+            parsed = weekScheduleParser.parse(response.body.orEmpty(), week, groupUrl)
+            etag = response.etag
+        }
+
+        val publication = parsed.publication ?: throw AppError.Parse()
+        val holidays = previous?.holidays.orEmpty().filterNot { it.date in parsed.calendarDates } + parsed.holidays
+        return WeekResponse(
+            week = week,
+            stored = StoredWeek(
+                startDate = week.startDate,
+                checkedAt = clock.millis(),
+                etag = etag,
+                publication = publication,
+                lessons = if (publication == WeekPublication.PUBLISHED) parsed.lessons else previous?.lessons,
+                holidays = holidays.sortedBy { it.date },
+            ),
+            weeks = parsed.weeks,
+        )
     }
 
-    private fun fromCache(
-        cached: CachedSchedule,
-        isOffline: Boolean = false,
+    private suspend fun commit(
+        update: Update,
+        generation: String? = null,
+        targets: List<Week> = emptyList(),
+    ): ScheduleLoadResult {
+        val previous = update.cache
+        if (!update.receivedData) return result(previous?.display, update.error)
+
+        val now = clock.instant()
+        val db = database
+        val notice = if (generation != null && db != null) {
+            val verified = update.checked.mapNotNull { id ->
+                val week = update.data.htmlWeeks.getValue(id)
+                if (week.publication == WeekPublication.PUBLISHED && week.lessons != null) {
+                    id to ComparedWeek(week.startDate, week.checkedAt, week.lessons, week.holidays)
+                } else null
+            }.toMap()
+            val prior = update.data.baseline
+            val unavailable = targets.filter { week ->
+                week.id in update.failed || week.id in prior?.weeks.orEmpty() && week.id !in verified
+            }
+            val comparison = detector.compare(generation, prior, verified, unavailable, now)
+            update.data = update.data.copy(baseline = comparison.baseline)
+            comparison.changes.takeIf { it.isNotEmpty() }?.let {
+                ScheduleNotificationEntity(
+                    id = UUID.randomUUID().toString(),
+                    generation = generation,
+                    payload = ScheduleCacheCodec.json.encodeToString(it),
+                    createdAt = now.toEpochMilli(),
+                )
+            }
+        } else null
+
+        val oldDisplay = previous?.display
+        val newDisplay = update.data.display(previous?.entity?.updatedAt ?: now.toEpochMilli())
+        val updatedAt = if (oldDisplay == null ||
+            oldDisplay.copy(checkedWeeks = emptyMap()) != newDisplay.copy(checkedWeeks = emptyMap())
+        ) now.toEpochMilli() else previous.entity.updatedAt
+        val entity = ScheduleCacheEntity(
+            groupSlug = update.group.slug,
+            payload = ScheduleCacheCodec.encodeStored(update.data),
+            icsEtag = update.icsEtag,
+            weeksEtag = update.weeksEtag,
+            updatedAt = updatedAt,
+            checkedAt = update.icsCheckedAt,
+        )
+        if (notice != null && db != null) {
+            db.withTransaction {
+                dao.upsert(entity)
+                db.scheduleNotificationDao().insert(notice)
+            }
+        } else dao.upsert(entity)
+        return result(newDisplay.copy(fetchedAt = Instant.ofEpochMilli(updatedAt)), update.error, fromCache = false)
+    }
+
+    private suspend fun read(group: Group): CachedSchedule? =
+        dao.get(group.slug)?.toCache()?.takeIf { it.data.group.facultyCode == group.facultyCode }
+
+    private fun ScheduleCacheEntity.toCache(): CachedSchedule? =
+        ScheduleCacheCodec.decodeStored(payload)?.let { CachedSchedule(this, it) }
+
+    private fun StoredSchedule.htmlWeek(week: Week): StoredWeek? =
+        htmlWeeks[week.id]?.takeIf { it.startDate == week.startDate }
+
+    private fun result(
+        schedule: GroupSchedule?,
         error: AppError? = null,
+        fromCache: Boolean = schedule != null,
     ): ScheduleLoadResult = ScheduleLoadResult(
-        schedule = cached.schedule,
-        updatedAt = Instant.ofEpochMilli(cached.entity.updatedAt),
-        isFromCache = true,
-        isOffline = isOffline,
+        schedule = schedule,
+        updatedAt = schedule?.fetchedAt,
+        isFromCache = fromCache,
+        isOffline = error is AppError.Network,
         error = error,
     )
 
-    private fun Throwable.toAppError(): AppError = when (this) {
-        is AppError -> this
-        is IOException -> AppError.Network(this)
-        else -> AppError.Unknown(this)
+    private fun mergeWeeks(old: List<Week>, latest: List<Week>): List<Week> =
+        (latest + old).distinctBy { it.id }.sortedBy { it.startDate }
+
+    private fun today(): LocalDate = clock.instant().atZone(ScheduleTime.ZONE).toLocalDate()
+
+    private fun needsWeekList(data: StoredSchedule, today: LocalDate): Boolean =
+        ScheduleTime.findWeek(data.weeks, today) == null ||
+            clock.millis() - data.weekListCheckedAt !in 0 until WEEK_LIST_TTL
+
+    private fun htmlIsFresh(checkedAt: Long): Boolean = clock.millis() - checkedAt in 0 until CURRENT_TTL
+
+    private fun isFresh(cache: CachedSchedule): Boolean {
+        val date = today()
+        val schedule = cache.display
+        val current = ScheduleTime.findWeek(schedule.weeks, date)
+        val hasCurrentLessons = current != null &&
+            schedule.lessons.any { ScheduleTime.weekStart(it.date) == current.startDate }
+        val ttl = when {
+            schedule.weeks.isEmpty() || cache.data.icsLessons.isEmpty() -> EMPTY_TTL
+            current == null -> OTHER_TTL
+            hasCurrentLessons -> CURRENT_TTL
+            else -> EMPTY_TTL
+        }
+        return clock.millis() - cache.entity.checkedAt in 0 until ttl
     }
 
-    /** Ошибки парсеров приводим к [AppError.Parse], остальные не трогаем. */
-    private inline fun <T> parse(block: () -> T): T =
+    private suspend fun <T> request(operation: suspend () -> T): Result<T> =
         try {
-            block()
+            Result.success(operation())
         } catch (e: CancellationException) {
             throw e
-        } catch (e: AppError) {
-            throw e
         } catch (e: Exception) {
-            throw AppError.Parse(e)
+            Result.failure(e)
         }
 
-    private data class CachedSchedule(
-        val entity: ScheduleCacheEntity,
-        val schedule: GroupSchedule,
-    )
+    private data class CachedSchedule(val entity: ScheduleCacheEntity, val data: StoredSchedule) {
+        val display: GroupSchedule by lazy { data.display(entity.updatedAt) }
+    }
 
-    private data class WeekFetch(
-        val week: Week,
-        val html: String? = null,
-        val error: AppError? = null,
-    )
+    private data class WeekResponse(val week: Week, val stored: StoredWeek, val weeks: List<Week>)
+
+    private class Update(val group: Group, val cache: CachedSchedule?) {
+        var data = cache?.data?.copy(group = group) ?: StoredSchedule.empty(group)
+        var icsEtag = cache?.entity?.icsEtag
+        var weeksEtag = cache?.entity?.weeksEtag
+        var icsCheckedAt = cache?.entity?.checkedAt ?: 0
+        var receivedData = false
+        var error: AppError? = null
+        val checked = mutableSetOf<Int>()
+        val failed = mutableSetOf<Int>()
+
+        fun recordError(cause: Throwable) {
+            val candidate = when (cause) {
+                is AppError -> cause
+                is IOException -> AppError.Network(cause)
+                else -> AppError.Parse(cause)
+            }
+            if (error == null || candidate is AppError.Network ||
+                candidate is AppError.Server && error !is AppError.Network
+            ) error = candidate
+        }
+    }
 
     private companion object {
-        const val TTL_CURRENT_WEEK_MS = 15L * 60 * 1000
-        const val TTL_EMPTY_MS = 1L * 60 * 1000
-        const val TTL_DEFAULT_MS = 6L * 60 * 60 * 1000
-        const val TTL_WEEK_MS = 15L * 60 * 1000
-        const val WEEKS_TTL_MS = 7L * 24 * 60 * 60 * 1000
+        val CURRENT_TTL = Duration.ofMinutes(15).toMillis()
+        val EMPTY_TTL = Duration.ofMinutes(1).toMillis()
+        val OTHER_TTL = Duration.ofHours(6).toMillis()
+        val WEEK_LIST_TTL = Duration.ofDays(7).toMillis()
         const val MAX_PARALLEL_WEEK_REQUESTS = 4
     }
 }

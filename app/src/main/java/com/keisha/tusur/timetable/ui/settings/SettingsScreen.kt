@@ -2,9 +2,14 @@
 
 package com.keisha.tusur.timetable.ui.settings
 
+import android.Manifest
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.compose.BackHandler
 import androidx.annotation.StringRes
 import androidx.compose.foundation.BorderStroke
@@ -27,6 +32,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.DeleteSweep
@@ -56,6 +62,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -79,6 +86,7 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
@@ -121,11 +129,18 @@ fun SettingsScreen(
     )
     val state by viewModel.state.collectAsStateWithLifecycle()
     val updateState by updateViewModel.state.collectAsStateWithLifecycle()
+    val canNotify by container.scheduleNotifications.deliveryAvailable.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val linkErrorText = stringResource(R.string.settings_link_error)
     var showClearDialog by rememberSaveable { mutableStateOf(false) }
+    var notificationPermissionDenied by rememberSaveable { mutableStateOf(false) }
+    val notificationPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        notificationPermissionDenied = !granted
+        if (granted) viewModel.setNotificationsEnabled(true)
+        scope.launch { container.scheduleNotifications.reconcile() }
+    }
 
     BackHandler(onBack = onBack)
 
@@ -139,6 +154,7 @@ fun SettingsScreen(
             val message = when (event) {
                 SettingsEvent.CacheCleared -> context.getString(R.string.settings_clear_cache_done)
                 is SettingsEvent.CacheClearFailed -> context.getString(event.error.messageRes())
+                SettingsEvent.NotificationSettingFailed -> context.getString(R.string.schedule_notifications_save_failed)
             }
             snackbarHostState.showSnackbar(message)
         }
@@ -194,6 +210,26 @@ fun SettingsScreen(
                 AppearanceCard(
                     themeMode = state.themeMode,
                     onThemeModeChange = viewModel::setThemeMode,
+                )
+            }
+            item {
+                NotificationsCard(
+                    enabled = state.notificationsEnabled,
+                    blocked = !canNotify && (state.notificationsEnabled || notificationPermissionDenied),
+                    onToggle = { enabled ->
+                        if (enabled && Build.VERSION.SDK_INT >= 33 && ContextCompat.checkSelfPermission(
+                                context, Manifest.permission.POST_NOTIFICATIONS,
+                            ) != PackageManager.PERMISSION_GRANTED
+                        ) {
+                            notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+                        } else {
+                            notificationPermissionDenied = false
+                            viewModel.setNotificationsEnabled(enabled)
+                        }
+                    },
+                    onOpenSystemSettings = {
+                        runCatching { context.startActivity(container.scheduleNotifications.settingsIntent()) }
+                    },
                 )
             }
             item {
@@ -383,6 +419,41 @@ private fun ThemeModeRow(
             )
             Text(text = label, modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
             RadioButton(selected = selected, onClick = null)
+        }
+    }
+}
+
+@Composable
+private fun NotificationsCard(
+    enabled: Boolean,
+    blocked: Boolean,
+    onToggle: (Boolean) -> Unit,
+    onOpenSystemSettings: () -> Unit,
+) {
+    val title = stringResource(R.string.schedule_notifications_title)
+    SettingsCard(title = title) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .toggleable(value = enabled, role = Role.Switch, onValueChange = onToggle)
+                .semantics { contentDescription = title }
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Text(
+                text = stringResource(
+                    if (blocked) R.string.schedule_notifications_blocked else R.string.schedule_notifications_summary,
+                ),
+                modifier = Modifier.weight(1f),
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            Switch(checked = enabled, onCheckedChange = null)
+        }
+        if (blocked) {
+            TextButton(onClick = onOpenSystemSettings, modifier = Modifier.padding(horizontal = 8.dp)) {
+                Text(stringResource(R.string.schedule_notifications_open_settings))
+            }
         }
     }
 }

@@ -31,6 +31,13 @@ object ScheduleCacheCodec {
             null
         }
 
+    internal fun encodeStored(schedule: StoredSchedule): String = json.encodeToString(schedule)
+
+    internal fun decodeStored(payload: String): StoredSchedule? =
+        runCatching { json.decodeFromString<StoredSchedule>(payload) }
+            .getOrNull()?.takeIf { it.format == StoredSchedule.CURRENT_FORMAT }
+            ?: decode(payload)?.let(StoredSchedule::fromLegacy)
+
     fun encodeTeacher(schedule: TeacherSchedule): String =
         json.encodeToString(TeacherSchedule.serializer(), schedule)
 

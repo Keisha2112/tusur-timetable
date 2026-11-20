@@ -25,8 +25,8 @@ android {
         applicationId = "com.keisha.tusur.timetable"
         minSdk = 23
         targetSdk = 36
-        versionCode = 9
-        versionName = "1.3.0"
+        versionCode = 10
+        versionName = "1.4.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
@@ -86,6 +86,8 @@ android {
             isReturnDefaultValues = true
         }
     }
+
+    sourceSets.getByName("androidTest").assets.srcDir("$projectDir/schemas")
 }
 
 kotlin {
@@ -128,6 +130,7 @@ dependencies {
     ksp(libs.androidx.room.compiler)
 
     implementation(libs.androidx.datastore.preferences)
+    implementation(libs.androidx.work.runtime)
     implementation(libs.okhttp)
     implementation(libs.jsoup)
     implementation(libs.biweekly)
@@ -146,5 +149,7 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+    androidTestImplementation(libs.androidx.room.testing)
+    androidTestImplementation(libs.androidx.work.testing)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 }
