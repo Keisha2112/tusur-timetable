@@ -57,8 +57,8 @@ class ScheduleRepositoryImpl(
     private val mutex = Mutex()
     private val detector = ScheduleChangeDetector()
 
-    override suspend fun cached(groupSlug: String): GroupSchedule? =
-        withContext(ioDispatcher) { dao.get(groupSlug)?.toCache()?.display }
+    override suspend fun cached(group: Group): GroupSchedule? =
+        withContext(ioDispatcher) { read(group)?.display }
 
     override fun observe(group: Group): Flow<GroupSchedule?> =
         dao.observe(group.slug)
@@ -68,8 +68,8 @@ class ScheduleRepositoryImpl(
             .distinctUntilChanged()
             .flowOn(ioDispatcher)
 
-    override suspend fun lastUpdated(groupSlug: String): Instant? =
-        withContext(ioDispatcher) { dao.updatedAt(groupSlug)?.let(Instant::ofEpochMilli) }
+    override suspend fun lastUpdated(group: Group): Instant? =
+        withContext(ioDispatcher) { read(group)?.display?.fetchedAt }
 
     override suspend fun load(group: Group, forceRefresh: Boolean): ScheduleLoadResult =
         withContext(ioDispatcher) {

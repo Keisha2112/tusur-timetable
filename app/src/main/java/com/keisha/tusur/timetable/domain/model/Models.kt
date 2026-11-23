@@ -105,6 +105,8 @@ data class Lesson(
     val status: LessonStatus = LessonStatus.SCHEDULED,
     @Serializable(with = LocalDateSerializer::class)
     val endDate: LocalDate? = null,
+    val groupLinks: List<Group> = emptyList(),
+    val sourceUrl: String? = null,
 )
 
 /** Пустой список [closedStarts] означает, что на сайте закрыт весь день. */
@@ -150,6 +152,7 @@ data class GroupSchedule(
     val holidays: List<HolidayDay> = emptyList(),
     val publications: Map<Int, WeekPublication> = emptyMap(),
     val staleWeeks: Set<Int> = emptySet(),
+    val roomCoverage: Map<Int, RoomWeekCoverage> = emptyMap(),
 ) {
     fun entries() = ScheduleEntries(weeks, lessons, holidays, publications)
 }

@@ -2,13 +2,10 @@
 <resources>
     <string name="schedule_source_title">Источник расписания</string>
     <string name="schedule_source_group">Расписание ТУСУРа</string>
-    <string name="schedule_source_room">Занятость аудиторий</string>
-    <string name="room_choose_building">Выберите корпус</string>
-    <string name="room_choose_auditorium">Выберите аудиторию</string>
-    <string name="room_change_auditorium">Сменить аудиторию</string>
-    <string name="room_apply_auditorium">Выбрать аудиторию</string>
-    <string name="room_back_to_buildings">К списку корпусов</string>
-    <string name="room_no_entries">Нет записей на сайте</string>
-    <string name="room_not_found">Аудитория не найдена на сайте ТУСУРа</string>
-    <string name="room_catalog_not_found">Не удалось найти список аудиторий</string>
+    <string name="schedule_source_group_from_rooms">Расписание группы по данным аудиторий</string>
+    <string name="room_checks_starting">Подготовка списка аудиторий…</string>
+    <string name="room_checks_progress">Проверено аудиторий: %1$d из %2$d</string>
+    <string name="room_checks_incomplete">Неполные данные недели. Проверено аудиторий: %1$d из %2$d</string>
+    <string name="room_no_entries">Нет записи в данных аудиторий</string>
+    <string name="schedule_notice_room_record_removed">Запись о занятии «%1$s» исчезла из данных аудиторий, %2$s</string>
 </resources>

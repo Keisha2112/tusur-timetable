@@ -40,9 +40,10 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.keisha.tusur.timetable.AppContainer
 import com.keisha.tusur.timetable.R
+import com.keisha.tusur.timetable.data.repository.UserSelection
 import com.keisha.tusur.timetable.domain.model.AppError
-import com.keisha.tusur.timetable.domain.model.Auditorium
 import com.keisha.tusur.timetable.domain.model.Lesson
+import com.keisha.tusur.timetable.domain.model.ScheduleSource
 import com.keisha.tusur.timetable.domain.time.NowSnapshot
 import com.keisha.tusur.timetable.domain.time.NowState
 import com.keisha.tusur.timetable.domain.time.ScheduleTime
@@ -57,13 +58,14 @@ internal fun NowScreen(
     container: AppContainer,
     onBack: () -> Unit,
     onOpenTeacher: (String) -> Unit,
-    auditorium: Auditorium? = null,
+    source: ScheduleSource = ScheduleSource.GROUP,
+    selectionOverride: UserSelection? = null,
 ) {
     val viewModel: NowViewModel = viewModel(
-        key = auditorium?.subject()?.key ?: "group",
+        key = selectionOverride?.subject(source)?.key ?: source.name,
         factory = viewModelFactory {
             initializer {
-                NowViewModel(container.scheduleRepository, container.settingsRepository, container.roomScheduleRepository, auditorium)
+                NowViewModel(container.scheduleFor(source), container.settingsRepository, source, selectionOverride)
             }
         },
     )
@@ -94,29 +96,31 @@ internal fun NowScreen(
     }
 
     val date = snapshot?.date
-    var roomLoading by remember(auditorium, date) { mutableStateOf(auditorium != null) }
-    var roomError by remember(auditorium, date) { mutableStateOf<AppError?>(null) }
-    var nextWeekError by remember(auditorium, date) { mutableStateOf<AppError?>(null) }
-    var retry by remember(auditorium, date) { mutableStateOf(0) }
-    LaunchedEffect(viewModel, date, retry, isOnline) {
-        if (auditorium == null || date == null) return@LaunchedEffect
+    val fromRooms = source == ScheduleSource.GROUP_FROM_ROOMS
+    val groupKey = schedule?.subject?.key
+    var roomLoading by remember(groupKey, date) { mutableStateOf(fromRooms) }
+    var roomError by remember(groupKey, date) { mutableStateOf<AppError?>(null) }
+    var nextWeekError by remember(groupKey, date) { mutableStateOf<AppError?>(null) }
+    var retry by remember(groupKey, date) { mutableStateOf(0) }
+    LaunchedEffect(viewModel, groupKey, date, retry, isOnline) {
+        if (!fromRooms || date == null || groupKey == null) return@LaunchedEffect
         roomLoading = true
         try {
-            roomError = viewModel.loadRoom(forceRefresh = retry > 0)
+            roomError = viewModel.load(forceRefresh = retry > 0)
         } finally {
             roomLoading = false
         }
     }
-    val nextWeek = state?.nextRoomWeek()?.takeIf { auditorium != null && !roomLoading && roomError == null }
-    LaunchedEffect(viewModel, nextWeek, retry, isOnline) {
-        nextWeekError = nextWeek?.let { viewModel.loadRoom(it, forceRefresh = retry > 0) }
+    val nextWeek = state?.nextRoomWeek()?.takeIf { fromRooms && !roomLoading && roomError == null }
+    LaunchedEffect(viewModel, groupKey, nextWeek, retry, isOnline) {
+        nextWeekError = nextWeek?.let { viewModel.load(it, forceRefresh = retry > 0) }
     }
 
     Scaffold(
         topBar = {
             ScheduleHeader(
                 title = stringResource(R.string.schedule_now),
-                subtitle = schedule?.subject?.title ?: auditorium?.label,
+                subtitle = schedule?.subject?.title,
                 onBack = onBack,
             )
         },
@@ -124,22 +128,23 @@ internal fun NowScreen(
         containerColor = MaterialTheme.colorScheme.background,
     ) { padding ->
         val week = schedule?.entries?.let { entries -> date?.let { ScheduleTime.findWeek(entries.weeks, it) } }
-        val roomWeekUnavailable = auditorium != null && (week == null || week.id !in schedule?.updatedWeeks.orEmpty())
+        val roomWeekPending = fromRooms && (week == null || week.id !in schedule?.entries?.publications.orEmpty())
+        val coverage = week?.id?.let { schedule?.roomCoverage?.get(it) }
         val error = roomError
-        if (snapshot == null || roomWeekUnavailable && roomLoading) {
+        if (snapshot == null || roomLoading && schedule?.entries == null) {
             ScheduleLoadingState(Modifier.padding(padding))
-        } else if (roomWeekUnavailable && error != null) {
+        } else if (schedule?.entries == null && error != null) {
             ScheduleErrorState(
                 error = error,
                 groupNotFound = false,
                 onRetry = { retry++ },
-                notFoundMessageRes = R.string.room_not_found,
                 modifier = Modifier.padding(padding),
             )
         } else {
             Column(Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState())) {
                 if (schedule?.entries != null &&
-                    (!isOnline || error != null || nextWeekError != null || week?.id in schedule.staleWeeks)
+                    (!isOnline || error != null || nextWeekError != null || week?.id in schedule.staleWeeks ||
+                        nextWeek?.id in schedule.staleWeeks)
                 ) {
                     OfflineBanner(
                         message = stringResource(
@@ -157,10 +162,15 @@ internal fun NowScreen(
                         }
                     }
                 }
+                val checking = coverage?.loading == true || roomLoading && roomWeekPending
+                if (fromRooms && (checking || coverage != null && !coverage.complete)) {
+                    RoomWeekProgress(coverage, checking)
+                }
                 NowContent(
                     snapshot,
                     onLesson = { details = it },
-                    isRoom = auditorium != null,
+                    fromRooms = fromRooms,
+                    partial = roomWeekPending,
                     loadingUpcoming = nextWeek != null && nextWeekError == null,
                 )
             }
@@ -170,8 +180,7 @@ internal fun NowScreen(
     if (lesson != null && schedule != null) {
         LessonDetailsSheet(
             lesson = lesson,
-            sourceUrl = schedule.subject.sourceUrl(schedule.entries?.let { ScheduleTime.findWeek(it.weeks, lesson.date) }),
-            showGroups = auditorium != null,
+            sourceUrl = schedule.subject.sourceUrl(lesson),
             onDismiss = { details = null },
             onTeacherClick = { teacher ->
                 details = null
@@ -185,7 +194,8 @@ internal fun NowScreen(
 internal fun NowContent(
     snapshot: NowSnapshot,
     onLesson: (Lesson) -> Unit,
-    isRoom: Boolean = false,
+    fromRooms: Boolean = false,
+    partial: Boolean = false,
     loadingUpcoming: Boolean = false,
 ) {
     val state = snapshot.state
@@ -206,7 +216,7 @@ internal fun NowContent(
             is NowState.Running -> {
                 StateTitle(stringResource(R.string.now_current_lesson))
                 for (entry in state.current) {
-                    LessonCard(entry.lesson, onClick = { onLesson(entry.lesson) }, showGroups = isRoom)
+                    LessonCard(entry.lesson, onClick = { onLesson(entry.lesson) })
                     Text(
                         stringResource(R.string.now_remaining, durationText(entry.remaining)),
                         style = MaterialTheme.typography.bodyMedium,
@@ -225,27 +235,29 @@ internal fun NowContent(
                 )
             }
             is NowState.Finished -> {
-                StateTitle(stringResource(R.string.now_finished))
+                if (!partial) StateTitle(stringResource(R.string.now_finished))
             }
             is NowState.DayOff -> {
-                StateTitle(stringResource(when (state.reason) {
-                    NowState.DayOff.Reason.HOLIDAY -> R.string.schedule_holiday
-                    NowState.DayOff.Reason.CANCELLED -> R.string.now_all_cancelled
-                    NowState.DayOff.Reason.EMPTY -> if (isRoom) R.string.room_no_entries else R.string.now_empty
-                    NowState.DayOff.Reason.UNPUBLISHED -> R.string.now_unpublished
-                    NowState.DayOff.Reason.UNKNOWN -> R.string.now_unknown_day
-                }))
+                if (!partial) {
+                    StateTitle(stringResource(when (state.reason) {
+                        NowState.DayOff.Reason.HOLIDAY -> R.string.schedule_holiday
+                        NowState.DayOff.Reason.CANCELLED -> R.string.now_all_cancelled
+                        NowState.DayOff.Reason.EMPTY -> if (fromRooms) R.string.room_no_entries else R.string.now_empty
+                        NowState.DayOff.Reason.UNPUBLISHED -> R.string.now_unpublished
+                        NowState.DayOff.Reason.UNKNOWN -> R.string.now_unknown_day
+                    }))
+                }
             }
             is NowState.UncertainTime -> {
                 StateTitle(stringResource(
                     if (state.lesson.note.isNullOrBlank()) R.string.now_time_unknown else R.string.now_time_note,
                 ))
                 if (snapshot.upcoming?.lessons?.none { it.lesson == state.lesson } != false) {
-                    LessonCard(state.lesson, onClick = { onLesson(state.lesson) }, showGroups = isRoom)
+                    LessonCard(state.lesson, onClick = { onLesson(state.lesson) })
                 }
             }
         }
-        if (state != NowState.NoSchedule) Upcoming(snapshot, onLesson, isRoom, loadingUpcoming)
+        if (state != NowState.NoSchedule) Upcoming(snapshot, onLesson, loadingUpcoming, partial)
     }
 }
 
@@ -258,11 +270,12 @@ private fun StateTitle(text: String) {
 private fun Upcoming(
     snapshot: NowSnapshot,
     onLesson: (Lesson) -> Unit,
-    isRoom: Boolean,
     loading: Boolean,
+    partial: Boolean,
 ) {
     val upcoming = snapshot.upcoming
     if (upcoming == null) {
+        if (partial && !loading) return
         Text(
             stringResource(if (loading) R.string.now_loading_next_week else R.string.now_no_following),
             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -283,7 +296,7 @@ private fun Upcoming(
     }
     upcoming.lessons.forEach { entry ->
         if (entry.timeConflict) Text(stringResource(R.string.now_time_note))
-        LessonCard(entry.lesson, onClick = { onLesson(entry.lesson) }, showGroups = isRoom)
+        LessonCard(entry.lesson, onClick = { onLesson(entry.lesson) })
     }
 }
 

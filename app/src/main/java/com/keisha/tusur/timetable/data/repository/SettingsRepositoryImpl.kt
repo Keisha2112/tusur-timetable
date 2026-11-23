@@ -9,9 +9,7 @@ import com.keisha.tusur.timetable.data.local.SettingsKeys
 import com.keisha.tusur.timetable.data.local.settingsDataStore
 import com.keisha.tusur.timetable.domain.model.AnimationMode
 import com.keisha.tusur.timetable.domain.model.Appearance
-import com.keisha.tusur.timetable.domain.model.Auditorium
 import com.keisha.tusur.timetable.domain.model.ColorPalette
-import com.keisha.tusur.timetable.domain.model.SchedulePreference
 import com.keisha.tusur.timetable.domain.model.ScheduleSource
 import com.keisha.tusur.timetable.domain.model.ThemeMode
 import kotlinx.coroutines.flow.Flow
@@ -73,30 +71,18 @@ class SettingsRepositoryImpl internal constructor(
         }
     }
 
-    override val schedulePreference: Flow<SchedulePreference> = preferences.map {
-        val auditorium = readAuditorium(it)
-        val source = if (auditorium != null && it[SettingsKeys.SCHEDULE_SOURCE] == "room") {
-            ScheduleSource.ROOM
-        } else {
-            ScheduleSource.GROUP
-        }
-        SchedulePreference(source, auditorium)
-    }.distinctUntilChanged()
+    override val scheduleSource: Flow<ScheduleSource> = preferences
+        .map(::readSource)
+        .distinctUntilChanged()
 
     override suspend fun setScheduleSource(source: ScheduleSource) {
         dataStore.edit { preferences ->
-            if (source == ScheduleSource.GROUP || readAuditorium(preferences) != null) {
+            if (readSource(preferences) != source) {
                 preferences[SettingsKeys.SCHEDULE_SOURCE] = source.preferenceValue()
+                if (preferences[SettingsKeys.SCHEDULE_MONITORING_GENERATION] != null) {
+                    preferences[SettingsKeys.SCHEDULE_MONITORING_GENERATION] = UUID.randomUUID().toString()
+                }
             }
-        }
-    }
-
-    override suspend fun selectAuditorium(auditorium: Auditorium) {
-        dataStore.edit {
-            it[SettingsKeys.ROOM_BUILDING] = auditorium.buildingCode
-            it[SettingsKeys.ROOM_SLUG] = auditorium.slug
-            it[SettingsKeys.ROOM_NUMBER] = auditorium.number
-            it[SettingsKeys.SCHEDULE_SOURCE] = ScheduleSource.ROOM.preferenceValue()
         }
     }
 
@@ -127,6 +113,7 @@ class SettingsRepositoryImpl internal constructor(
             selection = readSelection(it),
             generation = it[SettingsKeys.SCHEDULE_MONITORING_GENERATION],
             blocked = it[SettingsKeys.SCHEDULE_NOTIFICATIONS_BLOCKED] == true,
+            source = readSource(it),
         )
     }.distinctUntilChanged()
 
@@ -169,12 +156,8 @@ class SettingsRepositoryImpl internal constructor(
         )
     }
 
-    private fun readAuditorium(preferences: Preferences): Auditorium? {
-        val building = preferences[SettingsKeys.ROOM_BUILDING]?.takeIf(String::isNotBlank) ?: return null
-        val slug = preferences[SettingsKeys.ROOM_SLUG]?.takeIf(String::isNotBlank) ?: return null
-        val number = preferences[SettingsKeys.ROOM_NUMBER]?.takeIf(String::isNotBlank) ?: return null
-        return Auditorium(building, slug, number)
-    }
+    private fun readSource(preferences: Preferences): ScheduleSource =
+        readEnum(preferences[SettingsKeys.SCHEDULE_SOURCE], ScheduleSource.GROUP)
 }
 
 private fun Enum<*>.preferenceValue(): String = name.lowercase(Locale.ROOT)

@@ -104,7 +104,6 @@ import com.keisha.tusur.timetable.domain.model.AnimationMode
 import com.keisha.tusur.timetable.domain.model.Appearance
 import com.keisha.tusur.timetable.domain.model.AppError
 import com.keisha.tusur.timetable.domain.model.ColorPalette
-import com.keisha.tusur.timetable.domain.model.SchedulePreference
 import com.keisha.tusur.timetable.domain.model.ScheduleSource
 import com.keisha.tusur.timetable.domain.model.ThemeMode
 import com.keisha.tusur.timetable.domain.time.ScheduleTime
@@ -116,7 +115,7 @@ import java.time.Instant
 import kotlin.math.roundToInt
 import kotlinx.coroutines.launch
 
-private enum class OptionsDialog { PALETTE, ANIMATION, SOURCE, ROOM }
+private enum class OptionsDialog { PALETTE, ANIMATION, SOURCE }
 
 @Composable
 fun SettingsScreen(
@@ -132,9 +131,8 @@ fun SettingsScreen(
             initializer {
                 SettingsViewModel(
                     catalogRepository = container.catalogRepository,
-                    scheduleRepository = container.scheduleRepository,
+                    scheduleFor = container::scheduleFor,
                     teacherScheduleRepository = container.teacherScheduleRepository,
-                    roomRepository = container.roomScheduleRepository,
                     settingsRepository = container.settingsRepository,
                 )
             }
@@ -199,12 +197,7 @@ fun SettingsScreen(
     }
 
     val openSource: () -> Unit = {
-        val url = if (state.schedulePreference.source == ScheduleSource.ROOM) {
-            state.schedulePreference.auditorium?.let { Urls.auditorium(it) } ?: Urls.BASE
-        } else {
-            Urls.BASE
-        }
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(Urls.BASE))
         try {
             context.startActivity(intent)
         } catch (_: ActivityNotFoundException) {
@@ -262,13 +255,12 @@ fun SettingsScreen(
             }
             item {
                 DataCard(
-                    schedulePreference = state.schedulePreference,
+                    scheduleSource = state.scheduleSource,
                     lastUpdated = state.lastUpdated,
                     isClearingCache = state.isClearingCache,
                     onOpenSource = openSource,
                     onClearCache = { showClearDialog = true },
                     onChooseSource = { options = OptionsDialog.SOURCE },
-                    onChangeRoom = { options = OptionsDialog.ROOM },
                 )
             }
             item {
@@ -321,23 +313,11 @@ fun SettingsScreen(
         OptionsDialog.SOURCE -> SettingsOptions(
             title = stringResource(R.string.schedule_source_title),
             options = ScheduleSource.entries,
-            selected = state.schedulePreference.source,
+            selected = state.scheduleSource,
             label = { it.labelRes },
             onSelect = { source ->
-                if (source == ScheduleSource.ROOM && state.schedulePreference.auditorium == null) {
-                    options = OptionsDialog.ROOM
-                } else {
-                    dismissOptions()
-                    if (source != state.schedulePreference.source) viewModel.setScheduleSource(source)
-                }
-            },
-            onDismiss = dismissOptions,
-        )
-        OptionsDialog.ROOM -> RoomPickerDialog(
-            repository = container.roomScheduleRepository,
-            onSelect = {
-                viewModel.selectAuditorium(it)
                 dismissOptions()
+                if (source != state.scheduleSource) viewModel.setScheduleSource(source)
             },
             onDismiss = dismissOptions,
         )
@@ -558,30 +538,20 @@ private fun NotificationsCard(
 
 @Composable
 private fun DataCard(
-    schedulePreference: SchedulePreference,
+    scheduleSource: ScheduleSource,
     lastUpdated: Instant?,
     isClearingCache: Boolean,
     onOpenSource: () -> Unit,
     onClearCache: () -> Unit,
     onChooseSource: () -> Unit,
-    onChangeRoom: () -> Unit,
 ) {
     SettingsCard(title = stringResource(R.string.settings_data_title)) {
         PreferenceRow(
             title = stringResource(R.string.schedule_source_title),
-            value = stringResource(schedulePreference.source.labelRes),
+            value = stringResource(scheduleSource.labelRes),
             icon = Icons.AutoMirrored.Outlined.ViewList,
             onClick = onChooseSource,
         )
-        if (schedulePreference.source == ScheduleSource.ROOM) {
-            RowDivider()
-            PreferenceRow(
-                title = stringResource(R.string.room_change_auditorium),
-                value = schedulePreference.auditorium?.label.orEmpty(),
-                icon = Icons.Filled.SwapHoriz,
-                onClick = onChangeRoom,
-            )
-        }
         RowDivider()
         SourceRow(onClick = onOpenSource)
         RowDivider()

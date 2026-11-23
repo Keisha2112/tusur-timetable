@@ -53,7 +53,7 @@ internal val AnimationMode.labelRes: Int
 internal val ScheduleSource.labelRes: Int
     get() = when (this) {
         ScheduleSource.GROUP -> R.string.schedule_source_group
-        ScheduleSource.ROOM -> R.string.schedule_source_room
+        ScheduleSource.GROUP_FROM_ROOMS -> R.string.schedule_source_group_from_rooms
     }
 
 @Composable

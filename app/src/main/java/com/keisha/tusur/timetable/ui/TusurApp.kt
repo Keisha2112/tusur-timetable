@@ -1,6 +1,7 @@
 package com.keisha.tusur.timetable.ui
 
 import android.net.Uri
+import android.os.Bundle
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.tween
@@ -12,9 +13,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,14 +34,13 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.keisha.tusur.timetable.AppContainer
 import com.keisha.tusur.timetable.data.notification.ScheduleNoticeDestination
-import com.keisha.tusur.timetable.domain.model.SchedulePreference
+import com.keisha.tusur.timetable.data.repository.UserSelection
 import com.keisha.tusur.timetable.domain.model.ScheduleSource
 import com.keisha.tusur.timetable.ui.components.LoadingSpinner
 import com.keisha.tusur.timetable.ui.onboarding.FacultyPickerScreen
 import com.keisha.tusur.timetable.ui.onboarding.GroupPickerScreen
 import com.keisha.tusur.timetable.ui.schedule.ScheduleScreen
 import com.keisha.tusur.timetable.ui.schedule.NowScreen
-import com.keisha.tusur.timetable.ui.schedule.RoomScheduleScreen
 import com.keisha.tusur.timetable.ui.schedule.TeacherScheduleScreen
 import com.keisha.tusur.timetable.ui.settings.SettingsScreen
 import com.keisha.tusur.timetable.ui.theme.LocalAppMotion
@@ -54,20 +54,24 @@ private object Routes {
     const val ONBOARDING_FACULTY = "onboarding/faculty"
     const val ONBOARDING_GROUP = "onboarding/group/{facultyCode}/{facultyName}"
     const val SCHEDULE = "schedule"
-    const val NOTICE_GROUP = "notification/schedule"
-    const val NOW = "now"
-    const val NOW_GROUP = "now/group"
+    const val NOTICE_SCHEDULE = "notification/schedule/{source}"
+    const val NOW = "now/{source}"
     const val SETTINGS = "settings"
     const val TEACHER = "teacher/{teacherName}"
 
     fun group(facultyCode: String, facultyName: String): String =
         "onboarding/group/${Uri.encode(facultyCode)}/${Uri.encode(facultyName)}"
 
+    fun notice(source: ScheduleSource) = "notification/schedule/$source"
+
+    fun now(source: ScheduleSource) = "now/$source"
+
     fun teacher(teacherName: String): String =
         "teacher/${Uri.encode(teacherName)}"
 }
 
 private const val NOTICE_DATE = "schedule_notice_date"
+private const val NOTICE_GROUP = "schedule_notice_group"
 
 /**
  * Корневая навигация. Стартовый экран зависит от сохранённого выбора группы,
@@ -80,13 +84,12 @@ fun TusurApp(
     onNoticeHandled: () -> Unit = {},
 ) {
     var startDestination by remember { mutableStateOf<String?>(null) }
-    val schedulePreference by container.settingsRepository.schedulePreference
-        .collectAsStateWithLifecycle<SchedulePreference?>(initialValue = null)
+    val scheduleSource by container.settingsRepository.scheduleSource
+        .collectAsStateWithLifecycle<ScheduleSource?>(initialValue = null)
 
     LaunchedEffect(Unit) {
         val selection = container.settingsRepository.selection.first()
-        val source = container.settingsRepository.schedulePreference.first().source
-        startDestination = if (selection != null || source == ScheduleSource.ROOM) {
+        startDestination = if (selection != null) {
             Routes.SCHEDULE
         } else {
             Routes.ONBOARDING_FACULTY
@@ -94,7 +97,8 @@ fun TusurApp(
     }
 
     val destination = startDestination
-    if (destination == null || schedulePreference == null) {
+    val activeSource = scheduleSource
+    if (destination == null || activeSource == null) {
         Surface(modifier = Modifier.fillMaxSize()) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 LoadingSpinner()
@@ -117,6 +121,7 @@ fun TusurApp(
 
     val navController = rememberNavController()
     val motionOff = LocalAppMotion.current.disabled
+    val displayedSource by rememberUpdatedState(activeSource)
 
     NavHost(
         navController = navController,
@@ -148,8 +153,11 @@ fun TusurApp(
                 facultyCode = facultyCode,
                 facultyName = facultyName,
                 onGroupChosen = {
+                    val hasSchedule = runCatching { navController.getBackStackEntry(Routes.SCHEDULE) }.isSuccess
                     navController.navigate(Routes.SCHEDULE) {
-                        popUpTo(Routes.SCHEDULE) { inclusive = false }
+                        popUpTo(if (hasSchedule) Routes.SCHEDULE else Routes.ONBOARDING_FACULTY) {
+                            inclusive = !hasSchedule
+                        }
                         launchSingleTop = true
                     }
                 },
@@ -158,39 +166,22 @@ fun TusurApp(
         }
 
         composable(Routes.SCHEDULE) { entry ->
-            val room = schedulePreference?.takeIf { it.source == ScheduleSource.ROOM }?.auditorium
-            if (room != null) {
-                key(room) {
-                    RoomScheduleScreen(
-                        container = container,
-                        room = room,
-                        onOpenSettings = { navController.navigate(Routes.SETTINGS) },
-                        onOpenTeacher = { navController.navigate(Routes.teacher(it)) },
-                        onOpenNow = { navController.navigate(Routes.NOW) },
-                    )
-                }
-            } else {
-                GroupScheduleRoute(container, navController, entry)
-            }
+            GroupScheduleRoute(container, navController, entry, displayedSource)
         }
 
-        composable(Routes.NOTICE_GROUP) { entry ->
-            GroupScheduleRoute(container, navController, entry, openedFromNotice = true)
+        composable(
+            Routes.NOTICE_SCHEDULE, arguments = listOf(navArgument("source") { type = NavType.StringType }),
+        ) { entry ->
+            GroupScheduleRoute(container, navController, entry, entry.source(), openedFromNotice = true)
         }
 
-        composable(Routes.NOW) {
-            val room = schedulePreference?.takeIf { it.source == ScheduleSource.ROOM }?.auditorium
+        composable(
+            Routes.NOW, arguments = listOf(navArgument("source") { type = NavType.StringType }),
+        ) { entry ->
             NowScreen(
                 container = container,
-                onBack = { navController.popBackStack() },
-                onOpenTeacher = { teacherName -> navController.navigate(Routes.teacher(teacherName)) },
-                auditorium = room,
-            )
-        }
-
-        composable(Routes.NOW_GROUP) {
-            NowScreen(
-                container = container,
+                source = entry.source(),
+                selectionOverride = entry.noticeGroup(),
                 onBack = { navController.popBackStack() },
                 onOpenTeacher = { teacherName -> navController.navigate(Routes.teacher(teacherName)) },
             )
@@ -221,19 +212,28 @@ fun TusurApp(
     LaunchedEffect(noticeDestination, navController) {
         val requested = noticeDestination ?: return@LaunchedEffect
         val selection = container.settingsRepository.selection.first()
-        if (selection?.facultyCode == requested.facultyCode && selection.groupSlug == requested.groupSlug) {
-            val source = container.settingsRepository.schedulePreference.first().source
-            val target = if (source == ScheduleSource.ROOM) Routes.NOTICE_GROUP else Routes.SCHEDULE
-            if (navController.currentDestination?.route != target) {
-                if (navController.currentDestination?.route != Routes.SCHEDULE &&
-                    !navController.popBackStack(Routes.SCHEDULE, inclusive = false)
-                ) {
-                    navController.navigate(Routes.SCHEDULE) { launchSingleTop = true }
-                }
-                if (target == Routes.NOTICE_GROUP) navController.navigate(target)
+        val sameGroup = selection?.facultyCode == requested.facultyCode && selection.groupSlug == requested.groupSlug
+        val source = container.settingsRepository.scheduleSource.first()
+        if (selection != null) {
+            if (navController.currentDestination?.route != Routes.SCHEDULE &&
+                !navController.popBackStack(Routes.SCHEDULE, inclusive = false)
+            ) {
+                navController.navigate(Routes.SCHEDULE) { launchSingleTop = true }
             }
-            navController.currentBackStackEntry?.savedStateHandle?.set(NOTICE_DATE, requested.date.toString())
         }
+        if (!sameGroup || requested.source != source) {
+            navController.navigate(Routes.notice(requested.source))
+            if (!sameGroup) {
+                val group = Bundle().apply {
+                    putString("facultyCode", requested.facultyCode)
+                    putString("facultyName", selection?.takeIf { it.facultyCode == requested.facultyCode }?.facultyName.orEmpty())
+                    putString("groupSlug", requested.groupSlug)
+                    putString("groupName", requested.groupName ?: requested.groupSlug)
+                }
+                navController.currentBackStackEntry?.savedStateHandle?.set(NOTICE_GROUP, group)
+            }
+        }
+        navController.currentBackStackEntry?.savedStateHandle?.set(NOTICE_DATE, requested.date.toString())
         onNoticeHandled()
     }
 
@@ -259,17 +259,38 @@ private fun GroupScheduleRoute(
     container: AppContainer,
     navController: NavHostController,
     entry: NavBackStackEntry,
+    source: ScheduleSource,
     openedFromNotice: Boolean = false,
 ) {
     val target by entry.savedStateHandle.getStateFlow<String?>(NOTICE_DATE, null)
         .collectAsStateWithLifecycle()
+    val group = entry.noticeGroup()
     ScheduleScreen(
         container = container,
+        source = source,
+        selectionOverride = group,
         onOpenSettings = { navController.navigate(Routes.SETTINGS) },
         onOpenTeacher = { navController.navigate(Routes.teacher(it)) },
-        onOpenNow = { navController.navigate(if (openedFromNotice) Routes.NOW_GROUP else Routes.NOW) },
+        onOpenNow = {
+            navController.navigate(Routes.now(source))
+            entry.savedStateHandle.get<Bundle>(NOTICE_GROUP)?.let {
+                navController.currentBackStackEntry?.savedStateHandle?.set(NOTICE_GROUP, it)
+            }
+        },
         requestedDate = target?.let(LocalDate::parse),
         onDateHandled = { entry.savedStateHandle[NOTICE_DATE] = null as String? },
         onBack = if (openedFromNotice) ({ navController.popBackStack() }) else null,
     )
+}
+
+private fun NavBackStackEntry.source(): ScheduleSource =
+    ScheduleSource.entries.firstOrNull { it.name == arguments?.getString("source") } ?: ScheduleSource.GROUP
+
+@Composable
+private fun NavBackStackEntry.noticeGroup(): UserSelection? {
+    val group by savedStateHandle.getStateFlow<Bundle?>(NOTICE_GROUP, null).collectAsStateWithLifecycle()
+    return group?.let {
+        UserSelection(it.getString("facultyCode").orEmpty(), it.getString("facultyName").orEmpty(),
+            it.getString("groupSlug").orEmpty(), it.getString("groupName").orEmpty())
+    }
 }
