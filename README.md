@@ -14,7 +14,7 @@
 
 Готовый APK лежит в разделе [Releases](https://github.com/Keisha2112/tusur-timetable/releases/latest).
 Прямая ссылка на файл:
-[`tusur-timetable-1.5.0.apk`](https://github.com/Keisha2112/tusur-timetable/releases/download/v1.5.0/tusur-timetable-1.5.0.apk).
+[`tusur-timetable-1.6.0.apk`](https://github.com/Keisha2112/tusur-timetable/releases/download/v1.6.0/tusur-timetable-1.6.0.apk).
 
 ## Возможности
 
@@ -74,10 +74,10 @@
 
 ## SHA-256
 
-Файл `tusur-timetable-1.5.0.apk` из раздела Releases:
+Файл `tusur-timetable-1.6.0.apk` из раздела Releases:
 
 ```text
-3D54C3E8FFCA68C2CFF36487AD8E58C47D1FE6814E642955C152726FCD86F9ED
+A893DC64DC7FFAC68A41D2013F9A42B1E7B695670002AFF062D95C8EB891E8FE
 ```
 
 Для сборки из исходников APK лежит в `app/build/outputs/apk/release/app-release.apk`.
