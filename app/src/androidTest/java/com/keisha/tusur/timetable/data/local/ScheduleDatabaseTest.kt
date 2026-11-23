@@ -37,29 +37,40 @@ class ScheduleDatabaseTest {
     val migration = MigrationTestHelper(InstrumentationRegistry.getInstrumentation(), AppDatabase::class.java)
 
     @Test
-    fun updatesFromBothOldSchemasKeepCache() {
-        for (start in 1..2) {
+    fun updatesFromAllOldSchemasKeepCacheAndNotificationQueue() {
+        for (start in 1..3) {
             val name = "schedule-migration-$start-" + UUID.randomUUID()
             migration.createDatabase(name, start).use { db ->
                 db.execSQL("INSERT INTO schedule_cache VALUES ('714-2', 'legacy', NULL, NULL, 42, 42)")
-                if (start == 2) {
+                if (start >= 2) {
                     db.execSQL("INSERT INTO teacher_schedule_cache VALUES ('teacher', 'teacher-cache', 42, 42)")
+                }
+                if (start >= 3) {
+                    db.execSQL("INSERT INTO schedule_notifications VALUES ('notice', 'generation', '[]', 42)")
                 }
             }
             migration.runMigrationsAndValidate(
-                name, 3, true, AppDatabase.MIGRATION_1_2, AppDatabase.MIGRATION_2_3,
+                name, 4, true, AppDatabase.MIGRATION_1_2, AppDatabase.MIGRATION_2_3, AppDatabase.MIGRATION_3_4,
             ).use { db ->
                 db.query("SELECT payload FROM schedule_cache WHERE groupSlug = '714-2'").use {
                     assertTrue(it.moveToFirst())
                     assertEquals("legacy", it.getString(0))
                 }
-                if (start == 2) {
+                if (start >= 2) {
                     db.query("SELECT payload FROM teacher_schedule_cache WHERE teacherKey = 'teacher'").use {
                         assertTrue(it.moveToFirst())
                         assertEquals("teacher-cache", it.getString(0))
                     }
                 }
                 db.query("SELECT COUNT(*) FROM schedule_notifications").use {
+                    assertTrue(it.moveToFirst())
+                    assertEquals(if (start >= 3) 1 else 0, it.getInt(0))
+                }
+                db.query("SELECT COUNT(*) FROM room_schedule_cache").use {
+                    assertTrue(it.moveToFirst())
+                    assertEquals(0, it.getInt(0))
+                }
+                db.query("SELECT COUNT(*) FROM room_catalog_cache").use {
                     assertTrue(it.moveToFirst())
                     assertEquals(0, it.getInt(0))
                 }

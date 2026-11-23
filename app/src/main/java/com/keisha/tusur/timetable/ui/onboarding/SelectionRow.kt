@@ -12,7 +12,6 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -27,6 +26,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.keisha.tusur.timetable.R
+import com.keisha.tusur.timetable.ui.components.LoadingSpinner
 
 @Composable
 internal fun SelectionRow(
@@ -71,7 +71,7 @@ internal fun SelectionRow(
             }
             if (saving) {
                 val savingLabel = stringResource(R.string.onboarding_saving)
-                CircularProgressIndicator(
+                LoadingSpinner(
                     modifier = Modifier.size(18.dp).semantics { contentDescription = savingLabel },
                     strokeWidth = 2.dp,
                 )

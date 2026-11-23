@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.keisha.tusur.timetable.R
+import com.keisha.tusur.timetable.ui.theme.ApplyDialogMotion
 import kotlin.math.roundToInt
 
 @Composable
@@ -34,7 +35,10 @@ fun UpdateAvailableDialog(
         },
         shape = MaterialTheme.shapes.extraLarge,
         containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-        title = { Text(stringResource(R.string.update_dialog_title)) },
+        title = {
+            ApplyDialogMotion()
+            Text(stringResource(R.string.update_dialog_title))
+        },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Column(
@@ -112,7 +116,10 @@ fun UpdatePermissionDialog(
         onDismissRequest = onDismiss,
         shape = MaterialTheme.shapes.extraLarge,
         containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-        title = { Text(stringResource(R.string.update_permission_title)) },
+        title = {
+            ApplyDialogMotion()
+            Text(stringResource(R.string.update_permission_title))
+        },
         text = { Text(stringResource(R.string.update_permission_text)) },
         confirmButton = {
             TextButton(onClick = onOpenSettings) {

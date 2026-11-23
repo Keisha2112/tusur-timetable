@@ -1,29 +1,39 @@
 package com.keisha.tusur.timetable.data.repository
 
 import android.content.Context
+import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import com.keisha.tusur.timetable.data.local.SettingsKeys
 import com.keisha.tusur.timetable.data.local.settingsDataStore
+import com.keisha.tusur.timetable.domain.model.AnimationMode
+import com.keisha.tusur.timetable.domain.model.Appearance
+import com.keisha.tusur.timetable.domain.model.Auditorium
+import com.keisha.tusur.timetable.domain.model.ColorPalette
+import com.keisha.tusur.timetable.domain.model.SchedulePreference
+import com.keisha.tusur.timetable.domain.model.ScheduleSource
 import com.keisha.tusur.timetable.domain.model.ThemeMode
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import java.io.IOException
+import java.util.Locale
 import java.util.UUID
 
 /**
  * Настройки приложения в DataStore Preferences, файл "settings":
- * выбор факультета и группы, режим оформления.
+ * выбор расписания и оформление.
  *
  * DataStore должен быть один на процесс, поэтому репозиторий принимает Context,
  * а экземпляр берёт из делегата [settingsDataStore].
  */
-class SettingsRepositoryImpl(context: Context) : SettingsRepository {
+class SettingsRepositoryImpl internal constructor(
+    private val dataStore: DataStore<Preferences>,
+) : SettingsRepository {
 
-    private val dataStore = context.applicationContext.settingsDataStore
+    constructor(context: Context) : this(context.applicationContext.settingsDataStore)
 
     private val preferences = dataStore.data
         .catch { e ->
@@ -63,17 +73,53 @@ class SettingsRepositoryImpl(context: Context) : SettingsRepository {
         }
     }
 
-    override val themeMode: Flow<ThemeMode> = preferences
-        .map { preferences ->
-            // Ключа может не быть: настройки старых версий читаем как системную тему.
-            themeModeFrom(preferences[SettingsKeys.THEME_MODE])
+    override val schedulePreference: Flow<SchedulePreference> = preferences.map {
+        val auditorium = readAuditorium(it)
+        val source = if (auditorium != null && it[SettingsKeys.SCHEDULE_SOURCE] == "room") {
+            ScheduleSource.ROOM
+        } else {
+            ScheduleSource.GROUP
+        }
+        SchedulePreference(source, auditorium)
+    }.distinctUntilChanged()
+
+    override suspend fun setScheduleSource(source: ScheduleSource) {
+        dataStore.edit { preferences ->
+            if (source == ScheduleSource.GROUP || readAuditorium(preferences) != null) {
+                preferences[SettingsKeys.SCHEDULE_SOURCE] = source.preferenceValue()
+            }
+        }
+    }
+
+    override suspend fun selectAuditorium(auditorium: Auditorium) {
+        dataStore.edit {
+            it[SettingsKeys.ROOM_BUILDING] = auditorium.buildingCode
+            it[SettingsKeys.ROOM_SLUG] = auditorium.slug
+            it[SettingsKeys.ROOM_NUMBER] = auditorium.number
+            it[SettingsKeys.SCHEDULE_SOURCE] = ScheduleSource.ROOM.preferenceValue()
+        }
+    }
+
+    override val appearance: Flow<Appearance> = preferences
+        .map {
+            Appearance(
+                themeMode = readEnum(it[SettingsKeys.THEME_MODE], ThemeMode.SYSTEM),
+                palette = readEnum(it[SettingsKeys.COLOR_PALETTE], ColorPalette.ORIGINAL),
+                animationMode = readEnum(it[SettingsKeys.ANIMATION_MODE], AnimationMode.NORMAL),
+            )
         }
         .distinctUntilChanged()
 
     override suspend fun setThemeMode(mode: ThemeMode) {
-        dataStore.edit { preferences ->
-            preferences[SettingsKeys.THEME_MODE] = mode.toPreferenceValue()
-        }
+        dataStore.edit { it[SettingsKeys.THEME_MODE] = mode.preferenceValue() }
+    }
+
+    override suspend fun setPalette(palette: ColorPalette) {
+        dataStore.edit { it[SettingsKeys.COLOR_PALETTE] = palette.preferenceValue() }
+    }
+
+    override suspend fun setAnimationMode(mode: AnimationMode) {
+        dataStore.edit { it[SettingsKeys.ANIMATION_MODE] = mode.preferenceValue() }
     }
 
     override val monitoring: Flow<ScheduleMonitoring> = preferences.map {
@@ -122,16 +168,16 @@ class SettingsRepositoryImpl(context: Context) : SettingsRepository {
             groupName = preferences[SettingsKeys.GROUP_NAME].orEmpty(),
         )
     }
+
+    private fun readAuditorium(preferences: Preferences): Auditorium? {
+        val building = preferences[SettingsKeys.ROOM_BUILDING]?.takeIf(String::isNotBlank) ?: return null
+        val slug = preferences[SettingsKeys.ROOM_SLUG]?.takeIf(String::isNotBlank) ?: return null
+        val number = preferences[SettingsKeys.ROOM_NUMBER]?.takeIf(String::isNotBlank) ?: return null
+        return Auditorium(building, slug, number)
+    }
 }
 
-private fun themeModeFrom(raw: String?): ThemeMode = when (raw) {
-    "light" -> ThemeMode.LIGHT
-    "dark" -> ThemeMode.DARK
-    else -> ThemeMode.SYSTEM
-}
+private fun Enum<*>.preferenceValue(): String = name.lowercase(Locale.ROOT)
 
-private fun ThemeMode.toPreferenceValue(): String = when (this) {
-    ThemeMode.SYSTEM -> "system"
-    ThemeMode.LIGHT -> "light"
-    ThemeMode.DARK -> "dark"
-}
+private inline fun <reified T : Enum<T>> readEnum(raw: String?, default: T): T =
+    enumValues<T>().firstOrNull { it.preferenceValue() == raw } ?: default

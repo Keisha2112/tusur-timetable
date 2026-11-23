@@ -96,7 +96,7 @@ data class Lesson(
     val rawType: String,
     val rooms: List<String> = emptyList(),
     val teachers: List<String> = emptyList(),
-    /** Группы занятия: заполняется только в расписании преподавателя. */
+    /** Группы занятия в расписании преподавателя или аудитории. */
     val groups: List<String> = emptyList(),
     /** Идентификатор серии из HTML. Может повторяться у занятий на разных датах. */
     val siteSeriesId: String? = null,
@@ -150,7 +150,9 @@ data class GroupSchedule(
     val holidays: List<HolidayDay> = emptyList(),
     val publications: Map<Int, WeekPublication> = emptyMap(),
     val staleWeeks: Set<Int> = emptySet(),
-)
+) {
+    fun entries() = ScheduleEntries(weeks, lessons, holidays, publications)
+}
 
 @Serializable
 data class Teacher(

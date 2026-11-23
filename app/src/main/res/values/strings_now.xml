@@ -1,7 +1,8 @@
 <resources>
     <string name="schedule_now">Сейчас</string>
     <string name="now_no_schedule">Расписание ещё не загружено</string>
-    <string name="now_in_progress">Идёт занятие</string>
+    <string name="now_current_lesson">Текущая пара</string>
+    <string name="now_next_lesson">Следующая пара</string>
     <string name="now_before_first">Занятия ещё не начались</string>
     <string name="now_break">Перемена</string>
     <string name="now_finished">Занятия на сегодня закончились</string>
@@ -12,10 +13,11 @@
     <string name="now_time_note">Уточните время в примечании</string>
     <string name="now_time_unknown">Время окончания не указано</string>
     <string name="now_no_following">В загруженном расписании больше занятий нет</string>
-    <string name="now_following">Ближайший учебный день · %1$s</string>
+    <string name="now_loading_next_week">Проверяем расписание на следующую неделю…</string>
     <string name="now_remaining">Осталось %1$s</string>
     <string name="now_until">До начала %1$s</string>
     <string name="now_break_length">Свободный промежуток · %1$s</string>
     <string name="now_minutes">%1$d мин</string>
     <string name="now_hours_minutes">%1$d ч %2$d мин</string>
+    <string name="now_days_hours_minutes">%1$d д %2$d ч %3$d мин</string>
 </resources>

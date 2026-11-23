@@ -11,4 +11,18 @@
     <string name="settings_theme_system">Системная</string>
     <string name="settings_theme_light">Светлая</string>
     <string name="settings_theme_dark">Тёмная</string>
+    <string name="settings_preference_save_failed">Не удалось сохранить настройку</string>
+    <string name="settings_palette">Цветовая палитра</string>
+    <string name="settings_palette_original">Классическая</string>
+    <string name="settings_palette_marine">Морская</string>
+    <string name="settings_palette_terracotta">Терракота</string>
+    <string name="settings_palette_forest">Хвойная</string>
+    <string name="settings_palette_plum">Сливовая</string>
+    <string name="settings_palette_amber">Янтарная</string>
+    <string name="settings_palette_graphite">Графитовая</string>
+    <string name="settings_palette_rose">Розовая</string>
+    <string name="settings_animations">Анимации</string>
+    <string name="settings_animations_normal">Обычные</string>
+    <string name="settings_animations_off">Без анимаций</string>
+    <string name="settings_animations_fast">Ускоренные</string>
 </resources>

@@ -1,5 +1,6 @@
 package com.keisha.tusur.timetable.data.network
 
+import com.keisha.tusur.timetable.domain.model.Auditorium
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrl
 
@@ -12,6 +13,22 @@ object Urls {
     const val BASE = "https://timetable.tusur.ru"
 
     private val base: HttpUrl = BASE.toHttpUrl()
+
+    fun building(code: String, beforeBreaking: Boolean = true): String = base.newBuilder()
+        .apply { if (beforeBreaking) addPathSegment("before_breaking") }
+        .addPathSegment("buildings")
+        .addPathSegment(code)
+        .build()
+        .toString()
+
+    fun auditorium(room: Auditorium, weekId: Int? = null): String = base.newBuilder()
+        .addPathSegment("buildings")
+        .addPathSegment(room.buildingCode)
+        .addPathSegment("auditoriums")
+        .addPathSegment(room.slug)
+        .apply { if (weekId != null) addQueryParameter("week_id", weekId.toString()) }
+        .build()
+        .toString()
 
     fun faculties(): String = base.newBuilder()
         .addPathSegment("faculties")

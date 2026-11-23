@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.keisha.tusur.timetable.R
+import com.keisha.tusur.timetable.ui.theme.ApplyDialogMotion
 
 /** Dialog поддерживает Android 6–7, где ModalBottomSheet не инициализирует прокрутку. */
 @Composable
@@ -39,6 +40,7 @@ internal fun ScheduleSheet(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false),
     ) {
+        ApplyDialogMotion()
         Box(
             modifier = Modifier
                 .fillMaxSize()

@@ -1,5 +1,7 @@
 package com.keisha.tusur.timetable.data.parser
 
+import com.keisha.tusur.timetable.data.network.Urls
+import com.keisha.tusur.timetable.domain.model.Auditorium
 import com.keisha.tusur.timetable.domain.model.HolidayDay
 import com.keisha.tusur.timetable.domain.model.Lesson
 import com.keisha.tusur.timetable.domain.model.LessonNotes
@@ -28,16 +30,28 @@ class WeekScheduleParser(
         val hasSchedule: Boolean get() = publication == WeekPublication.PUBLISHED
     }
 
-    fun parse(html: String, week: Week, groupUrl: String? = null): ParsedWeek {
-        if (html.isBlank()) return ParsedWeek()
+    fun parse(html: String, week: Week, groupUrl: String? = null): ParsedWeek =
+        parse(Jsoup.parse(html), week, groupUrl)
 
+    fun parseRoom(html: String, room: Auditorium, week: Week?): Pair<Week, ParsedWeek>? {
         val document = Jsoup.parse(html)
+        val expected = week ?: weekListParser.selected(document) ?: return null
+        val parsed = parse(document, expected, Urls.auditorium(room), room)
+        return parsed.takeIf { it.publication != null }?.let { expected to it }
+    }
+
+    private fun parse(
+        document: Element,
+        week: Week,
+        scheduleUrl: String?,
+        room: Auditorium? = null,
+    ): ParsedWeek {
         val selected = weekListParser.selected(document)
         if (selected != null && (selected.id != week.id || selected.startDate != week.startDate)) {
             return ParsedWeek()
         }
-        if (groupUrl != null && (selected == null ||
-                !matchesGroup(weekListParser.selectedLink(document), groupUrl))
+        if (scheduleUrl != null && (selected == null ||
+                !matchesSchedule(weekListParser.selectedLink(document), scheduleUrl))
         ) {
             return ParsedWeek()
         }
@@ -62,7 +76,7 @@ class WeekScheduleParser(
             dateOf(text, week) ?: return ParsedWeek()
         }
         if (dates.firstOrNull() != week.startDate ||
-            groupUrl != null && (dates.size !in 6..7 || dates != dates.indices.map { week.startDate.plusDays(it.toLong()) })
+            scheduleUrl != null && (dates.size !in 6..7 || dates != dates.indices.map { week.startDate.plusDays(it.toLong()) })
         ) {
             return ParsedWeek()
         }
@@ -82,13 +96,14 @@ class WeekScheduleParser(
                 val (start, end) = timeRange(cells[index].text()) ?: return ParsedWeek()
                 if (holiday != null && start in holiday.closedStarts) continue
                 for (training in trainings) {
-                    lessons += readLesson(training, modals, date, start, end) ?: return ParsedWeek()
+                    lessons += readLesson(training, modals, date, start, end, room) ?: return ParsedWeek()
                 }
             }
         }
 
+        val entries = if (room == null) lessons else lessons.distinct()
         return ParsedWeek(
-            lessons = lessons.sortedWith(compareBy<Lesson> { it.date }.thenBy { it.start }.thenBy { it.discipline }),
+            lessons = entries.sortedWith(compareBy<Lesson> { it.date }.thenBy { it.start }.thenBy { it.discipline }),
             publication = WeekPublication.PUBLISHED,
             holidays = calendar.holidays,
             calendarDates = calendar.dates,
@@ -96,9 +111,9 @@ class WeekScheduleParser(
         )
     }
 
-    private fun matchesGroup(selectedLink: String?, groupUrl: String): Boolean {
+    private fun matchesSchedule(selectedLink: String?, scheduleUrl: String): Boolean {
         if (selectedLink.isNullOrBlank()) return false
-        return runCatching { URI(selectedLink).path == URI(groupUrl).path }.getOrDefault(false)
+        return runCatching { URI(selectedLink).path == URI(scheduleUrl).path }.getOrDefault(false)
     }
 
     private fun isUnpublished(document: Element): Boolean =
@@ -164,6 +179,7 @@ class WeekScheduleParser(
         date: LocalDate,
         start: LocalTime,
         end: LocalTime,
+        room: Auditorium?,
     ): Lesson? {
         val subject = training.selectFirst("span.discipline") ?: return null
         val discipline = subject.selectFirst("abbr[title]")?.attr("title")?.trim()
@@ -184,12 +200,19 @@ class WeekScheduleParser(
 
         val teacherContainer = modal?.selectFirst(".modal-info-teachers")
         val teacherLinks = teacherContainer?.select("a[href]").orEmpty()
-        val shortTeachers = training.selectFirst("span.group")
+        val roomTeacherLinks = if (room == null) emptyList() else training.select("a[href]")
+            .filter { TEACHER_ID.containsMatchIn(it.attr("href")) }
+        val shortTeachers = if (room == null) training.selectFirst("span.group") else null
+        val printedGroups = print?.select("span.group").orEmpty()
         val teachers = teacherLinks.map { it.text() }.ifEmpty {
-            print?.selectFirst("span.group")?.text()?.split(',').orEmpty()
+            if (room == null) printedGroups.firstOrNull()?.text()?.split(',').orEmpty()
+            else roomTeacherLinks.map(Element::text).ifEmpty {
+                printedGroups.lastOrNull()?.text()?.takeUnless { it.startsWith("гр.") }?.split(',').orEmpty()
+            }
         }.ifEmpty { textValues(shortTeachers, "a") }.cleanValues()
-        val ids = teacherLinks.ifEmpty { shortTeachers?.select("a[href]").orEmpty() }
+        val ids = teacherLinks.ifEmpty { roomTeacherLinks.ifEmpty { shortTeachers?.select("a[href]").orEmpty() } }
             .mapNotNull { TEACHER_ID.find(it.attr("href"))?.groupValues?.get(1) }.distinct().sorted()
+        val groups = if (room == null) emptyList() else roomGroups(training, printedGroups)
 
         return Lesson(
             id = seriesId ?: "$date-$start-$discipline",
@@ -200,13 +223,22 @@ class WeekScheduleParser(
             discipline = discipline,
             type = LessonTypeMapper.map(rawType),
             rawType = rawType,
-            rooms = textValues(training.selectFirst("span.auditoriums"), "i, a"),
+            rooms = if (room == null) textValues(training.selectFirst("span.auditoriums"), "i, a") else listOf(room.label),
             teachers = teachers,
+            groups = groups,
             siteSeriesId = seriesId,
             teacherIds = ids,
             note = note,
             status = if (LessonNotes.isCancellation(note)) LessonStatus.CANCELLED else LessonStatus.SCHEDULED,
         )
+    }
+
+    private fun roomGroups(training: Element, printed: List<Element>): List<String> {
+        val fullList = printed.firstOrNull { it.text().startsWith("гр.") }?.text()
+            ?: training.select("span.group[title]").map { it.attr("title") }.firstOrNull { it.startsWith("гр.") }
+        val visible = training.select("a[href*=/groups/]").map(Element::text)
+        return (fullList?.split(',') ?: visible).map { it.trim().removePrefix("гр.") }
+            .cleanValues().filterNot { it.all { char -> char == '.' || char == '…' } }
     }
 
     private fun modalValue(modal: Element, label: String): String? {
@@ -229,7 +261,8 @@ class WeekScheduleParser(
         val offset = DAYS.indexOf(match.groupValues[1].lowercase())
         if (offset < 0) return null
         val date = week.startDate.plusDays(offset.toLong())
-        val month = MONTHS.indexOf(match.groupValues[3].lowercase().take(3)) + 1
+        val monthText = match.groupValues[3].lowercase().take(3).let { if (it == "мая") "май" else it }
+        val month = MONTHS.indexOf(monthText) + 1
         return date.takeIf { it.dayOfMonth == match.groupValues[2].toInt() && it.monthValue == month }
     }
 

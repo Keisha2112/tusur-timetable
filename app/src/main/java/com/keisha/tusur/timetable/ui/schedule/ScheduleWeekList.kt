@@ -65,6 +65,7 @@ internal fun ScheduleWeekList(
     publication: WeekPublication? = null,
     focusDate: LocalDate? = null,
     onDateFocused: (LocalDate) -> Unit = {},
+    isRoom: Boolean = false,
 ) {
     val days = remember(lessons, holidays, week?.startDate, publication) {
         val scheduledDays = week?.let { ScheduleTime.daysForWeek(lessons, it.startDate, holidays) }.orEmpty()
@@ -74,7 +75,9 @@ internal fun ScheduleWeekList(
     }
     val hasDays = week != null && (publication == WeekPublication.PUBLISHED ||
         days.any { it.isHoliday || it.lessons.isNotEmpty() })
-    val maxPair = remember(days) { weekMaxPair(days) }
+    val maxPair = remember(days, isRoom) {
+        if (isRoom) ScheduleTime.PAIRS.last().number else weekMaxPair(days)
+    }
     val hasUnpublishedHeader = hasDays && publication == WeekPublication.UNPUBLISHED
 
     // Текущая неделя открывается на сегодняшнем дне, остальные — с понедельника.
@@ -145,7 +148,7 @@ internal fun ScheduleWeekList(
                 }
                 if (day.lessons.isEmpty()) {
                     item(key = "empty-${day.date}") {
-                        EmptyDayRow(day.isHoliday)
+                        EmptyDayRow(day.isHoliday, isRoom)
                     }
                 } else if (day.isHoliday) {
                     lessonRows(day.lessons, showTeachers, showGroups, onOpenLesson)
@@ -154,7 +157,7 @@ internal fun ScheduleWeekList(
                         val pairLessons = day.lessons.filter { it.pairNumber == pair }
                         if (pairLessons.isEmpty()) {
                             item(key = "free-${day.date}-$pair") {
-                                EmptyPairRow(pairNumber = pair)
+                                EmptyPairRow(pairNumber = pair, isRoom = isRoom)
                             }
                         } else {
                             lessonRows(pairLessons, showTeachers, showGroups, onOpenLesson)
@@ -231,9 +234,13 @@ private fun DayHeader(date: LocalDate, showHoliday: Boolean) {
 }
 
 @Composable
-private fun EmptyDayRow(isHoliday: Boolean) {
+private fun EmptyDayRow(isHoliday: Boolean, isRoom: Boolean) {
     Text(
-        text = stringResource(if (isHoliday) R.string.schedule_holiday else R.string.schedule_empty_day),
+        text = stringResource(when {
+            isHoliday -> R.string.schedule_holiday
+            isRoom -> R.string.room_no_entries
+            else -> R.string.schedule_empty_day
+        }),
         style = MaterialTheme.typography.bodyMedium,
         color = if (isHoliday) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = Modifier.padding(start = 4.dp, bottom = 4.dp),
@@ -244,7 +251,7 @@ private fun EmptyDayRow(isHoliday: Boolean) {
  * Свободная пара — «окно». Компактная строка, чтобы полная сетка не вытеснила занятия.
  */
 @Composable
-private fun EmptyPairRow(pairNumber: Int) {
+private fun EmptyPairRow(pairNumber: Int, isRoom: Boolean) {
     val pair = ScheduleTime.PAIRS.firstOrNull { it.number == pairNumber }
     Row(
         modifier = Modifier
@@ -272,7 +279,8 @@ private fun EmptyPairRow(pairNumber: Int) {
         )
         Spacer(Modifier.width(12.dp))
         Text(
-            text = stringResource(R.string.schedule_free_pair, pairNumber),
+            text = if (isRoom) stringResource(R.string.room_no_entries)
+            else stringResource(R.string.schedule_free_pair, pairNumber),
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )

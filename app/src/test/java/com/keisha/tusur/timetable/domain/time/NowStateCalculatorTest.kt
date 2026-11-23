@@ -10,6 +10,7 @@ import com.keisha.tusur.timetable.domain.model.Week
 import com.keisha.tusur.timetable.domain.model.WeekKind
 import com.keisha.tusur.timetable.domain.model.WeekPublication
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.time.Duration
@@ -40,7 +41,9 @@ class NowStateCalculatorTest {
         )
         val finished = calculator.calculate(schedule, at(monday, 12, 15))
         assertEquals(NowState.Finished(tomorrow), finished.state)
-        assertEquals(at(monday.plusDays(1), 0, 0), finished.nextUpdate)
+        assertEquals(tomorrow, finished.upcoming?.lessons?.single()?.lesson)
+        assertEquals(at(monday, 12, 16), finished.nextUpdate)
+        assertEquals(at(monday.plusDays(1), 0, 0), calculator.calculate(schedule, at(monday, 23, 59)).nextUpdate)
     }
 
     @Test
@@ -49,7 +52,7 @@ class NowStateCalculatorTest {
         val result = calculator.calculate(schedule, at(monday, 9, 0))
         assertEquals(NowState.DayOff(NowState.DayOff.Reason.HOLIDAY, tomorrow), result.state)
         assertTrue(result.isHoliday)
-        assertEquals(at(monday.plusDays(1), 0, 0), result.nextUpdate)
+        assertEquals(at(monday, 9, 1), result.nextUpdate)
     }
 
     @Test
@@ -86,6 +89,35 @@ class NowStateCalculatorTest {
         val breakState = calculator.calculate(schedule, at(monday, 10, 30)).state as NowState.Break
         assertEquals(Duration.ofMinutes(15), breakState.length)
         assertEquals(Duration.ofMinutes(10), breakState.remaining)
+    }
+
+    @Test
+    fun `while a lesson runs the earliest future start includes all simultaneous lessons`() {
+        val overlap = lesson("Практика", monday, 9, 30, 11, 5)
+        val simultaneous = overlap.copy(id = "lab", discipline = "Лабораторная работа")
+        val cancelled = lesson("Отменено", monday, 9, 10, 10, 0).copy(status = LessonStatus.CANCELLED)
+        val schedule = schedule(first, overlap, simultaneous, cancelled, next)
+        val snapshot = calculator.calculateEntries(schedule.entries(), at(monday, 9, 0))
+        assertEquals(listOf(first), (snapshot.state as NowState.Running).current.map { it.lesson })
+        assertEquals(listOf(overlap, simultaneous), snapshot.upcoming?.lessons?.map { it.lesson })
+        assertEquals(Duration.ofMinutes(30), snapshot.upcoming?.remaining)
+
+        val atStart = calculator.calculate(schedule, at(monday, 9, 30))
+        assertEquals(3, (atStart.state as NowState.Running).current.size)
+        assertEquals(next, atStart.upcoming?.lessons?.single()?.lesson)
+    }
+
+    @Test
+    fun `next slot skips holiday closures and flags conflicting time without a countdown`() {
+        val conflict = next.copy(note = "с 10:35")
+        val blocked = lesson("Закрытый интервал", monday, 9, 15, 9, 45)
+        val schedule = schedule(first, conflict, blocked, tomorrow)
+            .copy(holidays = listOf(HolidayDay(monday, listOf(blocked.start))))
+        val upcoming = calculator.calculate(schedule, at(monday, 9, 0)).upcoming
+        assertEquals(listOf(UpcomingLesson(conflict, timeConflict = true)), upcoming?.lessons)
+        assertNull(upcoming?.remaining)
+        assertEquals(tomorrow, calculator.calculate(schedule, at(monday, 12, 0)).upcoming?.lessons?.single()?.lesson)
+        assertNull(calculator.calculate(schedule, at(monday.plusDays(1), 18, 0)).upcoming)
     }
 
     private fun at(date: LocalDate, hour: Int, minute: Int, second: Int = 0): Instant =

@@ -11,6 +11,7 @@ import com.keisha.tusur.timetable.data.parser.WeekListParser
 import com.keisha.tusur.timetable.data.parser.WeekScheduleParser
 import com.keisha.tusur.timetable.data.repository.CatalogRepository
 import com.keisha.tusur.timetable.data.repository.CatalogRepositoryImpl
+import com.keisha.tusur.timetable.data.repository.RoomScheduleRepository
 import com.keisha.tusur.timetable.data.repository.ScheduleRepository
 import com.keisha.tusur.timetable.data.repository.ScheduleRepositoryImpl
 import com.keisha.tusur.timetable.data.repository.SettingsRepository
@@ -107,6 +108,10 @@ class AppContainer(context: Context) {
             ioDispatcher = ioDispatcher,
             database = database,
         )
+    }
+
+    internal val roomScheduleRepository by lazy {
+        RoomScheduleRepository(database.roomCacheDao(), client, weekScheduleParser)
     }
 
     internal val scheduleNotifications by lazy {

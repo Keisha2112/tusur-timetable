@@ -21,6 +21,12 @@ internal object SettingsKeys {
 
     /** "system" | "light" | "dark". Отсутствие ключа равнозначно "system". */
     val THEME_MODE = stringPreferencesKey("theme_mode")
+    val COLOR_PALETTE = stringPreferencesKey("color_palette")
+    val ANIMATION_MODE = stringPreferencesKey("animation_mode")
+    val SCHEDULE_SOURCE = stringPreferencesKey("schedule_source")
+    val ROOM_BUILDING = stringPreferencesKey("room_building")
+    val ROOM_SLUG = stringPreferencesKey("room_slug")
+    val ROOM_NUMBER = stringPreferencesKey("room_number")
 
     val SCHEMA_VERSION = intPreferencesKey("schema_version")
 

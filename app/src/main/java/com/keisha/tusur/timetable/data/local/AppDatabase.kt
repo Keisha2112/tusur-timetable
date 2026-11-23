@@ -14,8 +14,10 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         ScheduleCacheEntity::class,
         TeacherScheduleCacheEntity::class,
         ScheduleNotificationEntity::class,
+        RoomCatalogCacheEntity::class,
+        RoomScheduleCacheEntity::class,
     ],
-    version = 3,
+    version = 4,
     exportSchema = true,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -27,6 +29,8 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun teacherScheduleCacheDao(): TeacherScheduleCacheDao
 
     abstract fun scheduleNotificationDao(): ScheduleNotificationDao
+
+    abstract fun roomCacheDao(): RoomCacheDao
 
     companion object {
 
@@ -65,13 +69,37 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        internal val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS room_catalog_cache (
+                        `key` TEXT NOT NULL PRIMARY KEY,
+                        payload TEXT NOT NULL,
+                        updatedAt INTEGER NOT NULL
+                    )
+                    """.trimIndent(),
+                )
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS room_schedule_cache (
+                        buildingCode TEXT NOT NULL,
+                        roomSlug TEXT NOT NULL,
+                        payload TEXT NOT NULL,
+                        PRIMARY KEY(buildingCode, roomSlug)
+                    )
+                    """.trimIndent(),
+                )
+            }
+        }
+
         fun build(context: Context): AppDatabase =
             Room.databaseBuilder(
                 context.applicationContext,
                 AppDatabase::class.java,
                 "tusur-timetable.db",
             )
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
                 .build()
     }
 }

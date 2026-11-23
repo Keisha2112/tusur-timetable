@@ -1,9 +1,15 @@
 package com.keisha.tusur.timetable.data.repository
 
 import com.keisha.tusur.timetable.domain.model.AppError
+import com.keisha.tusur.timetable.domain.model.AnimationMode
+import com.keisha.tusur.timetable.domain.model.Appearance
+import com.keisha.tusur.timetable.domain.model.Auditorium
+import com.keisha.tusur.timetable.domain.model.ColorPalette
 import com.keisha.tusur.timetable.domain.model.Faculty
 import com.keisha.tusur.timetable.domain.model.Group
 import com.keisha.tusur.timetable.domain.model.GroupSchedule
+import com.keisha.tusur.timetable.domain.model.SchedulePreference
+import com.keisha.tusur.timetable.domain.model.ScheduleSource
 import com.keisha.tusur.timetable.domain.model.ThemeMode
 import com.keisha.tusur.timetable.domain.model.Week
 import com.keisha.tusur.timetable.domain.update.AppUpdate
@@ -119,10 +125,20 @@ interface SettingsRepository {
 
     suspend fun clearSelection()
 
-    /** Оформление приложения. При отсутствии сохранённого значения — [ThemeMode.SYSTEM]. */
-    val themeMode: Flow<ThemeMode>
+    val schedulePreference: Flow<SchedulePreference>
+
+    suspend fun setScheduleSource(source: ScheduleSource)
+
+    /** Запоминает аудиторию и переключает источник одной записью DataStore. */
+    suspend fun selectAuditorium(auditorium: Auditorium)
+
+    val appearance: Flow<Appearance>
 
     suspend fun setThemeMode(mode: ThemeMode)
+
+    suspend fun setPalette(palette: ColorPalette)
+
+    suspend fun setAnimationMode(mode: AnimationMode)
 
     /** Поколение меняется при включении уведомлений или смене группы. */
     val monitoring: Flow<ScheduleMonitoring>

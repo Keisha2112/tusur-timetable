@@ -8,7 +8,9 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.unit.dp
+import com.keisha.tusur.timetable.domain.model.ColorPalette
 
 private val LightColors = lightColorScheme(
     primary = Color(0xFF1D4ED8),
@@ -94,13 +96,68 @@ private val TusurShapes = Shapes(
     extraLarge = RoundedCornerShape(24.dp),
 )
 
+private val paletteAccents = mapOf(
+    ColorPalette.MARINE to (Color(0xFF00696C) to Color(0xFF7DDBDA)),
+    ColorPalette.TERRACOTTA to (Color(0xFF934128) to Color(0xFFFFB59C)),
+    ColorPalette.FOREST to (Color(0xFF386321) to Color(0xFFAFCF91)),
+    ColorPalette.PLUM to (Color(0xFF6D437F) to Color(0xFFE2B6F3)),
+    ColorPalette.AMBER to (Color(0xFF795600) to Color(0xFFF5CA63)),
+    ColorPalette.GRAPHITE to (Color(0xFF485461) to Color(0xFFC2C9D1)),
+    ColorPalette.ROSE to (Color(0xFF922958) to Color(0xFFFFB1CE)),
+)
+
+internal fun paletteScheme(palette: ColorPalette, dark: Boolean): androidx.compose.material3.ColorScheme {
+    val base = if (dark) DarkColors else LightColors
+    val (lightAccent, darkAccent) = paletteAccents[palette] ?: return base
+    val accent = if (dark) darkAccent else lightAccent
+    val neutral = if (dark) Color(0xFF151618) else Color(0xFFFFFFFF)
+    val onAccent = if (dark) neutral else Color.White
+    val secondary = lerp(accent, base.onSurface, 0.2f)
+    val tertiary = lerp(accent, base.tertiary, 0.45f)
+
+    fun surface(tint: Float) = lerp(neutral, accent, tint)
+    fun container(color: Color) = lerp(neutral, color, if (dark) 0.18f else 0.10f)
+    val onContainer = if (dark) base.onSurface else base.onBackground
+
+    return base.copy(
+        primary = accent,
+        onPrimary = onAccent,
+        primaryContainer = container(accent),
+        onPrimaryContainer = onContainer,
+        secondary = secondary,
+        onSecondary = onAccent,
+        secondaryContainer = container(secondary),
+        onSecondaryContainer = onContainer,
+        tertiary = tertiary,
+        onTertiary = onAccent,
+        tertiaryContainer = container(tertiary),
+        onTertiaryContainer = onContainer,
+        background = surface(0.04f),
+        surface = surface(0.06f),
+        surfaceVariant = surface(0.12f),
+        surfaceDim = surface(if (dark) 0.02f else 0.16f),
+        surfaceBright = surface(if (dark) 0.20f else 0.02f),
+        surfaceContainerLowest = surface(0.02f),
+        surfaceContainerLow = surface(0.06f),
+        surfaceContainer = surface(0.09f),
+        surfaceContainerHigh = surface(0.12f),
+        surfaceContainerHighest = surface(0.15f),
+        outlineVariant = surface(if (dark) 0.23f else 0.17f),
+        surfaceTint = accent,
+        inverseSurface = if (dark) Color(0xFFF1F3F5) else Color(0xFF26282B),
+        inverseOnSurface = if (dark) Color(0xFF24262A) else Color(0xFFF1F3F5),
+        inversePrimary = if (dark) lightAccent else darkAccent,
+    )
+}
+
 @Composable
 fun TusurTimetableTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
+    palette: ColorPalette = ColorPalette.ORIGINAL,
     content: @Composable () -> Unit,
 ) {
     MaterialTheme(
-        colorScheme = if (darkTheme) DarkColors else LightColors,
+        colorScheme = androidx.compose.runtime.remember(palette, darkTheme) { paletteScheme(palette, darkTheme) },
         typography = TusurTypography,
         shapes = TusurShapes,
         content = content,

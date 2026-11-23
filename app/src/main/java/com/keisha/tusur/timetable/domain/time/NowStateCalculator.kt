@@ -4,6 +4,7 @@ import com.keisha.tusur.timetable.domain.model.GroupSchedule
 import com.keisha.tusur.timetable.domain.model.Lesson
 import com.keisha.tusur.timetable.domain.model.LessonNotes
 import com.keisha.tusur.timetable.domain.model.LessonStatus
+import com.keisha.tusur.timetable.domain.model.ScheduleEntries
 import com.keisha.tusur.timetable.domain.model.WeekPublication
 import java.time.Duration
 import java.time.Instant
@@ -30,15 +31,22 @@ internal sealed interface NowState {
 
 internal data class RunningLesson(val lesson: Lesson, val remaining: Duration, val progress: Float)
 
+internal data class UpcomingLesson(val lesson: Lesson, val timeConflict: Boolean)
+
+internal data class UpcomingLessons(val lessons: List<UpcomingLesson>, val remaining: Duration?)
+
 internal data class NowSnapshot(
     val date: LocalDate,
     val isHoliday: Boolean,
     val state: NowState,
     val nextUpdate: Instant,
+    val upcoming: UpcomingLessons? = null,
 )
 
 internal class NowStateCalculator {
-    fun calculate(schedule: GroupSchedule?, now: Instant): NowSnapshot {
+    fun calculate(schedule: GroupSchedule?, now: Instant): NowSnapshot = calculateEntries(schedule?.entries(), now)
+
+    fun calculateEntries(schedule: ScheduleEntries?, now: Instant): NowSnapshot {
         val today = now.atZone(ScheduleTime.ZONE).toLocalDate()
         val midnight = today.plusDays(1).atStartOfDay(ScheduleTime.ZONE).toInstant()
         if (schedule == null) return NowSnapshot(today, false, NowState.NoSchedule, midnight)
@@ -52,6 +60,15 @@ internal class NowStateCalculator {
         val nextKnownDay = scheduled.firstOrNull { it.lesson.date.isAfter(today) }?.lesson
         val active = scheduled.filter { it.isReliable && now >= it.start && now < it.end }
         val nextStart = todays.firstOrNull { it.possibleStart.isAfter(now) }
+        val upcomingStart = scheduled.firstOrNull { it.possibleStart.isAfter(now) }?.possibleStart
+        val upcoming = upcomingStart?.let { start ->
+            val lessonsAtStart = scheduled.filter { it.possibleStart == start }
+                .map { UpcomingLesson(it.lesson, it.hasTimeConflict) }
+            UpcomingLessons(
+                lessons = lessonsAtStart,
+                remaining = Duration.between(now, start).takeUnless { lessonsAtStart.any(UpcomingLesson::timeConflict) },
+            )
+        }
         val uncertain = todays.firstOrNull {
             !it.isReliable && it.possibleStart <= now &&
                 (!it.hasKnownEnd || now < it.end)
@@ -79,18 +96,18 @@ internal class NowStateCalculator {
             else -> NowState.DayOff(reason(schedule, today, holiday != null, lessons), nextKnownDay)
         }
 
-        val minute = if (state is NowState.Running || state is NowState.BeforeFirst || state is NowState.Break) {
+        val minute = if (state is NowState.Running || upcoming?.remaining != null) {
             now.truncatedTo(ChronoUnit.MINUTES).plus(1, ChronoUnit.MINUTES)
         } else null
-        val nextUpdate = listOfNotNull(minute, nextStart?.possibleStart, midnight)
+        val nextUpdate = listOfNotNull(minute, upcomingStart, midnight)
             .plus(active.map { it.end })
             .plus(todays.filter { !it.isReliable && it.end > now }.map { it.end })
             .minOrNull() ?: midnight
-        return NowSnapshot(today, holiday != null, state, nextUpdate)
+        return NowSnapshot(today, holiday != null, state, nextUpdate, upcoming)
     }
 
     private fun reason(
-        schedule: GroupSchedule,
+        schedule: ScheduleEntries,
         today: LocalDate,
         holiday: Boolean,
         lessons: List<Lesson>,

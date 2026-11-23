@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="TusurDialogFastAnimations">
+        <item name="android:windowEnterAnimation">@anim/dialog_fast_enter</item>
+        <item name="android:windowExitAnimation">@anim/dialog_fast_exit</item>
+    </style>
+</resources>

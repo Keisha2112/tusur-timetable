@@ -18,11 +18,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -42,11 +40,11 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.keisha.tusur.timetable.AppContainer
 import com.keisha.tusur.timetable.R
-import com.keisha.tusur.timetable.data.network.Urls
-import com.keisha.tusur.timetable.data.repository.UserSelection
+import com.keisha.tusur.timetable.ui.components.LoadingBar
+import com.keisha.tusur.timetable.ui.components.ScheduleRefreshBox
 import com.keisha.tusur.timetable.domain.model.AppError
-import com.keisha.tusur.timetable.domain.model.GroupSchedule
 import com.keisha.tusur.timetable.domain.model.Lesson
+import com.keisha.tusur.timetable.domain.model.ScheduleEntries
 import com.keisha.tusur.timetable.domain.model.Week
 import com.keisha.tusur.timetable.domain.time.ScheduleTime
 import com.keisha.tusur.timetable.ui.components.NoSelectionState
@@ -65,6 +63,7 @@ fun ScheduleScreen(
     onOpenNow: () -> Unit,
     requestedDate: LocalDate? = null,
     onDateHandled: () -> Unit = {},
+    onBack: (() -> Unit)? = null,
 ) {
     val viewModel: ScheduleViewModel = viewModel(
         factory = viewModelFactory {
@@ -95,7 +94,21 @@ fun ScheduleScreen(
     }
 
     ScheduleScreenContent(
-        state = state,
+        state = ScheduleScreenState(
+            subject = state.selection?.subject(),
+            entries = state.schedule?.entries(),
+            selectedWeekId = state.selectedWeekId,
+            isInitialLoading = state.isInitialLoading,
+            isRefreshing = state.isRefreshing,
+            loadingWeekId = state.loadingWeekId,
+            isOffline = state.isOffline,
+            error = state.error,
+            lastUpdated = state.lastUpdated,
+            groupNotFound = state.groupNotFound,
+            focusDate = state.focusDate,
+            staleWeeks = state.schedule?.staleWeeks.orEmpty(),
+        ),
+        onBack = onBack,
         onOpenSettings = onOpenSettings,
         onOpenTeacher = onOpenTeacher,
         onOpenNow = onOpenNow,
@@ -109,10 +122,24 @@ fun ScheduleScreen(
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+internal data class ScheduleScreenState(
+    val subject: ScheduleSubject?,
+    val entries: ScheduleEntries? = null,
+    val selectedWeekId: Int? = null,
+    val isInitialLoading: Boolean = true,
+    val isRefreshing: Boolean = false,
+    val loadingWeekId: Int? = null,
+    val isOffline: Boolean = false,
+    val error: AppError? = null,
+    val lastUpdated: Instant? = null,
+    val groupNotFound: Boolean = false,
+    val focusDate: LocalDate? = null,
+    val staleWeeks: Set<Int> = emptySet(),
+)
+
 @Composable
-private fun ScheduleScreenContent(
-    state: ScheduleUiState,
+internal fun ScheduleScreenContent(
+    state: ScheduleScreenState,
     onOpenSettings: () -> Unit,
     onOpenTeacher: (String) -> Unit,
     onOpenNow: () -> Unit,
@@ -122,12 +149,14 @@ private fun ScheduleScreenContent(
     onNextWeek: () -> Unit,
     onSelectWeek: (Int) -> Unit,
     onToday: () -> Unit,
-    onDateFocused: (LocalDate) -> Unit,
+    onDateFocused: (LocalDate) -> Unit = {},
+    onBack: (() -> Unit)? = null,
 ) {
     var showWeekPicker by rememberSaveable { mutableStateOf(false) }
     var detailsLesson by remember { mutableStateOf<Lesson?>(null) }
 
-    val schedule = state.schedule
+    val subject = state.subject
+    val schedule = state.entries
     val weeks = remember(schedule?.weeks) {
         schedule?.weeks?.sortedBy { it.startDate }.orEmpty()
     }
@@ -139,7 +168,7 @@ private fun ScheduleScreenContent(
     val currentWeekId = ScheduleTime.currentWeek(weeks, ScheduleTime.today())?.id
 
     // При смене группы листы со старыми данными закрываем.
-    LaunchedEffect(schedule?.group?.slug) {
+    LaunchedEffect(subject?.key) {
         detailsLesson = null
         showWeekPicker = false
     }
@@ -147,9 +176,10 @@ private fun ScheduleScreenContent(
     Scaffold(
         topBar = {
             ScheduleTopBar(
-                selection = state.selection,
+                subject = subject,
                 onOpenSettings = onOpenSettings,
                 onOpenNow = onOpenNow,
+                onBack = onBack,
             )
         },
         containerColor = MaterialTheme.colorScheme.background,
@@ -161,7 +191,7 @@ private fun ScheduleScreenContent(
                 .padding(innerPadding),
         ) {
             when {
-                state.selection == null -> {
+                subject == null -> {
                     if (state.isInitialLoading) {
                         ScheduleLoadingState()
                     } else {
@@ -178,6 +208,11 @@ private fun ScheduleScreenContent(
                             groupNotFound = state.groupNotFound,
                             onRetry = onRetry,
                             onOpenSettings = onOpenSettings,
+                            notFoundMessageRes = if (subject.auditorium != null) {
+                                R.string.room_not_found
+                            } else {
+                                R.string.schedule_group_not_found
+                            },
                         )
                     }
                 }
@@ -185,6 +220,7 @@ private fun ScheduleScreenContent(
                 else -> ScheduleBody(
                     state = state,
                     schedule = schedule,
+                    subject = subject,
                     weeks = weeks,
                     weeksWithLessons = weeksWithLessons,
                     currentWeekId = currentWeekId,
@@ -194,7 +230,6 @@ private fun ScheduleScreenContent(
                     onToday = onToday,
                     onChooseWeek = { showWeekPicker = true },
                     onOpenLesson = { detailsLesson = it },
-                    onOpenTeacher = onOpenTeacher,
                     onDateFocused = onDateFocused,
                 )
             }
@@ -214,12 +249,12 @@ private fun ScheduleScreenContent(
     }
 
     val lesson = detailsLesson
-    if (lesson != null && schedule != null) {
+    if (lesson != null && subject != null && schedule != null) {
         LessonDetailsSheet(
             lesson = lesson,
-            sourceUrl = Urls.group(schedule.group.facultyCode, schedule.group.slug),
+            sourceUrl = subject.sourceUrl(ScheduleTime.findWeek(weeks, lesson.date)),
             showTeachers = true,
-            showGroups = false,
+            showGroups = subject.auditorium != null,
             onTeacherClick = { teacher ->
                 detailsLesson = null
                 onOpenTeacher(teacher)
@@ -231,19 +266,21 @@ private fun ScheduleScreenContent(
 
 @Composable
 private fun ScheduleTopBar(
-    selection: UserSelection?,
+    subject: ScheduleSubject?,
     onOpenSettings: () -> Unit,
     onOpenNow: () -> Unit,
+    onBack: (() -> Unit)?,
 ) {
     ScheduleHeader(
-        title = selection?.groupName ?: stringResource(R.string.app_name),
-        subtitle = selection?.facultyName,
+        title = subject?.title ?: stringResource(R.string.app_name),
+        subtitle = if (subject?.auditorium != null) stringResource(R.string.schedule_source_room) else subject?.subtitle,
+        onBack = onBack,
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(4.dp),
         ) {
-            if (selection != null) {
+            if (subject != null) {
                 FilledTonalButton(onClick = onOpenNow, modifier = Modifier.heightIn(min = 48.dp)) {
                     Text(stringResource(R.string.schedule_now))
                 }
@@ -268,8 +305,9 @@ private fun ScheduleTopBar(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ScheduleBody(
-    state: ScheduleUiState,
-    schedule: GroupSchedule,
+    state: ScheduleScreenState,
+    schedule: ScheduleEntries,
+    subject: ScheduleSubject,
     weeks: List<Week>,
     weeksWithLessons: Set<Int>,
     currentWeekId: Int?,
@@ -279,9 +317,9 @@ private fun ScheduleBody(
     onToday: () -> Unit,
     onChooseWeek: () -> Unit,
     onOpenLesson: (Lesson) -> Unit,
-    onOpenTeacher: (String) -> Unit,
     onDateFocused: (LocalDate) -> Unit,
 ) {
+    val isRoom = subject.auditorium != null
     val selectedWeek = weeks.firstOrNull { it.id == state.selectedWeekId }
     val selectedIndex = weeks.indexOfFirst { it.id == state.selectedWeekId }
     val canGoPrevious = selectedIndex > 0
@@ -312,7 +350,9 @@ private fun ScheduleBody(
             )
         }
 
-        if (state.error != null || state.isOffline || selectedWeek?.id in schedule.staleWeeks) {
+        if ((state.error != null || state.isOffline || selectedWeek?.id in state.staleWeeks) &&
+            (!isRoom || selectedWeek?.id in schedule.publications)
+        ) {
             OfflineBanner(
                 message = stringResource(
                     if (state.isOffline || state.error is AppError.Network) {
@@ -321,13 +361,13 @@ private fun ScheduleBody(
                         R.string.schedule_stale
                     },
                 ),
-                updatedAt = state.lastUpdated,
+                updatedAt = state.lastUpdated.takeUnless { isRoom },
             )
-        } else if (state.lastUpdated != null) {
+        } else if (!isRoom && state.lastUpdated != null) {
             UpdatedAtLabel(updatedAt = state.lastUpdated)
         }
 
-        PullToRefreshBox(
+        ScheduleRefreshBox(
             isRefreshing = state.isRefreshing,
             onRefresh = onRefresh,
             modifier = Modifier
@@ -345,29 +385,42 @@ private fun ScheduleBody(
                     week = selectedWeek,
                     modifier = Modifier.fillMaxSize(),
                 ) { week ->
-                    ScheduleWeekList(
-                        lessons = schedule.lessons,
-                        week = week,
-                        contentKey = schedule.group.slug,
-                        currentWeekId = currentWeekId,
-                        canGoPrevious = canGoPrevious,
-                        canGoNext = canGoNext,
-                        showTeachers = true,
-                        showGroups = false,
-                        onPreviousWeek = onPreviousWeek,
-                        onNextWeek = onNextWeek,
-                        onOpenLesson = onOpenLesson,
-                        holidays = schedule.holidays,
-                        publication = week?.id?.let(schedule.publications::get),
-                        focusDate = state.focusDate.takeIf { week?.id == state.selectedWeekId },
-                        onDateFocused = onDateFocused,
-                    )
+                    val publication = week?.id?.let(schedule.publications::get)
+                    when {
+                        isRoom && publication == null && week != null && week.id == state.loadingWeekId ->
+                            ScheduleLoadingState()
+                        isRoom && publication == null && state.error != null -> ScheduleErrorState(
+                            error = state.error,
+                            groupNotFound = false,
+                            onRetry = onRefresh,
+                            onOpenSettings = null,
+                            notFoundMessageRes = R.string.room_not_found,
+                        )
+                        else -> ScheduleWeekList(
+                            lessons = schedule.lessons,
+                            week = week,
+                            contentKey = subject.key,
+                            currentWeekId = currentWeekId,
+                            canGoPrevious = canGoPrevious,
+                            canGoNext = canGoNext,
+                            showTeachers = true,
+                            showGroups = isRoom,
+                            onPreviousWeek = onPreviousWeek,
+                            onNextWeek = onNextWeek,
+                            onOpenLesson = onOpenLesson,
+                            holidays = schedule.holidays,
+                            publication = publication,
+                            focusDate = state.focusDate.takeIf { week?.id == state.selectedWeekId },
+                            onDateFocused = onDateFocused,
+                            isRoom = isRoom,
+                        )
+                    }
                 }
-                if (selectedWeek != null &&
+                if (!isRoom && selectedWeek != null &&
                     state.loadingWeekId == selectedWeek.id &&
                     !hasSelectedWeekLessons
                 ) {
-                    LinearProgressIndicator(
+                    LoadingBar(
                         modifier = Modifier
                             .fillMaxWidth()
                             .align(Alignment.TopCenter),

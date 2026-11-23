@@ -84,7 +84,7 @@
     <string name="settings_title">Настройки</string>
     <string name="settings_current_group">Текущая группа</string>
     <string name="settings_change_group">Изменить факультет и группу</string>
-    <string name="settings_data_source">Источник данных</string>
+    <string name="settings_data_source">Открыть на сайте ТУСУРа</string>
     <string name="settings_data_source_url">timetable.tusur.ru</string>
     <string name="settings_about">О приложении</string>
     <string name="settings_version">Версия %1$s</string>
