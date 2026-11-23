@@ -18,6 +18,7 @@ import com.keisha.tusur.timetable.data.repository.ScheduleRepository
 import com.keisha.tusur.timetable.data.repository.SettingsRepository
 import com.keisha.tusur.timetable.domain.change.ScheduleChange
 import com.keisha.tusur.timetable.domain.model.Group
+import com.keisha.tusur.timetable.domain.model.ScheduleSource
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -33,14 +34,15 @@ import java.util.concurrent.TimeUnit
 internal class ScheduleNotificationScheduler(
     private val context: Context,
     private val settings: SettingsRepository,
-    private val repository: ScheduleRepository,
+    private val repositoryFor: (ScheduleSource) -> ScheduleRepository,
     private val queue: ScheduleNotificationDao,
     private val clock: Clock = Clock.systemUTC(),
 ) {
     private val notifier = ScheduleNotifier(context)
     private val workManager by lazy { WorkManager.getInstance(context) }
     private val mutex = Mutex()
-    private var workActive: Boolean? = null
+    private var workSource: ScheduleSource? = null
+    private var workReconciled = false
     private val available = MutableStateFlow(notifier.canPost())
     val deliveryAvailable = available.asStateFlow()
 
@@ -53,18 +55,19 @@ internal class ScheduleNotificationScheduler(
     suspend fun reconcile() = safely {
         mutex.withLock {
             val monitoring = checkPermission()
-            val enabled = monitoring.activeGeneration() != null
-            if (enabled != workActive) {
-                if (enabled) {
+            val source = monitoring.source.takeIf { monitoring.activeGeneration() != null }
+            if (!workReconciled || source != workSource) {
+                if (source != null) {
                     workManager.enqueueUniquePeriodicWork(
                         WORK_NAME,
-                        ExistingPeriodicWorkPolicy.KEEP,
+                        ExistingPeriodicWorkPolicy.UPDATE,
                         PeriodicWorkRequestBuilder<ScheduleNotificationWorker>(
-                            2, TimeUnit.HOURS, 30, TimeUnit.MINUTES,
+                            if (source == ScheduleSource.GROUP_FROM_ROOMS) 6 else 2,
+                            TimeUnit.HOURS, 30, TimeUnit.MINUTES,
                         )
                             .setConstraints(
                                 Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED)
-                                    .setRequiresBatteryNotLow(true).build(),
+                                    .setRequiresBatteryNotLow(source == ScheduleSource.GROUP).build(),
                             )
                             .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 30, TimeUnit.MINUTES)
                             .build(),
@@ -73,19 +76,20 @@ internal class ScheduleNotificationScheduler(
                     workManager.cancelUniqueWork(WORK_NAME)
                     queue.clear()
                 }
-                workActive = enabled
+                workSource = source
+                workReconciled = true
             }
             drain(monitoring)
         }
     }
 
-    suspend fun refreshManually(group: Group, selectedWeekId: Int?): ScheduleLoadResult {
+    suspend fun refreshManually(group: Group, selectedWeekId: Int?, source: ScheduleSource): ScheduleLoadResult {
         val monitoring = checkPermission()
         val generation = monitoring.activeGeneration().takeIf {
             val selected = monitoring.selection
-            selected?.facultyCode == group.facultyCode && selected.groupSlug == group.slug
+            monitoring.source == source && selected?.facultyCode == group.facultyCode && selected.groupSlug == group.slug
         }
-        val result = repository.refresh(group, ScheduleRefreshReason.MANUAL, selectedWeekId, generation)
+        val result = repositoryFor(source).refresh(group, ScheduleRefreshReason.MANUAL, selectedWeekId, generation)
         reconcile()
         return result
     }
@@ -94,7 +98,9 @@ internal class ScheduleNotificationScheduler(
         val monitoring = checkPermission()
         val generation = monitoring.activeGeneration() ?: return null
         val group = monitoring.selection?.toGroup() ?: return null
-        val result = repository.refresh(group, ScheduleRefreshReason.BACKGROUND, monitoringGeneration = generation)
+        val result = repositoryFor(monitoring.source).refresh(
+            group, ScheduleRefreshReason.BACKGROUND, monitoringGeneration = generation,
+        )
         reconcile()
         return result
     }
@@ -124,7 +130,7 @@ internal class ScheduleNotificationScheduler(
             }.getOrDefault(emptyList()).filter { it.isRelevantAt(clock.instant()) }
             if (queue.claim(item.id) == 1 &&
                 settings.monitoring.first().activeGeneration() == generation
-            ) notifier.show(item.id, group, changes)
+            ) notifier.show(item.id, group, changes, monitoring.source)
         }
     }
 

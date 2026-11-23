@@ -3,12 +3,10 @@ package com.keisha.tusur.timetable.data.repository
 import com.keisha.tusur.timetable.domain.model.AppError
 import com.keisha.tusur.timetable.domain.model.AnimationMode
 import com.keisha.tusur.timetable.domain.model.Appearance
-import com.keisha.tusur.timetable.domain.model.Auditorium
 import com.keisha.tusur.timetable.domain.model.ColorPalette
 import com.keisha.tusur.timetable.domain.model.Faculty
 import com.keisha.tusur.timetable.domain.model.Group
 import com.keisha.tusur.timetable.domain.model.GroupSchedule
-import com.keisha.tusur.timetable.domain.model.SchedulePreference
 import com.keisha.tusur.timetable.domain.model.ScheduleSource
 import com.keisha.tusur.timetable.domain.model.ThemeMode
 import com.keisha.tusur.timetable.domain.model.Week
@@ -56,6 +54,7 @@ data class ScheduleMonitoring(
     val selection: UserSelection?,
     val generation: String?,
     val blocked: Boolean = false,
+    val source: ScheduleSource = ScheduleSource.GROUP,
 )
 
 interface CatalogRepository {
@@ -72,12 +71,12 @@ interface CatalogRepository {
 interface ScheduleRepository {
 
     /** Расписание из кэша без обращения к сети. */
-    suspend fun cached(groupSlug: String): GroupSchedule?
+    suspend fun cached(group: Group): GroupSchedule?
 
     fun observe(group: Group): Flow<GroupSchedule?>
 
     /** Время последнего успешного обновления, если кэш есть. */
-    suspend fun lastUpdated(groupSlug: String): Instant?
+    suspend fun lastUpdated(group: Group): Instant?
 
     /**
      * Загружает расписание: кэш → при необходимости сеть.
@@ -125,12 +124,9 @@ interface SettingsRepository {
 
     suspend fun clearSelection()
 
-    val schedulePreference: Flow<SchedulePreference>
+    val scheduleSource: Flow<ScheduleSource>
 
     suspend fun setScheduleSource(source: ScheduleSource)
-
-    /** Запоминает аудиторию и переключает источник одной записью DataStore. */
-    suspend fun selectAuditorium(auditorium: Auditorium)
 
     val appearance: Flow<Appearance>
 

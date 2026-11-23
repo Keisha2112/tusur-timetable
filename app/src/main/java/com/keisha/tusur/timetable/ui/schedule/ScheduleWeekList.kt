@@ -41,6 +41,7 @@ import com.keisha.tusur.timetable.domain.time.ScheduleTime
 import com.keisha.tusur.timetable.ui.components.EmptyWeekState
 import com.keisha.tusur.timetable.ui.components.LessonCard
 import kotlinx.coroutines.flow.first
+import java.time.DayOfWeek
 import java.time.LocalDate
 
 /**
@@ -65,19 +66,24 @@ internal fun ScheduleWeekList(
     publication: WeekPublication? = null,
     focusDate: LocalDate? = null,
     onDateFocused: (LocalDate) -> Unit = {},
-    isRoom: Boolean = false,
+    fromRooms: Boolean = false,
+    partial: Boolean = false,
 ) {
-    val days = remember(lessons, holidays, week?.startDate, publication) {
-        val scheduledDays = week?.let { ScheduleTime.daysForWeek(lessons, it.startDate, holidays) }.orEmpty()
-        if (publication == WeekPublication.UNPUBLISHED && scheduledDays.none { it.lessons.isNotEmpty() }) {
-            scheduledDays.filter { it.isHoliday }
-        } else scheduledDays
+    val resetKey = "${week?.id}/$contentKey"
+    var focusedSunday by rememberSaveable(resetKey) { mutableStateOf(false) }
+    val includeSunday = focusedSunday || focusDate?.dayOfWeek == DayOfWeek.SUNDAY
+    val days = remember(lessons, holidays, week?.startDate, publication, partial, includeSunday) {
+        val scheduledDays = week?.let { ScheduleTime.daysForWeek(lessons, it.startDate, holidays, includeSunday) }.orEmpty()
+        when {
+            partial -> scheduledDays.filter { it.lessons.isNotEmpty() }
+            publication == WeekPublication.UNPUBLISHED && scheduledDays.none { it.lessons.isNotEmpty() } ->
+                scheduledDays.filter { it.isHoliday }
+            else -> scheduledDays
+        }
     }
     val hasDays = week != null && (publication == WeekPublication.PUBLISHED ||
         days.any { it.isHoliday || it.lessons.isNotEmpty() })
-    val maxPair = remember(days, isRoom) {
-        if (isRoom) ScheduleTime.PAIRS.last().number else weekMaxPair(days)
-    }
+    val maxPair = remember(days, partial) { if (partial) 0 else weekMaxPair(days) }
     val hasUnpublishedHeader = hasDays && publication == WeekPublication.UNPUBLISHED
 
     // Текущая неделя открывается на сегодняшнем дне, остальные — с понедельника.
@@ -93,7 +99,6 @@ internal fun ScheduleWeekList(
     // Стартовая позиция задаётся сразу, иначе при анимации неделя успевает
     // показаться с понедельника и прыгнуть на сегодняшний день.
     val listState = rememberLazyListState(initialFirstVisibleItemIndex = startIndex)
-    val resetKey = "${week?.id}/$contentKey"
     // Ключ уже обработанной прокрутки переживает поворот экрана: rememberLazyListState
     // восстановит позицию, а повторная прокрутка к сегодняшнему дню её бы сбросила.
     var handledResetKey by rememberSaveable { mutableStateOf<String?>(null) }
@@ -107,11 +112,12 @@ internal fun ScheduleWeekList(
     }
 
     val focusIndex = focusDate?.let { dayHeaderIndex(days, it, maxPair) }
-    LaunchedEffect(focusDate, focusIndex, hasDays) {
-        if (focusDate != null && hasDays) {
+    LaunchedEffect(focusDate, focusIndex, hasDays, partial) {
+        if (focusDate != null && hasDays && (!partial || focusIndex != null)) {
             val index = (focusIndex ?: 0) + if (hasUnpublishedHeader) 1 else 0
             snapshotFlow { listState.layoutInfo.totalItemsCount }.first { it > index }
             listState.scrollToItem(index)
+            if (focusDate.dayOfWeek == DayOfWeek.SUNDAY && focusIndex != null) focusedSunday = true
             onDateFocused(focusDate)
         }
     }
@@ -148,16 +154,16 @@ internal fun ScheduleWeekList(
                 }
                 if (day.lessons.isEmpty()) {
                     item(key = "empty-${day.date}") {
-                        EmptyDayRow(day.isHoliday, isRoom)
+                        EmptyDayRow(day.isHoliday, fromRooms)
                     }
-                } else if (day.isHoliday) {
+                } else if (day.isHoliday || partial) {
                     lessonRows(day.lessons, showTeachers, showGroups, onOpenLesson)
                 } else {
                     for (pair in 1..maxPair) {
                         val pairLessons = day.lessons.filter { it.pairNumber == pair }
                         if (pairLessons.isEmpty()) {
                             item(key = "free-${day.date}-$pair") {
-                                EmptyPairRow(pairNumber = pair, isRoom = isRoom)
+                                EmptyPairRow(pairNumber = pair, fromRooms = fromRooms)
                             }
                         } else {
                             lessonRows(pairLessons, showTeachers, showGroups, onOpenLesson)
@@ -234,11 +240,11 @@ private fun DayHeader(date: LocalDate, showHoliday: Boolean) {
 }
 
 @Composable
-private fun EmptyDayRow(isHoliday: Boolean, isRoom: Boolean) {
+private fun EmptyDayRow(isHoliday: Boolean, fromRooms: Boolean) {
     Text(
         text = stringResource(when {
             isHoliday -> R.string.schedule_holiday
-            isRoom -> R.string.room_no_entries
+            fromRooms -> R.string.room_no_entries
             else -> R.string.schedule_empty_day
         }),
         style = MaterialTheme.typography.bodyMedium,
@@ -251,7 +257,7 @@ private fun EmptyDayRow(isHoliday: Boolean, isRoom: Boolean) {
  * Свободная пара — «окно». Компактная строка, чтобы полная сетка не вытеснила занятия.
  */
 @Composable
-private fun EmptyPairRow(pairNumber: Int, isRoom: Boolean) {
+private fun EmptyPairRow(pairNumber: Int, fromRooms: Boolean) {
     val pair = ScheduleTime.PAIRS.firstOrNull { it.number == pairNumber }
     Row(
         modifier = Modifier
@@ -279,7 +285,7 @@ private fun EmptyPairRow(pairNumber: Int, isRoom: Boolean) {
         )
         Spacer(Modifier.width(12.dp))
         Text(
-            text = if (isRoom) stringResource(R.string.room_no_entries)
+            text = if (fromRooms) stringResource(R.string.room_no_entries)
             else stringResource(R.string.schedule_free_pair, pairNumber),
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,

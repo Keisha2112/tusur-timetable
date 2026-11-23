@@ -7,6 +7,7 @@ import android.os.Build
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.work.ListenableWorker
+import androidx.work.NetworkType
 import androidx.work.WorkManager
 import androidx.work.testing.TestListenableWorkerBuilder
 import com.keisha.tusur.timetable.App
@@ -16,6 +17,7 @@ import com.keisha.tusur.timetable.domain.change.ScheduleChange
 import com.keisha.tusur.timetable.domain.model.Group
 import com.keisha.tusur.timetable.domain.model.Lesson
 import com.keisha.tusur.timetable.domain.model.LessonType
+import com.keisha.tusur.timetable.domain.model.ScheduleSource
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -66,7 +68,7 @@ class ScheduleNotificationWorkerTest {
         val id = UUID.randomUUID().toString()
         val manager = requireNotNull(context.getSystemService(NotificationManager::class.java))
         try {
-            ScheduleNotifier(context).show(id, group, listOf(change))
+            ScheduleNotifier(context).show(id, group, listOf(change), ScheduleSource.GROUP)
             val notification = withTimeout(5_000) {
                 var posted = manager.activeNotifications.firstOrNull { it.tag == id }
                 while (posted == null) {
@@ -92,20 +94,25 @@ class ScheduleNotificationWorkerTest {
         val container = (context.applicationContext as App).container
         val settings = container.settingsRepository
         val previous = settings.selection.first()
+        val previousSource = settings.scheduleSource.first()
         val manager = WorkManager.getInstance(context)
-        fun activeCount() = manager.getWorkInfosForUniqueWork(ScheduleNotificationScheduler.WORK_NAME)
-            .get(10, TimeUnit.SECONDS).count { !it.state.isFinished }
+        fun activeWork() = manager.getWorkInfosForUniqueWork(ScheduleNotificationScheduler.WORK_NAME)
+            .get(10, TimeUnit.SECONDS).filterNot { it.state.isFinished }
 
         try {
             settings.saveSelection(UserSelection("fb", "Факультет безопасности", "714-2", "714-2"))
+            settings.setScheduleSource(ScheduleSource.GROUP_FROM_ROOMS)
             settings.setScheduleNotifications(true)
             container.scheduleNotifications.reconcile()
             container.scheduleNotifications.reconcile()
-            assertEquals(1, activeCount())
+            val work = activeWork().single()
+            assertEquals(TimeUnit.HOURS.toMillis(6), work.periodicityInfo?.repeatIntervalMillis)
+            assertEquals(NetworkType.CONNECTED, work.constraints.requiredNetworkType)
         } finally {
             settings.setScheduleNotifications(false)
             container.scheduleNotifications.reconcile()
-            assertEquals(0, activeCount())
+            assertTrue(activeWork().isEmpty())
+            settings.setScheduleSource(previousSource)
             if (previous == null) settings.clearSelection() else settings.saveSelection(previous)
         }
     }

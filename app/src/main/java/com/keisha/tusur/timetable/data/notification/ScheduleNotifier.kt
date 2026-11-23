@@ -19,6 +19,7 @@ import com.keisha.tusur.timetable.domain.change.ChangeKind
 import com.keisha.tusur.timetable.domain.change.ScheduleChange
 import com.keisha.tusur.timetable.domain.model.Group
 import com.keisha.tusur.timetable.domain.model.Lesson
+import com.keisha.tusur.timetable.domain.model.ScheduleSource
 import com.keisha.tusur.timetable.domain.time.ScheduleTime
 import java.time.LocalDate
 
@@ -26,12 +27,16 @@ data class ScheduleNoticeDestination(
     val facultyCode: String,
     val groupSlug: String,
     val date: LocalDate,
+    val source: ScheduleSource = ScheduleSource.GROUP,
+    val groupName: String? = null,
 ) {
     companion object {
         private const val ACTION = "com.keisha.tusur.timetable.OPEN_SCHEDULE_CHANGE"
         private const val FACULTY_CODE = "facultyCode"
         private const val GROUP_SLUG = "groupSlug"
         private const val DATE = "date"
+        private const val SOURCE = "source"
+        private const val GROUP_NAME = "groupName"
 
         fun from(intent: Intent?): ScheduleNoticeDestination? {
             if (intent?.action != ACTION) return null
@@ -39,10 +44,18 @@ data class ScheduleNoticeDestination(
             val group = intent.getStringExtra(GROUP_SLUG) ?: return null
             val rawDate = intent.getStringExtra(DATE) ?: return null
             val date = runCatching { LocalDate.parse(rawDate) }.getOrNull() ?: return null
-            return ScheduleNoticeDestination(faculty, group, date)
+            val source = ScheduleSource.entries.firstOrNull { it.name == intent.getStringExtra(SOURCE) }
+                ?: ScheduleSource.GROUP
+            return ScheduleNoticeDestination(faculty, group, date, source, intent.getStringExtra(GROUP_NAME))
         }
 
-        internal fun intent(context: Context, group: Group, date: LocalDate, noticeId: String): Intent =
+        internal fun intent(
+            context: Context,
+            group: Group,
+            date: LocalDate,
+            noticeId: String,
+            source: ScheduleSource = ScheduleSource.GROUP,
+        ): Intent =
             Intent(context, MainActivity::class.java).apply {
                 action = ACTION
                 data = Uri.Builder().scheme("tusur-timetable").authority("schedule").appendPath(noticeId).build()
@@ -50,6 +63,8 @@ data class ScheduleNoticeDestination(
                 putExtra(FACULTY_CODE, group.facultyCode)
                 putExtra(GROUP_SLUG, group.slug)
                 putExtra(DATE, date.toString())
+                putExtra(SOURCE, source.name)
+                putExtra(GROUP_NAME, group.name)
             }
     }
 }
@@ -93,20 +108,24 @@ internal class ScheduleNotifier(private val context: Context) {
         }
     }
 
-    fun show(id: String, group: Group, changes: List<ScheduleChange>) {
+    fun show(id: String, group: Group, changes: List<ScheduleChange>, source: ScheduleSource) {
         if (changes.isEmpty() || !canPost()) return
         ensureChannel()
         val content = PendingIntent.getActivity(
             context,
             0,
-            ScheduleNoticeDestination.intent(context, group, changes.first().date, id),
+            ScheduleNoticeDestination.intent(context, group, changes.first().date, id, source),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
         )
-        val lines = changes.map(::describe)
+        val lines = changes.map { describe(it, source) }
         val builder = NotificationCompat.Builder(context, CHANNEL)
             .setSmallIcon(R.drawable.ic_stat_schedule)
             .setContentTitle(context.getString(R.string.schedule_notice_title, group.name))
             .setContentText(lines.first())
+            .setSubText(context.getString(
+                if (source == ScheduleSource.GROUP_FROM_ROOMS) R.string.schedule_source_group_from_rooms
+                else R.string.schedule_source_group,
+            ))
             .setContentIntent(content)
             .setAutoCancel(true)
             .setOnlyAlertOnce(true)
@@ -129,7 +148,7 @@ internal class ScheduleNotifier(private val context: Context) {
         }
     }
 
-    private fun describe(change: ScheduleChange): String {
+    private fun describe(change: ScheduleChange, source: ScheduleSource): String {
         val before = change.before
         val after = change.after
         val lesson = after ?: before
@@ -138,7 +157,10 @@ internal class ScheduleNotifier(private val context: Context) {
         val kinds = change.kinds
         if (ChangeKind.SCHEDULE in kinds) return context.getString(R.string.schedule_notice_unspecified_change, date)
         if (ChangeKind.ADDED in kinds) return context.getString(R.string.schedule_notice_added, title, date, time(after))
-        if (ChangeKind.REMOVED in kinds) return context.getString(R.string.schedule_notice_removed, title, date)
+        if (ChangeKind.REMOVED in kinds) return context.getString(
+            if (source == ScheduleSource.GROUP_FROM_ROOMS) R.string.schedule_notice_room_record_removed
+            else R.string.schedule_notice_removed, title, date,
+        )
         if (ChangeKind.CANCELLED in kinds) return context.getString(R.string.schedule_notice_cancelled, title, date)
         if (ChangeKind.RESTORED in kinds) return context.getString(R.string.schedule_notice_restored, title, date)
 

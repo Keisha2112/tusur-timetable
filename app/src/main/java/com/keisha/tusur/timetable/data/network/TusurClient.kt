@@ -90,7 +90,7 @@ class TusurClient(
         )
 
         code == HTTP_NOT_FOUND -> throw AppError.NotFound()
-        code >= 500 -> throw AppError.Server(code)
+        code == 429 || code >= 500 -> throw AppError.Server(code)
         else -> throw AppError.Unknown()
     }
 

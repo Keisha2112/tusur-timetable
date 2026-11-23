@@ -1,11 +1,6 @@
 package com.keisha.tusur.timetable.domain.model
 
-enum class ScheduleSource { GROUP, ROOM }
-
-data class SchedulePreference(
-    val source: ScheduleSource = ScheduleSource.GROUP,
-    val auditorium: Auditorium? = null,
-)
+enum class ScheduleSource { GROUP, GROUP_FROM_ROOMS }
 
 enum class AnimationMode(val scale: Float) {
     NORMAL(1f),

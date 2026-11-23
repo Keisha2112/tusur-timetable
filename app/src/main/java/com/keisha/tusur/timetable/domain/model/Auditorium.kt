@@ -1,7 +1,6 @@
 package com.keisha.tusur.timetable.domain.model
 
 import kotlinx.serialization.Serializable
-import java.time.Instant
 
 @Serializable
 data class Building(val code: String, val name: String)
@@ -28,8 +27,7 @@ data class ScheduleEntries(
     val publications: Map<Int, WeekPublication>,
 )
 
-data class RoomSchedule(
-    val entries: ScheduleEntries,
-    val updatedWeeks: Map<Int, Instant>,
-    val staleWeeks: Set<Int>,
-)
+@Serializable
+data class RoomWeekCoverage(val checked: Int, val total: Int, val loading: Boolean) {
+    val complete: Boolean get() = total > 0 && checked == total
+}

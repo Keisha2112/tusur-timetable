@@ -11,7 +11,7 @@ import com.keisha.tusur.timetable.data.parser.WeekListParser
 import com.keisha.tusur.timetable.data.parser.WeekScheduleParser
 import com.keisha.tusur.timetable.data.repository.CatalogRepository
 import com.keisha.tusur.timetable.data.repository.CatalogRepositoryImpl
-import com.keisha.tusur.timetable.data.repository.RoomScheduleRepository
+import com.keisha.tusur.timetable.data.repository.RoomGroupScheduleRepository
 import com.keisha.tusur.timetable.data.repository.ScheduleRepository
 import com.keisha.tusur.timetable.data.repository.ScheduleRepositoryImpl
 import com.keisha.tusur.timetable.data.repository.SettingsRepository
@@ -24,10 +24,12 @@ import com.keisha.tusur.timetable.data.update.ApkDownloader
 import com.keisha.tusur.timetable.data.update.ApkInstaller
 import com.keisha.tusur.timetable.data.update.GitHubReleaseClient
 import com.keisha.tusur.timetable.data.update.UpdatePreferences
+import com.keisha.tusur.timetable.domain.model.ScheduleSource
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.first
 import okhttp3.OkHttpClient
 import java.util.concurrent.TimeUnit
 
@@ -110,12 +112,19 @@ class AppContainer(context: Context) {
         )
     }
 
-    internal val roomScheduleRepository by lazy {
-        RoomScheduleRepository(database.roomCacheDao(), client, weekScheduleParser)
+    private val roomGroupScheduleRepository by lazy {
+        RoomGroupScheduleRepository(database.roomCacheDao(), client, weekScheduleParser, applicationScope, database) {
+            settingsRepository.monitoring.first()
+        }
+    }
+
+    internal fun scheduleFor(source: ScheduleSource): ScheduleRepository = when (source) {
+        ScheduleSource.GROUP -> scheduleRepository
+        ScheduleSource.GROUP_FROM_ROOMS -> roomGroupScheduleRepository
     }
 
     internal val scheduleNotifications by lazy {
-        ScheduleNotificationScheduler(appContext, settingsRepository, scheduleRepository, database.scheduleNotificationDao())
+        ScheduleNotificationScheduler(appContext, settingsRepository, ::scheduleFor, database.scheduleNotificationDao())
     }
 
     val teacherScheduleRepository: TeacherScheduleRepository by lazy {

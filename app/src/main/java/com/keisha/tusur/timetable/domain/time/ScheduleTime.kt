@@ -113,6 +113,7 @@ object ScheduleTime {
         lessons: List<Lesson>,
         weekStart: LocalDate,
         holidays: List<HolidayDay> = emptyList(),
+        includeSunday: Boolean = false,
     ): List<DaySchedule> {
         val weekEnd = weekEnd(weekStart)
         val byDate = lessons
@@ -127,7 +128,7 @@ object ScheduleTime {
             val dayLessons = byDate[date].orEmpty().filterNot { holiday?.blocks(it) == true }
             DaySchedule(date, dayLessons, isHoliday = holiday != null)
         }
-        return days.filter { it.isHoliday || it.lessons.isNotEmpty() || it.date.dayOfWeek != DayOfWeek.SUNDAY }
+        return days.filter { includeSunday || it.isHoliday || it.lessons.isNotEmpty() || it.date.dayOfWeek != DayOfWeek.SUNDAY }
     }
 
     /** Неделя, в которую попадает дата, с допуском по границам. */

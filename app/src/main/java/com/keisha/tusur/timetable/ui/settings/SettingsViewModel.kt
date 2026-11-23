@@ -3,7 +3,6 @@ package com.keisha.tusur.timetable.ui.settings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.keisha.tusur.timetable.data.repository.CatalogRepository
-import com.keisha.tusur.timetable.data.repository.RoomScheduleRepository
 import com.keisha.tusur.timetable.data.repository.ScheduleMonitoring
 import com.keisha.tusur.timetable.data.repository.ScheduleRepository
 import com.keisha.tusur.timetable.data.repository.SettingsRepository
@@ -12,9 +11,7 @@ import com.keisha.tusur.timetable.data.repository.UserSelection
 import com.keisha.tusur.timetable.domain.model.AnimationMode
 import com.keisha.tusur.timetable.domain.model.Appearance
 import com.keisha.tusur.timetable.domain.model.AppError
-import com.keisha.tusur.timetable.domain.model.Auditorium
 import com.keisha.tusur.timetable.domain.model.ColorPalette
-import com.keisha.tusur.timetable.domain.model.SchedulePreference
 import com.keisha.tusur.timetable.domain.model.ScheduleSource
 import com.keisha.tusur.timetable.domain.model.ThemeMode
 import kotlinx.coroutines.CancellationException
@@ -39,7 +36,7 @@ data class SettingsUiState(
     val isLoading: Boolean = true,
     val isClearingCache: Boolean = false,
     val appearance: Appearance = Appearance(),
-    val schedulePreference: SchedulePreference = SchedulePreference(),
+    val scheduleSource: ScheduleSource = ScheduleSource.GROUP,
     val notificationsEnabled: Boolean = false,
 )
 
@@ -53,9 +50,8 @@ sealed interface SettingsEvent {
 
 internal class SettingsViewModel(
     private val catalogRepository: CatalogRepository,
-    private val scheduleRepository: ScheduleRepository,
+    private val scheduleFor: (ScheduleSource) -> ScheduleRepository,
     private val teacherScheduleRepository: TeacherScheduleRepository,
-    private val roomRepository: RoomScheduleRepository,
     private val settingsRepository: SettingsRepository,
 ) : ViewModel() {
 
@@ -71,16 +67,15 @@ internal class SettingsViewModel(
     val state: StateFlow<SettingsUiState> = combine(
         settingsRepository.monitoring.catch { emit(ScheduleMonitoring(null, null)) },
         settingsRepository.appearance.catch { emit(Appearance()) },
-        settingsRepository.schedulePreference.catch { emit(SchedulePreference()) },
         local,
-    ) { monitoring, appearance, preference, localState ->
+    ) { monitoring, appearance, localState ->
         SettingsUiState(
             selection = monitoring.selection,
             lastUpdated = localState.lastUpdated,
             isLoading = false,
             isClearingCache = localState.isClearingCache,
             appearance = appearance,
-            schedulePreference = preference,
+            scheduleSource = monitoring.source,
             notificationsEnabled = monitoring.generation != null,
         )
     }.stateIn(
@@ -92,7 +87,7 @@ internal class SettingsViewModel(
     init {
         // Время кэша относится к конкретной группе: после смены группы его нужно перечитать.
         viewModelScope.launch {
-            combine(settingsRepository.selection, settingsRepository.schedulePreference, ::Pair)
+            combine(settingsRepository.selection, settingsRepository.scheduleSource, ::Pair)
                 .collectLatest { (selection, preference) ->
                 val updatedAt = readLastUpdated(selection, preference)
                 local.update { it.copy(lastUpdated = updatedAt) }
@@ -103,7 +98,7 @@ internal class SettingsViewModel(
     /** Перечитывает время последнего обновления: экран открывается повторно после расписания. */
     fun refreshLastUpdated() {
         viewModelScope.launch {
-            val updatedAt = readLastUpdated(settingsRepository.selection.first(), settingsRepository.schedulePreference.first())
+            val updatedAt = readLastUpdated(settingsRepository.selection.first(), settingsRepository.scheduleSource.first())
             local.update { it.copy(lastUpdated = updatedAt) }
         }
     }
@@ -116,11 +111,6 @@ internal class SettingsViewModel(
 
     fun setScheduleSource(source: ScheduleSource) = savePreference {
         settingsRepository.setScheduleSource(source)
-        _events.send(SettingsEvent.ScheduleSourceChanged)
-    }
-
-    fun selectAuditorium(auditorium: Auditorium) = savePreference {
-        settingsRepository.selectAuditorium(auditorium)
         _events.send(SettingsEvent.ScheduleSourceChanged)
     }
 
@@ -142,9 +132,9 @@ internal class SettingsViewModel(
             local.update { it.copy(isClearingCache = true) }
             try {
                 catalogRepository.clearCache()
-                scheduleRepository.clearCache()
+                scheduleFor(ScheduleSource.GROUP).clearCache()
                 teacherScheduleRepository.clearCache()
-                roomRepository.clearCache()
+                scheduleFor(ScheduleSource.GROUP_FROM_ROOMS).clearCache()
                 // Кэша больше нет — «последнее обновление» тоже сбрасывается.
                 local.update { it.copy(lastUpdated = null) }
                 _events.send(SettingsEvent.CacheCleared)
@@ -160,10 +150,9 @@ internal class SettingsViewModel(
         }
     }
 
-    private suspend fun readLastUpdated(selection: UserSelection?, preference: SchedulePreference): Instant? {
+    private suspend fun readLastUpdated(selection: UserSelection?, source: ScheduleSource): Instant? {
         return try {
-            if (preference.source == ScheduleSource.ROOM) preference.auditorium?.let { roomRepository.lastUpdated(it) }
-            else selection?.let { scheduleRepository.lastUpdated(it.groupSlug) }
+            selection?.let { scheduleFor(source).lastUpdated(it.toGroup()) }
         } catch (e: CancellationException) {
             throw e
         } catch (_: Exception) {

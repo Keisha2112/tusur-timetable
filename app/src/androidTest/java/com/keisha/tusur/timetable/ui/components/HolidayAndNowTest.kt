@@ -5,6 +5,7 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -66,6 +67,39 @@ class HolidayAndNowTest {
     }
 
     @Test
+    fun openedDateRemainsVisibleWhenTheSundayEntryWasRemoved() {
+        val sunday = LocalDate.of(2026, 11, 29)
+        val week = Week(851, 13, sunday.minusDays(6), WeekKind.THEORETICAL, false)
+        val focus = mutableStateOf<LocalDate?>(sunday)
+        compose.setContent {
+            TusurTimetableTheme(darkTheme = false) {
+                ScheduleWeekList(
+                    lessons = emptyList(),
+                    week = week,
+                    contentKey = "713-1",
+                    currentWeekId = null,
+                    canGoPrevious = true,
+                    canGoNext = true,
+                    showTeachers = true,
+                    showGroups = false,
+                    onPreviousWeek = {},
+                    onNextWeek = {},
+                    onOpenLesson = {},
+                    publication = WeekPublication.PUBLISHED,
+                    focusDate = focus.value,
+                    onDateFocused = { focus.value = null },
+                    fromRooms = true,
+                )
+            }
+        }
+        val title = ScheduleTime.formatDayTitle(sunday)
+        compose.waitUntil(timeoutMillis = 5_000) {
+            focus.value == null && compose.onAllNodes(hasText(title)).fetchSemanticsNodes().isNotEmpty()
+        }
+        compose.onNodeWithText(title).assertIsDisplayed()
+    }
+
+    @Test
     fun nowShowsHolidayAndTheEndOfLoadedScheduleInDarkTheme() {
         val snapshot = NowSnapshot(
             LocalDate.of(2026, 11, 4),
@@ -91,7 +125,7 @@ class HolidayAndNowTest {
         val snapshot = NowStateCalculator().calculateEntries(entry, date.atTime(9, 0).atZone(ScheduleTime.ZONE).toInstant())
         var opened: Lesson? = null
         compose.setContent {
-            TusurTimetableTheme(darkTheme = false) { NowContent(snapshot, onLesson = { opened = it }, isRoom = true) }
+            TusurTimetableTheme(darkTheme = false) { NowContent(snapshot, onLesson = { opened = it }, fromRooms = true) }
         }
         compose.onNodeWithText("Текущая пара").assertIsDisplayed()
         compose.onNodeWithText("Следующая пара").assertIsDisplayed()

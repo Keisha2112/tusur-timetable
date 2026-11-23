@@ -2,12 +2,13 @@ package com.keisha.tusur.timetable.ui.schedule
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.keisha.tusur.timetable.data.repository.RoomScheduleRepository
 import com.keisha.tusur.timetable.data.repository.ScheduleRepository
 import com.keisha.tusur.timetable.data.repository.SettingsRepository
+import com.keisha.tusur.timetable.data.repository.UserSelection
 import com.keisha.tusur.timetable.domain.model.AppError
-import com.keisha.tusur.timetable.domain.model.Auditorium
+import com.keisha.tusur.timetable.domain.model.RoomWeekCoverage
 import com.keisha.tusur.timetable.domain.model.ScheduleEntries
+import com.keisha.tusur.timetable.domain.model.ScheduleSource
 import com.keisha.tusur.timetable.domain.model.Week
 import com.keisha.tusur.timetable.domain.time.NowSnapshot
 import com.keisha.tusur.timetable.domain.time.NowStateCalculator
@@ -20,6 +21,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
@@ -34,8 +36,8 @@ internal data class NowSchedule(
     val subject: ScheduleSubject,
     val entries: ScheduleEntries?,
     val fetchedAt: Instant? = null,
-    val updatedWeeks: Map<Int, Instant> = emptyMap(),
     val staleWeeks: Set<Int> = emptySet(),
+    val roomCoverage: Map<Int, RoomWeekCoverage> = emptyMap(),
 )
 
 internal data class NowUiState(val schedule: NowSchedule?, val snapshot: NowSnapshot) {
@@ -52,28 +54,26 @@ internal data class NowUiState(val schedule: NowSchedule?, val snapshot: NowSnap
 
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class NowViewModel(
-    scheduleRepository: ScheduleRepository,
+    private val scheduleRepository: ScheduleRepository,
     settingsRepository: SettingsRepository,
-    private val roomRepository: RoomScheduleRepository,
-    private val auditorium: Auditorium?,
+    private val source: ScheduleSource,
+    selectionOverride: UserSelection? = null,
     private val clock: Clock = Clock.systemUTC(),
 ) : ViewModel() {
     private val timeChanges = MutableStateFlow(0L)
     private val calculator = NowStateCalculator()
 
-    private val schedules = if (auditorium != null) {
-        val subject = auditorium.subject()
-        roomRepository.observe(auditorium).catch { emit(null) }.map { schedule ->
-            NowSchedule(subject, schedule?.entries, updatedWeeks = schedule?.updatedWeeks.orEmpty(),
-                staleWeeks = schedule?.staleWeeks.orEmpty())
-        }
-    } else {
-        settingsRepository.selection.catch { emit(null) }.flatMapLatest { selection ->
-            if (selection == null) flowOf(null)
-            else scheduleRepository.observe(selection.toGroup()).catch { emit(null) }.map { schedule ->
-                NowSchedule(selection.subject(), schedule?.entries(), schedule?.fetchedAt,
-                    staleWeeks = schedule?.staleWeeks.orEmpty())
-            }
+    private val selectionFlow = selectionOverride?.let { flowOf(it) } ?: settingsRepository.selection
+    private val schedules = selectionFlow.catch { emit(null) }.flatMapLatest { selection ->
+        if (selection == null) flowOf(null)
+        else scheduleRepository.observe(selection.toGroup()).catch { emit(null) }.map { schedule ->
+            NowSchedule(
+                subject = selection.subject(source),
+                entries = schedule?.entries(),
+                fetchedAt = schedule?.fetchedAt?.takeUnless { it == Instant.EPOCH },
+                staleWeeks = schedule?.staleWeeks.orEmpty(),
+                roomCoverage = schedule?.roomCoverage.orEmpty(),
+            )
         }
     }
 
@@ -95,6 +95,9 @@ internal class NowViewModel(
 
     fun onTimeChanged() = timeChanges.update { it + 1 }
 
-    suspend fun loadRoom(week: Week? = null, forceRefresh: Boolean = false): AppError? =
-        auditorium?.let { roomRepository.load(it, week, forceRefresh) }
+    suspend fun load(week: Week? = null, forceRefresh: Boolean = false): AppError? {
+        val group = selectionFlow.first()?.toGroup() ?: return null
+        return if (week == null) scheduleRepository.load(group, forceRefresh).error
+        else scheduleRepository.loadWeek(group, week, forceRefresh).error
+    }
 }

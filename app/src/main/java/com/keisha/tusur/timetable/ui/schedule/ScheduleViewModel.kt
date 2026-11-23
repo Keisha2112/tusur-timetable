@@ -10,16 +10,16 @@ import com.keisha.tusur.timetable.data.repository.UserSelection
 import com.keisha.tusur.timetable.domain.model.AppError
 import com.keisha.tusur.timetable.domain.model.Group
 import com.keisha.tusur.timetable.domain.model.GroupSchedule
+import com.keisha.tusur.timetable.domain.model.ScheduleSource
 import com.keisha.tusur.timetable.domain.model.Week
 import com.keisha.tusur.timetable.domain.time.ScheduleTime
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.Instant
@@ -50,6 +50,8 @@ class ScheduleViewModel(
     private val refreshManually: suspend (Group, Int?) -> ScheduleLoadResult = { group, weekId ->
         scheduleRepository.refresh(group, ScheduleRefreshReason.MANUAL, weekId)
     },
+    private val source: ScheduleSource = ScheduleSource.GROUP,
+    selectionOverride: UserSelection? = null,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(ScheduleUiState())
@@ -57,6 +59,7 @@ class ScheduleViewModel(
 
     private var appliedSelection: UserSelection? = null
     private var selectionResolved = false
+    private var screenActive = false
     private var loadJob: Job? = null
     private var weekLoadJob: Job? = null
     private var weekLoadJobWeekId: Int? = null
@@ -65,7 +68,7 @@ class ScheduleViewModel(
     init {
         viewModelScope.launch {
             // Сбой DataStore не должен оставлять экран в вечном загрузочном состоянии.
-            settingsRepository.selection
+            (selectionOverride?.let { flowOf(it) } ?: settingsRepository.selection)
                 .catch { emit(null) }
                 .collect(::onSelectionChanged)
         }
@@ -78,14 +81,27 @@ class ScheduleViewModel(
 
     fun retry() = refresh()
 
+    fun onScreenHidden() {
+        screenActive = false
+        if (source == ScheduleSource.GROUP_FROM_ROOMS) {
+            loadJob?.cancel()
+            weekLoadJob?.cancel()
+            _state.update { it.copy(isRefreshing = false, loadingWeekId = null) }
+        }
+    }
+
     /**
      * Вызывается при возврате на экран. TTL решает репозиторий, поэтому частые
      * возвраты из настроек не приводят к лишним запросам.
      */
     fun onScreenShown() {
+        screenActive = true
         val selection = _state.value.selection ?: return
         if (loadJob?.isActive == true || weekLoadJob?.isActive == true) return
-        load(selection, forceRefresh = false)
+        val selectedWeekId = _state.value.selectedWeekId
+        if (source == ScheduleSource.GROUP_FROM_ROOMS && selectedWeekId != null) {
+            ensureWeekLoaded(selectedWeekId)
+        } else load(selection, forceRefresh = false)
     }
 
     /**
@@ -93,12 +109,16 @@ class ScheduleViewModel(
      * `.ics` сайта обрезан текущим учебным периодом.
      */
     fun ensureWeekLoaded(weekId: Int, forceRefresh: Boolean = false) {
+        if (!screenActive) return
         val current = _state.value
         val schedule = current.schedule ?: return
         val week = schedule.weeks.firstOrNull { it.id == weekId } ?: return
         // Во время ручной загрузки всех недель отдельный запрос не нужен:
         // выбранная неделя уже входит в общий список.
         if (!forceRefresh && current.isRefreshing) return
+        if (source == ScheduleSource.GROUP_FROM_ROOMS && loadJob?.isActive == true &&
+            ScheduleTime.currentWeek(schedule.weeks)?.id == weekId
+        ) return
         if (weekLoadJob?.isActive == true) {
             if (weekLoadJobWeekId == weekId) return
             // Пользователь уже пролистнул дальше — старый запрос больше не нужен.
@@ -110,7 +130,8 @@ class ScheduleViewModel(
             val checkedAt = schedule.checkedWeeks[weekId]
             if (checkedAt != null) {
                 val age = System.currentTimeMillis() - checkedAt
-                if (age in 0 until WEEK_REFRESH_MS) return
+                val ttl = if (source == ScheduleSource.GROUP_FROM_ROOMS) ROOM_WEEK_REFRESH_MS else WEEK_REFRESH_MS
+                if (age in 0 until ttl) return
             }
         }
 
@@ -133,15 +154,19 @@ class ScheduleViewModel(
     }
 
     fun selectWeek(weekId: Int) {
-        val exists = _state.value.schedule?.weeks?.any { it.id == weekId } == true
-        if (!exists) return
+        val current = _state.value
+        if (current.schedule?.weeks?.none { it.id == weekId } != false) return
         _state.update { it.copy(selectedWeekId = weekId, focusDate = null) }
+        if (source == ScheduleSource.GROUP_FROM_ROOMS && current.selectedWeekId != weekId &&
+            loadJob?.isActive == true && !current.isRefreshing
+        ) loadJob?.cancel()
     }
 
     fun openDate(date: LocalDate): Boolean {
         val weeks = _state.value.schedule?.weeks ?: return false
         val week = ScheduleTime.findWeek(weeks, date) ?: return false
-        _state.update { it.copy(selectedWeekId = week.id, focusDate = date) }
+        selectWeek(week.id)
+        _state.update { it.copy(focusDate = date) }
         return true
     }
 
@@ -156,7 +181,7 @@ class ScheduleViewModel(
     fun goToCurrentWeek() {
         val weeks = _state.value.schedule?.weeks ?: return
         val current = ScheduleTime.currentWeek(weeks, ScheduleTime.today()) ?: return
-        _state.update { it.copy(selectedWeekId = current.id) }
+        selectWeek(current.id)
     }
 
     private fun onSelectionChanged(selection: UserSelection?) {
@@ -177,22 +202,12 @@ class ScheduleViewModel(
         if (previous != null && (previous.groupSlug != selection.groupSlug ||
                 previous.facultyCode != selection.facultyCode)
         ) {
+            loadJob?.cancel()
             weekLoadJob?.cancel()
             // Другая группа: старые данные на экране не показываем, ждём кэш новой.
-            _state.update {
-                it.copy(
-                    selection = selection,
-                    schedule = null,
-                    selectedWeekId = null,
-                    error = null,
-                    lastUpdated = null,
-                    isOffline = false,
-                    isRefreshing = false,
-                    groupNotFound = false,
-                    isInitialLoading = true,
-                    focusDate = null,
-                )
-            }
+            _state.value = ScheduleUiState(selection = selection)
+        } else {
+            _state.update { it.copy(selection = selection) }
         }
         val group = selection.toGroup()
         cacheJob = viewModelScope.launch {
@@ -201,14 +216,14 @@ class ScheduleViewModel(
                     if (current.selection != selection || cached == null) return@update current
                     current.copy(
                         schedule = cached,
-                        lastUpdated = cached.fetchedAt,
+                        lastUpdated = cached.fetchedAt.takeUnless { it == Instant.EPOCH },
                         selectedWeekId = resolveWeek(cached, current.selectedWeekId),
                         isInitialLoading = false,
                     )
                 }
             }
         }
-        load(selection, forceRefresh = false)
+        if (screenActive) load(selection, forceRefresh = false)
     }
 
     private fun load(selection: UserSelection, forceRefresh: Boolean) {
@@ -228,27 +243,20 @@ class ScheduleViewModel(
                 )
             }
 
-            val slug = selection.groupSlug
+            val group = selection.toGroup()
             if (!forceRefresh) {
-                // Кэш и время последнего обновления читаем параллельно, экран показываем сразу.
-                val (cached, cachedUpdatedAt) = coroutineScope {
-                    val scheduleDeferred = async { cachedSchedule(slug) }
-                    val updatedDeferred = async { lastUpdatedAt(slug) }
-                    scheduleDeferred.await() to updatedDeferred.await()
-                }
-                if (cached != null && cached.group.facultyCode == selection.facultyCode) {
+                cachedSchedule(group)?.let { cached ->
                     applySchedule(
                         schedule = cached,
-                        updatedAt = cachedUpdatedAt ?: cached.fetchedAt,
+                        updatedAt = cached.fetchedAt.takeUnless { it == Instant.EPOCH },
                         isOffline = false,
                         error = null,
                     )
                 }
             }
 
-            val group = selection.toGroup()
             applyLoadResult(loadSchedule(group, forceRefresh))
-            if (!forceRefresh) {
+            if (!forceRefresh && source == ScheduleSource.GROUP) {
                 // Ответ мог быть 304, и объект расписания не изменился. Явно
                 // проверяем выбранную неделю, иначе пустая будущая неделя
                 // останется пустой до ручного обновления.
@@ -290,7 +298,7 @@ class ScheduleViewModel(
 
         applySchedule(
             schedule = schedule,
-            updatedAt = result.updatedAt ?: schedule.fetchedAt,
+            updatedAt = result.updatedAt ?: schedule.fetchedAt.takeUnless { it == Instant.EPOCH },
             isOffline = result.isOffline,
             error = result.error,
         )
@@ -298,7 +306,7 @@ class ScheduleViewModel(
 
     private fun applySchedule(
         schedule: GroupSchedule,
-        updatedAt: Instant,
+        updatedAt: Instant?,
         isOffline: Boolean,
         error: AppError?,
     ) {
@@ -333,18 +341,9 @@ class ScheduleViewModel(
         selectWeek(target.id)
     }
 
-    private suspend fun cachedSchedule(slug: String): GroupSchedule? =
+    private suspend fun cachedSchedule(group: Group): GroupSchedule? =
         try {
-            scheduleRepository.cached(slug)
-        } catch (e: CancellationException) {
-            throw e
-        } catch (_: Exception) {
-            null
-        }
-
-    private suspend fun lastUpdatedAt(slug: String): Instant? =
-        try {
-            scheduleRepository.lastUpdated(slug)
+            scheduleRepository.cached(group)
         } catch (e: CancellationException) {
             throw e
         } catch (_: Exception) {
@@ -405,5 +404,6 @@ class ScheduleViewModel(
 
     private companion object {
         const val WEEK_REFRESH_MS = 15L * 60 * 1000
+        const val ROOM_WEEK_REFRESH_MS = 6L * 60 * 60 * 1000
     }
 }

@@ -2,6 +2,7 @@ package com.keisha.tusur.timetable.data.parser
 
 import com.keisha.tusur.timetable.data.network.Urls
 import com.keisha.tusur.timetable.domain.model.Auditorium
+import com.keisha.tusur.timetable.domain.model.Group
 import com.keisha.tusur.timetable.domain.model.HolidayDay
 import com.keisha.tusur.timetable.domain.model.Lesson
 import com.keisha.tusur.timetable.domain.model.LessonNotes
@@ -9,6 +10,7 @@ import com.keisha.tusur.timetable.domain.model.LessonStatus
 import com.keisha.tusur.timetable.domain.model.Week
 import com.keisha.tusur.timetable.domain.model.WeekPublication
 import com.keisha.tusur.timetable.domain.time.ScheduleTime
+import okhttp3.HttpUrl.Companion.toHttpUrl
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import java.net.URI
@@ -212,7 +214,8 @@ class WeekScheduleParser(
         }.ifEmpty { textValues(shortTeachers, "a") }.cleanValues()
         val ids = teacherLinks.ifEmpty { roomTeacherLinks.ifEmpty { shortTeachers?.select("a[href]").orEmpty() } }
             .mapNotNull { TEACHER_ID.find(it.attr("href"))?.groupValues?.get(1) }.distinct().sorted()
-        val groups = if (room == null) emptyList() else roomGroups(training, printedGroups)
+        val groupLinks = if (room == null) emptyList() else training.select("a[href]").mapNotNull(::groupLink)
+        val groups = if (room == null) emptyList() else roomGroups(training, printedGroups, groupLinks)
 
         return Lesson(
             id = seriesId ?: "$date-$start-$discipline",
@@ -226,6 +229,7 @@ class WeekScheduleParser(
             rooms = if (room == null) textValues(training.selectFirst("span.auditoriums"), "i, a") else listOf(room.label),
             teachers = teachers,
             groups = groups,
+            groupLinks = groupLinks.distinct(),
             siteSeriesId = seriesId,
             teacherIds = ids,
             note = note,
@@ -233,11 +237,20 @@ class WeekScheduleParser(
         )
     }
 
-    private fun roomGroups(training: Element, printed: List<Element>): List<String> {
+    private fun groupLink(element: Element): Group? {
+        val url = Urls.BASE.toHttpUrl().resolve(element.attr("href")) ?: return null
+        val path = url.pathSegments
+        if (url.host != "timetable.tusur.ru" || path.size != 4 ||
+            path[0] != "faculties" || path[2] != "groups" || path[1].isBlank() || path[3].isBlank()
+        ) return null
+        return Group(path[1], path[3], element.text().trim())
+    }
+
+    private fun roomGroups(training: Element, printed: List<Element>, links: List<Group>): List<String> {
         val fullList = printed.firstOrNull { it.text().startsWith("гр.") }?.text()
             ?: training.select("span.group[title]").map { it.attr("title") }.firstOrNull { it.startsWith("гр.") }
-        val visible = training.select("a[href*=/groups/]").map(Element::text)
-        return (fullList?.split(',') ?: visible).map { it.trim().removePrefix("гр.") }
+        return (fullList.orEmpty().split(',') + links.map(Group::name))
+            .map { it.trim().removePrefix("гр.") }
             .cleanValues().filterNot { it.all { char -> char == '.' || char == '…' } }
     }
 
